@@ -20,10 +20,14 @@
 | Ethereum | ETH | YES | ethereum |
 | Ethereum Classic | ETC | YES | ethereum_classic |
 | Filecoin | FIL | YES | filecoin |
+| Grin | GRIN | YES | grin |
+| Grin Testnet | GRIN | YES | grin_testnet |
 | Hedera | HBAR | YES | hedera |
 | Horizen | ZEN | YES | zencash |
 | Komodo | KMD | YES | komodo |
 | Litecoin | LTC | YES | litecoin |
+| MimbleWimble Coin | MWC | YES | mimblewimble_coin |
+| MimbleWimble Coin Floonet | MWC | YES | mimblewimble_coin_floonet |
 | Osmosis | OSMO | YES | osmo |
 | Peercoin | PPC | YES | peercoin |
 | PivX | PIVX | YES | pivx |

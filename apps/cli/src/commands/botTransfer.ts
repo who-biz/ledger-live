@@ -86,7 +86,7 @@ export default {
                   120 * 1000,
                   throwError(new Error("scan account timeout"))
                 ),
-                map((e) => e.account.freshAddress),
+                map((e: any) => e.account.freshAddress),
                 catchError((err) => {
                   console.error(
                     "couldn't infer address for a " + currency.id + " account",

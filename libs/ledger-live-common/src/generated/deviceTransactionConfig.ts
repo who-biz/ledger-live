@@ -8,6 +8,7 @@ import elrond from "../families/elrond/deviceTransactionConfig";
 import ethereum from "../families/ethereum/deviceTransactionConfig";
 import filecoin from "../families/filecoin/deviceTransactionConfig";
 import hedera from "../families/hedera/deviceTransactionConfig";
+import mimblewimble_coin from "../families/mimblewimble_coin/deviceTransactionConfig";
 import osmosis from "../families/osmosis/deviceTransactionConfig";
 import polkadot from "../families/polkadot/deviceTransactionConfig";
 import ripple from "../families/ripple/deviceTransactionConfig";
@@ -27,6 +28,7 @@ export default {
   ethereum,
   filecoin,
   hedera,
+  mimblewimble_coin,
   osmosis,
   polkadot,
   ripple,

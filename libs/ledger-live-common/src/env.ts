@@ -80,6 +80,26 @@ const envDefinitions = {
     def: "https://filecoin.coin.ledger.com",
     desc: "Filecoin API url",
   },
+  API_MIMBLEWIMBLE_COIN_NODE: {
+    parser: stringParser,
+    def: "https://mwc713.mwc.mw",
+    desc: "Node for MimbleWimble Coin",
+  },
+  API_MIMBLEWIMBLE_COIN_FLOONET_NODE: {
+    parser: stringParser,
+    def: "https://mwc713.floonet.mwc.mw",
+    desc: "Node for MimbleWimble Coin floonet",
+  },
+  API_GRIN_NODE: {
+    parser: stringParser,
+    def: "https://grinnode.live:3413",
+    desc: "Node for Grin",
+  },
+   API_GRIN_TESTNET_NODE: {
+    parser: stringParser,
+    def: "http://localhost:13413",
+    desc: "Node for Grin testnet",
+  },
   API_POLKADOT_INDEXER: {
     parser: stringParser,
     def: "https://polkadot.coin.ledger.com",
@@ -533,6 +553,11 @@ const envDefinitions = {
     def: 5,
     parser: intParser,
     desc: "maximum limit to run bot spec in parallel",
+  },
+  TOR_SOCKS_PROXY: {
+    parser: stringParser,
+    def: "socks://localhost:9050",
+    desc: "SOCKS proxy for Tor",
   },
   USER_ID: {
     def: "",

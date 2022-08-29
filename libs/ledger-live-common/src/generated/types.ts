@@ -38,6 +38,10 @@ import { Transaction as hederaTransaction } from "../families/hedera/types";
 import { TransactionRaw as hederaTransactionRaw } from "../families/hedera/types";
 import { TransactionStatus as hederaTransactionStatus } from "../families/hedera/types";
 import { TransactionStatusRaw as hederaTransactionStatusRaw } from "../families/hedera/types";
+import { Transaction as mimblewimble_coinTransaction } from "../families/mimblewimble_coin/types";
+import { TransactionRaw as mimblewimble_coinTransactionRaw } from "../families/mimblewimble_coin/types";
+import { TransactionStatus as mimblewimble_coinTransactionStatus } from "../families/mimblewimble_coin/types";
+import { TransactionStatusRaw as mimblewimble_coinTransactionStatusRaw } from "../families/mimblewimble_coin/types";
 import { Transaction as neoTransaction } from "../families/neo/types";
 import { TransactionRaw as neoTransactionRaw } from "../families/neo/types";
 import { TransactionStatus as neoTransactionStatus } from "../families/neo/types";
@@ -82,6 +86,7 @@ export type Transaction =
   | ethereumTransaction
   | filecoinTransaction
   | hederaTransaction
+  | mimblewimble_coinTransaction
   | neoTransaction
   | osmosisTransaction
   | polkadotTransaction
@@ -102,6 +107,7 @@ export type TransactionRaw =
   | ethereumTransactionRaw
   | filecoinTransactionRaw
   | hederaTransactionRaw
+  | mimblewimble_coinTransactionRaw
   | neoTransactionRaw
   | osmosisTransactionRaw
   | polkadotTransactionRaw
@@ -122,6 +128,7 @@ export type TransactionStatus =
   | ethereumTransactionStatus
   | filecoinTransactionStatus
   | hederaTransactionStatus
+  | mimblewimble_coinTransactionStatus
   | neoTransactionStatus
   | osmosisTransactionStatus
   | polkadotTransactionStatus
@@ -142,6 +149,7 @@ export type TransactionStatusRaw =
   | ethereumTransactionStatusRaw
   | filecoinTransactionStatusRaw
   | hederaTransactionStatusRaw
+  | mimblewimble_coinTransactionStatusRaw
   | neoTransactionStatusRaw
   | osmosisTransactionStatusRaw
   | polkadotTransactionStatusRaw

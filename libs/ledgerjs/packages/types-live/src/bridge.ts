@@ -24,17 +24,31 @@ import {
   NFTMetadataResponse,
 } from "./nft";
 
-export type ScanAccountEvent = {
-  type: "discovered";
-  account: Account;
-};
-/**
- * More events will come in the future
- */
-export type ScanAccountEventRaw = {
-  type: "discovered";
-  account: AccountRaw;
-};
+export type ScanAccountEvent =
+  | {
+      type: "discovered";
+      account: Account;
+    } // REQUIRED Indicates that an account was found
+  | {
+      type: "device-root-public-key-requested";
+      index: number;
+    } // optional For mimblewimble_coin family
+  | {
+      type: "device-root-public-key-granted";
+    }; // optional For mimblewimble_coin family
+
+export type ScanAccountEventRaw =
+  | {
+      type: "discovered";
+      account: AccountRaw;
+    }
+  | {
+      type: "device-root-public-key-requested";
+      index: number;
+    }
+  | {
+      type: "device-root-public-key-granted";
+    };
 
 /**
  * Unique identifier of a device. It will depend on the underlying implementation.

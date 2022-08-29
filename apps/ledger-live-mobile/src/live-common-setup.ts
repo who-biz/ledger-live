@@ -64,6 +64,10 @@ setSupportedCurrencies([
   "cardano",
   "osmosis",
   "filecoin",
+  "mimblewimble_coin",
+  "mimblewimble_coin_floonet",
+  "grin",
+  "grin_testnet",
 ]);
 
 if (Config.VERBOSE) {

@@ -83,7 +83,7 @@ type Props = {
 
 function ReadOnlyAddressField({ address, allowCopy = true }: Props) {
   const [copyFeedback, setCopyFeedback] = useState(false);
-  const [clibboardChanged, setClipboardChanged] = useState(false);
+  const [clipboardChanged, setClipboardChanged] = useState(false);
 
   const copyTimeout = useRef();
 
@@ -114,7 +114,7 @@ function ReadOnlyAddressField({ address, allowCopy = true }: Props) {
 
   return (
     <Box vertical>
-      {clibboardChanged ? (
+      {clipboardChanged ? (
         <ClipboardSuspicious>
           <Trans i18nKey="common.addressCopiedSuspicious" />
         </ClipboardSuspicious>

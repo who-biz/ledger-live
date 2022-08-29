@@ -31,6 +31,8 @@ import {
   toSolanaResourcesRaw,
   toCosmosResourcesRaw,
   toTronResourcesRaw,
+  fromMimbleWimbleCoinResourcesRaw,
+  toMimbleWimbleCoinResourcesRaw,
 } from "./account";
 import consoleWarnExpectToEqual from "./consoleWarnExpectToEqual";
 import { AlgorandAccount, AlgorandAccountRaw } from "./families/algorand/types";
@@ -46,6 +48,7 @@ import { PolkadotAccount, PolkadotAccountRaw } from "./families/polkadot/types";
 import { SolanaAccount, SolanaAccountRaw } from "./families/solana/types";
 import { TezosAccount, TezosAccountRaw } from "./families/tezos/types";
 import { TronAccount, TronAccountRaw } from "./families/tron/types";
+import { MimbleWimbleCoinAccount, MimbleWimbleCoinAccountRaw } from "./families/mimblewimble_coin/types";
 
 // aim to build operations with the minimal diff & call to coin implementation possible
 export async function minimalOperationsBuilder<CO>(
@@ -462,6 +465,24 @@ export function patchAccount(
       ) {
         (next as SolanaAccount).solanaResources = fromSolanaResourcesRaw(
           solanaUpdatedRaw.solanaResources
+        );
+        changed = true;
+      }
+      break;
+    }
+    case "mimblewimble_coin": {
+      const mimbleWimbleCoinAcc = account as MimbleWimbleCoinAccount;
+      const mimbleWimbleCoinUpdatedRaw = updatedRaw as MimbleWimbleCoinAccountRaw;
+
+      if (
+        mimbleWimbleCoinUpdatedRaw.mimbleWimbleCoinResources &&
+        !areSameResources(
+          toMimbleWimbleCoinResourcesRaw(mimbleWimbleCoinAcc.mimbleWimbleCoinResources),
+          mimbleWimbleCoinUpdatedRaw.mimbleWimbleCoinResources
+        )
+      ) {
+        (next as MimbleWimbleCoinAccount).mimbleWimbleCoinResources = fromMimbleWimbleCoinResourcesRaw(
+          mimbleWimbleCoinUpdatedRaw.mimbleWimbleCoinResources
         );
         changed = true;
       }

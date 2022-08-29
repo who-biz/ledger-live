@@ -19,7 +19,8 @@ import Stepper from "~/renderer/components/Stepper";
 import StepAccount, { StepAccountFooter } from "./steps/StepAccount";
 import StepConnectDevice, { StepConnectDeviceFooter } from "./steps/StepConnectDevice";
 import StepWarning, { StepWarningFooter } from "./steps/StepWarning";
-import StepReceiveFunds from "./steps/StepReceiveFunds";
+import StepReceiveFunds, { StepReceiveFundsFooter } from "./steps/StepReceiveFunds";
+import byFamily from "~/renderer/generated/StepReceiveFunds";
 
 export type StepId = "warning" | "account" | "device" | "receive";
 
@@ -72,6 +73,7 @@ export type StepProps = {
   onChangeAddressVerified: (?boolean, ?Error) => void,
   onClose: () => void,
   currencyName: ?string,
+  onChangeOnBack: (StepProps) => void,
 };
 
 export type St = Step<StepId, StepProps>;
@@ -101,6 +103,7 @@ const createSteps = (): Array<St> => [
     id: "receive",
     label: <Trans i18nKey="receive.steps.receiveFunds.title" />,
     component: StepReceiveFunds,
+    footer: StepReceiveFundsFooter,
   },
 ];
 
@@ -125,7 +128,7 @@ const Body = ({
   onChangeAddressVerified,
   params,
 }: Props) => {
-  const [steps] = useState(createSteps);
+  const [steps, setSteps] = useState(createSteps);
   const [account, setAccount] = useState(() => (params && params.account) || accounts[0]);
   const [parentAccount, setParentAccount] = useState(() => params && params.parentAccount);
   const [disabledSteps, setDisabledSteps] = useState([]);
@@ -146,7 +149,26 @@ const Body = ({
     closeModal("MODAL_RECEIVE");
   }, [closeModal]);
 
-  const handleStepChange = useCallback(e => onChangeStepId(e.id), [onChangeStepId]);
+  const handleStepChange = useCallback((e) => {
+    onChangeStepId(e.id);
+    if (e.id === "receive") {
+      // custom family action for StepReceiveFundsOnBack
+      let onBack: (StepProps) => void | undefined;
+      const CustomStepReceiveFunds = byFamily[currency.family];
+      if (CustomStepReceiveFunds && CustomStepReceiveFunds.StepReceiveFundsOnBack) {
+        onBack = CustomStepReceiveFunds.StepReceiveFundsOnBack;
+      } else {
+        onBack = undefined;
+      }
+      setSteps([
+        ...steps.slice(0, 3),
+        {
+          ...steps[3],
+          onBack,
+        },
+      ]);
+    }
+  }, [onChangeStepId, steps, setSteps]);
 
   const handleResetSkip = useCallback(() => {
     setDisabledSteps([]);
@@ -164,6 +186,24 @@ const Body = ({
     }
     onChangeStepId("receive");
   }, [onChangeAddressVerified, setDisabledSteps, steps, onChangeStepId]);
+
+  const handleChangeOnBack = useCallback((
+    onBack: (StepProps) => void
+  ) => {
+    for(let i: number = 0; i < steps.length; ++i) {
+      if (steps[i].id === stepId) {
+        setSteps([
+          ...steps.slice(0, i),
+          {
+            ...steps[i],
+            onBack,
+          },
+          ...steps.slice(i + 1),
+        ]);
+        break;
+      }
+    }
+  }, [stepId, steps, setSteps]);
 
   useEffect(() => {
     const stepId =
@@ -208,6 +248,7 @@ const Body = ({
     onStepChange: handleStepChange,
     onClose: handleCloseModal,
     currencyName,
+    onChangeOnBack: handleChangeOnBack,
   };
 
   return (

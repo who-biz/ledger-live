@@ -119,22 +119,26 @@ export default class StepSummary extends PureComponent<StepProps> {
                 </Box>
               </Box>
             </Box>
-            <VerticalSeparator />
-            <Box horizontal alignItems="center">
-              <Circle>
-                <IconQrCode size={14} />
-              </Circle>
-              <Box flex={1}>
-                <Text ff="Inter|Medium" color="palette.text.shade40" fontSize={4}>
-                  <Trans i18nKey="send.steps.details.to" />
-                </Text>
-                <Ellipsis>
-                  <Text ff="Inter" color="palette.text.shade100" fontSize={4}>
-                    {transaction.recipient}
-                  </Text>
-                </Ellipsis>
-              </Box>
-            </Box>
+            {transaction.recipient && (
+              <>
+                <VerticalSeparator />
+                <Box horizontal alignItems="center">
+                  <Circle>
+                    <IconQrCode size={14} />
+                  </Circle>
+                  <Box flex={1}>
+                    <Text ff="Inter|Medium" color="palette.text.shade40" fontSize={4}>
+                      <Trans i18nKey="send.steps.details.to" />
+                    </Text>
+                    <Ellipsis>
+                      <Text ff="Inter" color="palette.text.shade100" fontSize={4}>
+                        {transaction.recipient}
+                      </Text>
+                    </Ellipsis>
+                  </Box>
+                </Box>
+              </>
+            )}
           </Box>
           <Separator />
           {memo && (

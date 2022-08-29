@@ -109,7 +109,7 @@ const Receive2Device = ({
           fontSize={4}
         >
           <span style={{ marginRight: 10 }}>
-            <Trans i18nKey="currentAddress.messageIfUnverified" value={{ name }} />
+            <Trans i18nKey="currentAddress.messageIfUnverified" values={{ name }} />
           </span>
           <LinkWithExternalIcon
             style={{ display: "inline-flex" }}
@@ -197,6 +197,9 @@ const StepReceiveFunds = (props: StepProps) => {
   // custom family UI for StepReceiveFunds
   const CustomStepReceiveFunds = byFamily[mainAccount.currency.family];
   if (CustomStepReceiveFunds) {
+    if (CustomStepReceiveFunds.StepReceiveFunds) {
+      return <CustomStepReceiveFunds.StepReceiveFunds {...props} />;
+    }
     return <CustomStepReceiveFunds {...props} />;
   }
 
@@ -302,3 +305,21 @@ const StepReceiveFunds = (props: StepProps) => {
 };
 
 export default StepReceiveFunds;
+
+export function StepReceiveFundsFooter(props: StepProps) {
+  const {
+    account,
+    parentAccount
+  } = props;
+
+  const mainAccount = account ? getMainAccount(account, parentAccount) : null;
+  invariant(account && mainAccount, "No account given");
+
+  // custom family UI for StepReceiveFundsFooter
+  const CustomStepReceiveFunds = byFamily[mainAccount.currency.family];
+  if (CustomStepReceiveFunds && CustomStepReceiveFunds.StepReceiveFundsFooter) {
+    return <CustomStepReceiveFunds.StepReceiveFundsFooter {...props} />;
+  }
+
+  return null;
+}

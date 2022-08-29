@@ -28,6 +28,10 @@ const targets = [
   "AccountHeaderManageActions.js",
   "StepReceiveFunds.jsx",
   "NoAssociatedAccounts.jsx",
+  "NoAssociatedAccounts.jsx",
+  "ReceiveStepConnectDevice.jsx",
+  "StepImport.jsx",
+  "SendStepConnectDevice.jsx",
 ];
 
 async function genTarget(target) {

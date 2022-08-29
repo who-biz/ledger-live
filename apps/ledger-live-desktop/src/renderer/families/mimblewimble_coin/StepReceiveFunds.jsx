@@ -1,0 +1,701 @@
+// @flow
+import invariant from "invariant";
+import React, { PureComponent } from "react";
+import { getMainAccount, getAccountName } from "@ledgerhq/live-common/account/index";
+import TrackPage from "~/renderer/analytics/TrackPage";
+import ErrorDisplay from "~/renderer/components/ErrorDisplay";
+import { Trans } from "react-i18next";
+import styled from "styled-components";
+import useTheme from "~/renderer/hooks/useTheme";
+import { urls } from "~/config/urls";
+import { openURL } from "~/renderer/linking";
+import Box from "~/renderer/components/Box";
+import Button from "~/renderer/components/Button";
+import Text from "~/renderer/components/Text";
+import Ellipsis from "~/renderer/components/Ellipsis";
+import ReadOnlyAddressField from "~/renderer/components/ReadOnlyAddressField";
+import LinkWithExternalIcon from "~/renderer/components/LinkWithExternalIcon";
+import LinkShowQRCode from "~/renderer/components/LinkShowQRCode";
+import SuccessDisplay from "~/renderer/components/SuccessDisplay";
+import { renderVerifyUnwrapped } from "~/renderer/components/DeviceAction/rendering";
+import type { StepProps } from "~/renderer/modals/Receive/Body";
+import type { Account, AccountLike, Address, OperationRaw } from "@ledgerhq/types-live";
+import Modal from "~/renderer/components/Modal";
+import ModalBody from "~/renderer/components/Modal/ModalBody";
+import QRCode from "~/renderer/components/QRCode";
+import AccountTagDerivationMode from "~/renderer/components/AccountTagDerivationMode";
+import StepProgress from "~/renderer/components/StepProgress";
+import DeviceAction from "~/renderer/components/DeviceAction";
+import { createAction } from "@ledgerhq/live-common/hw/actions/app";
+import { command } from "~/renderer/commands";
+import { validateTransactionData, addReceivedTransactionToAccount } from "@ledgerhq/live-common/families/mimblewimble_coin/react";
+import TextAreaTransaction from "./components/TextAreaTransaction";
+import ReadOnlyTransactionField from "./components/ReadOnlyTransactionField";
+import Label from "~/renderer/components/Label";
+import qrcode from "qrcode";
+import { toAccountRaw } from "@ledgerhq/live-common/account/serialization";
+import { updateAccountWithUpdater } from "~/renderer/actions/accounts";
+import { connect } from "react-redux";
+import { OperationDetails } from "~/renderer/drawers/OperationDetails";
+import { setDrawer } from "~/renderer/drawers/Provider";
+import { localeSelector } from "~/renderer/reducers/settings";
+import { formatCurrencyUnit } from "@ledgerhq/live-common/currencies/index";
+import BigNumber from "bignumber.js";
+
+const connectAppExec = command("connectApp");
+
+const action = createAction(connectAppExec);
+
+const Separator = styled.div`
+  border-top: 1px solid #99999933;
+  margin: 50px 0;
+`;
+
+const QRCodeWrapper = styled.div`
+  border: 24px solid white;
+  background: white;
+  display: flex;
+`;
+
+const Receive1ShareAddress = (
+  {
+    account,
+    name,
+    address,
+    showQRCodeModal
+  }: {
+    account: AccountLike;
+    name: string;
+    address: string;
+    showQRCodeModal: () => void;
+  }
+) => {
+  return (
+    <>
+      <Box horizontal alignItems="center" flow={2} mb={4}>
+        <Text style={{ flex: 1 }} ff="Inter|SemiBold" color="palette.text.shade100" fontSize={4}>
+          {name ? (
+            <Box horizontal alignItems="center" flexWrap="wrap">
+              <Ellipsis>
+                <Trans i18nKey="currentAddress.for">
+                  {"Address for "}
+                  <strong>{name}</strong>
+                </Trans>
+              </Ellipsis>
+              <AccountTagDerivationMode account={account} />
+            </Box>
+          ) : (
+            <Trans i18nKey="currentAddress.title" />
+          )}
+        </Text>
+        <LinkShowQRCode onClick={showQRCodeModal} address={address} />
+      </Box>
+      <ReadOnlyAddressField address={address} />
+    </>
+  );
+};
+
+const Receive2Device = (
+  {
+    onVerify,
+    name,
+    device
+  }: {
+    onVerify: () => void;
+    name: string;
+    device: any;
+  }
+) => {
+  const type = useTheme("colors.palette.type");
+  return (
+    <>
+      <Box horizontal alignItems="center" flow={2}>
+        <Text
+          style={{ flexShrink: "unset" }}
+          ff="Inter|SemiBold"
+          color="palette.text.shade100"
+          fontSize={4}
+        >
+          <span style={{ marginRight: 10 }}>
+            <Trans i18nKey="currentAddress.messageIfUnverified" values={{ name }} />
+          </span>
+          <LinkWithExternalIcon
+            style={{ display: "inline-flex" }}
+            onClick={() => openURL(urls.recipientAddressInfo)}
+            label={<Trans i18nKey="common.learnMore" />}
+          />
+        </Text>
+      </Box>
+      {renderVerifyUnwrapped({ modelId: device.modelId, type })}
+    </>
+  );
+};
+
+type State = {
+  modalVisible: boolean,
+  transactionData: string,
+  transactionDataError: Error | undefined,
+  transactionDataWarning: Error | undefined,
+  connectingToDevice: boolean,
+  processingTransactionError: Error | null,
+  transactionResponse: string | null,
+  currentDevice: Device | null,
+  initialDevice: Device,
+  disableContinue: boolean,
+  useTransactionResponseQrCode: boolean
+  operationId: string | null;
+  operationAmount: string | null;
+};
+
+type Props = {
+  ...StepProps,
+  updateAccountWithUpdater: (string, (Account) => Account) => void
+};
+
+const mapDispatchToProps = {
+  updateAccountWithUpdater,
+  locale: localeSelector
+};
+
+class StepReceiveFunds extends PureComponent<Props, State> {
+
+  constructor(
+    props: Props
+  ) {
+    super(props);
+    const {
+      device,
+      onChangeOnBack
+    } = props;
+    this.state = {
+      modalVisible: false,
+      transactionData: "",
+      connectingToDevice: false,
+      processingTransactionError: null,
+      transactionResponse: null,
+      currentDevice: null,
+      initialDevice: device,
+      disableContinue: true,
+      useTransactionResponseQrCode: true,
+      operationId: null,
+      operationAmount: null
+    };
+    this.processTransactionSubscription = null;
+  }
+
+  componentDidMount() {
+    invariant(setFooterState, "Footer doesn't exist");
+    setFooterState({
+      ...this.state,
+      stepReceiveFunds: this
+    });
+  }
+
+  componentWillUnmount() {
+    const {
+      onChangeOnBack
+    } = this.props;
+    onChangeOnBack(undefined);
+    this.unsubscribe();
+  }
+
+  componentDidUpdate(
+    previousProps: Props,
+    previousState: State
+  ) {
+    const {
+      account,
+      parentAccount,
+      onChangeAddressVerified,
+      onChangeOnBack,
+      updateAccountWithUpdater
+    } = this.props;
+    const {
+      transactionData,
+      currentDevice
+    } = this.state;
+    const mainAccount = getMainAccount(account, parentAccount);
+    if(!previousState.currentDevice && currentDevice) {
+      this.unsubscribe();
+      this.processTransactionSubscription = command("getTransactionResponse")({
+        account: toAccountRaw(mainAccount),
+        deviceId: currentDevice.deviceId,
+        transactionData
+      }).subscribe({
+        next: (
+          {
+            transactionResponse,
+            freshAddress,
+            nextIdentifier,
+            operation
+          }: {
+            transactionResponse: string;
+            freshAddress: Address;
+            nextIdentifier: string;
+            operation: OperationRaw;
+          }
+        ) => {
+          qrcode.toString(transactionResponse, {
+            errorCorrectionLevel: "Q"
+          }, (
+            error: Error | null
+          ) => {
+            if(this.processTransactionSubscription) {
+              this.updateState({
+                transactionResponse,
+                useTransactionResponseQrCode: !error,
+                currentDevice: null,
+                operationId: operation.id,
+                operationAmount: operation.value
+              });
+              onChangeOnBack(undefined);
+              updateAccountWithUpdater(mainAccount.id, (
+                account: Account
+              ) => {
+                return addReceivedTransactionToAccount(account, freshAddress, nextIdentifier, operation);
+              });
+            }
+          });
+        },
+        error: (
+          error: Error
+        ) => {
+          this.updateState({
+            processingTransactionError: error,
+            currentDevice: null
+          });
+          onChangeAddressVerified(true, error);
+        }
+      });
+    }
+    else if(previousState.currentDevice && !currentDevice) {
+      this.unsubscribe();
+    }
+  }
+
+  unsubscribe() {
+    if(this.processTransactionSubscription) {
+      this.processTransactionSubscription.unsubscribe();
+      this.processTransactionSubscription = null;
+    }
+  }
+
+  updateState(
+    newState: {[key: string]: any}
+  ) {
+    this.setState(newState);
+    setFooterState(newState);
+  }
+
+  hideQRCodeModal = () => {
+    this.updateState({
+      modalVisible: false
+    });
+  };
+
+  showQRCodeModal = () => {
+    this.updateState({
+      modalVisible: true
+    });
+  };
+
+  onVerify = () => {
+    const {
+      isAddressVerified,
+      transitionTo,
+      onChangeAddressVerified,
+      onResetSkip,
+      device
+    } = this.props;
+    const {
+      initialDevice
+    } = this.state;
+    if(device !== initialDevice || !isAddressVerified) {
+      transitionTo("device");
+    }
+    else {
+      this.updateState({
+        transactionData: "",
+        transactionDataError: undefined,
+        transactionDataWarning: undefined,
+        disableContinue: true
+      });
+    }
+    onChangeAddressVerified(null);
+    onResetSkip();
+  };
+
+  onTransactionDataChange = (
+    transactionData: string
+  ) => {
+    const {
+      account,
+      parentAccount
+    } = this.props;
+    const mainAccount = getMainAccount(account, parentAccount);
+    if(transactionData) {
+      const {
+        error,
+        warning
+      } = validateTransactionData(mainAccount.currency, transactionData);
+      if(error) {
+        this.updateState({
+          transactionDataError: error,
+          disableContinue: true
+        });
+      }
+      else {
+        this.updateState({
+          transactionDataError: undefined,
+          disableContinue: false
+        });
+      }
+      if(warning) {
+        this.updateState({
+          transactionDataWarning: warning
+        });
+      }
+      else {
+        this.updateState({
+          transactionDataWarning: undefined
+        });
+      }
+    }
+    else {
+      this.updateState({
+        transactionDataError: undefined,
+        transactionDataWarning: undefined,
+        disableContinue: true
+      });
+    }
+    this.updateState({
+      transactionData
+    });
+  };
+
+  onContinue = () => {
+    const {
+      onChangeOnBack
+    } = this.props;
+    this.updateState({
+      connectingToDevice: true
+    });
+    onChangeOnBack((
+      props: StepProps
+    ) => {
+      this.onRetry(true);
+    });
+  };
+
+  onDeviceConnected = (
+    {
+      device
+    }: {
+      device: Device;
+    }
+  ) => {
+    this.updateState({
+      currentDevice: device
+    });
+  };
+
+  onRetry = (
+    forceDisconnectFromDevice: boolean = false
+  ) => {
+    const {
+      onChangeAddressVerified,
+      onChangeOnBack,
+    } = this.props;
+    const {
+      processingTransactionError
+    } = this.state;
+    if(forceDisconnectFromDevice === true) {
+      this.updateState({
+        connectingToDevice: false
+      });
+      onChangeOnBack((
+        props: StepProps
+      ) => {
+        const {
+          transitionTo,
+          onChangeAddressVerified,
+          onResetSkip
+        } = props;
+        transitionTo("account");
+        onChangeAddressVerified(null);
+        onResetSkip();
+      });
+    }
+    else if(processingTransactionError) {
+      const errorHandled = ["DisconnectedDevice", "DisconnectedDeviceDuringOperation", "CantOpenDevice"].indexOf(processingTransactionError.name) !== -1;
+      if(!errorHandled) {
+        this.updateState({
+          connectingToDevice: false
+        });
+        onChangeOnBack((
+          props: StepProps
+        ) => {
+          const {
+            transitionTo,
+            onChangeAddressVerified,
+            onResetSkip
+          } = props;
+          transitionTo("account");
+          onChangeAddressVerified(null);
+          onResetSkip();
+        });
+      }
+    }
+    this.updateState({
+      processingTransactionError: null,
+      currentDevice: null
+    });
+    onChangeAddressVerified(true, null);
+  };
+
+  render() {
+    const {
+      isAddressVerified,
+      account,
+      parentAccount,
+      device,
+      verifyAddressError,
+      token,
+      onClose,
+      eventType,
+      currencyName,
+      locale
+    } = this.props;
+    const {
+      modalVisible,
+      transactionData,
+      transactionDataError,
+      transactionDataWarning,
+      connectingToDevice,
+      processingTransactionError,
+      transactionResponse,
+      useTransactionResponseQrCode,
+      operationAmount
+    } = this.state;
+
+    const mainAccount = account ? getMainAccount(account, parentAccount) : null;
+    invariant(account && mainAccount, "No account given");
+    const name = token ? token.name : getAccountName(account);
+    const address = mainAccount.freshAddresses[0].address;
+    const formattedAmount = formatCurrencyUnit(mainAccount.unit, new BigNumber((operationAmount !== null) ? operationAmount : 0), {
+      disableRounding: true,
+      alwaysShowSign: false,
+      showCode: true,
+      locale
+    });
+
+    return (
+      <>
+        <Box px={(transactionResponse !== null || (device && isAddressVerified !== true)) ? 2 : 0}>
+          <TrackPage
+            category={`Receive Flow${eventType ? ` (${eventType})` : ""}`}
+            name="Step 3"
+            currencyName={currencyName}
+          />
+          {(transactionResponse !== null) ? (
+            <Box alignItems="center">
+              <SuccessDisplay
+                title={
+                  <Trans i18nKey="families.mimblewimble_coin.fundsReceived" />
+                }
+                description={
+                  <>
+                    <Text mb={2}>
+                      <Trans i18nKey="families.mimblewimble_coin.receivedAmount" values={{ amount: formattedAmount }} />
+                    </Text>
+                    <Box style={{ display: "block" }} textAlign="left" horizontal flow={2} mb={4}>
+                      <Text style={{ flex: 1 }} ff="Inter|SemiBold" color="palette.text.shade100" fontSize={4}>
+                        <Trans i18nKey="families.mimblewimble_coin.transactionResponse" />
+                      </Text>
+                      {useTransactionResponseQrCode ? (
+                        <Box style={{ float: "right", marginLeft: 10 }}>
+                          <LinkShowQRCode onClick={this.showQRCodeModal} address={transactionResponse} />
+                        </Box>
+                      ) : null}
+                    </Box>
+                    <ReadOnlyTransactionField transactionData={transactionResponse} allowSave />
+                    <Text mt={4}>
+                      <Trans i18nKey="send.steps.confirmation.success.text" />
+                    </Text>
+                   </>
+                }
+              >
+              </SuccessDisplay>
+            </Box>
+          ) : processingTransactionError ? (
+            <ErrorDisplay
+              error={processingTransactionError}
+              withExportLogs={["DisconnectedDevice", "DisconnectedDeviceDuringOperation"].indexOf(processingTransactionError.name) === -1}
+              onRetry={this.onRetry}
+            />
+          ) : connectingToDevice ? (
+            <DeviceAction
+              action={action}
+              request={{
+                account: mainAccount
+              }}
+              Result={(
+                {
+                  device,
+                }: {
+                  device: Device;
+                }
+              ) => {
+                return (
+                  <StepProgress modelId={device.modelId}>
+                    <Trans i18nKey="families.mimblewimble_coin.processingTransaction" />
+                  </StepProgress>
+                );
+              }}
+              onResult={this.onDeviceConnected}
+              analyticsPropertyFlow="receive"
+            />
+          ) : verifyAddressError ? (
+            <ErrorDisplay error={verifyAddressError} onRetry={this.onVerify} />
+          ) : (isAddressVerified === true) ? (
+            <>
+              <Label mb={5}>
+                <Trans i18nKey="families.mimblewimble_coin.transactionToReceive" />
+              </Label>
+              <TextAreaTransaction
+                style={{ wordBreak: "break-all" }}
+                spellCheck="false"
+                value={transactionData}
+                onChange={this.onTransactionDataChange}
+                error={transactionDataError}
+                warning={transactionDataWarning}
+              />
+            </>
+          ) : device ? (
+            <>
+              <Receive1ShareAddress
+                account={mainAccount}
+                name={name}
+                address={address}
+                showQRCodeModal={this.showQRCodeModal}
+              />
+              <Separator />
+              <Receive2Device device={device} onVerify={this.onVerify} name={name} />
+            </>
+          ) : null}
+        </Box>
+        <Modal isOpened={modalVisible} onClose={this.hideQRCodeModal} centered width={460}>
+          <ModalBody
+            onClose={this.hideQRCodeModal}
+            render={() => (
+              <Box alignItems="center">
+                <QRCodeWrapper>
+                  <QRCode size={(transactionResponse !== null) ? 372 : 160} data={(transactionResponse !== null) ? transactionResponse : address} />
+                </QRCodeWrapper>
+                <Box mt={6}>
+                  {(transactionResponse !== null) ? (
+                    <ReadOnlyTransactionField transactionData={transactionResponse} />
+                  ) : (
+                    <ReadOnlyAddressField address={address} />
+                  )}
+                </Box>
+              </Box>
+            )}
+          />
+        </Modal>
+      </>
+    );
+  }
+}
+
+interface FooterState extends State = {
+  stepReceiveFunds: StepReceiveFunds | undefined
+};
+
+let setFooterState: ({[key: string]: any}) => void | undefined;
+
+class StepReceiveFundsFooter extends PureComponent<StepProps, FooterState> {
+
+  constructor(
+    props: StepProps
+  ) {
+    super(props);
+    this.state = {};
+    setFooterState = (
+      state: {[key: string]: any}
+    ) => {
+      this.setState(state);
+    };
+  }
+
+  componentWillUnmount() {
+    setFooterState = undefined;
+  }
+
+  render() {
+    const {
+      account,
+      parentAccount,
+      isAddressVerified,
+      closeModal
+    } = this.props;
+    const {
+      connectingToDevice,
+      transactionResponse,
+      disableContinue,
+      stepReceiveFunds,
+      operationId
+    } = this.state;
+
+    if(!stepReceiveFunds) {
+      return null;
+    }
+
+    return (
+        <>
+          {(transactionResponse !== null) ? (
+            <Button data-test-id="modal-continue-button" primary onClick={() => {
+             closeModal();
+              if(account) {
+                setDrawer(OperationDetails, {
+                  operationId,
+                  accountId: account.id,
+                  parentId: parentAccount && parentAccount.id
+                });
+              }
+            }}>
+              <Trans i18nKey="send.steps.confirmation.success.cta" />
+            </Button>
+          ) : (!connectingToDevice && isAddressVerified === true) ? (
+            <Box horizontal alignItems="center" justifyContent="space-between" grow>
+              <Button event="Page Receive Step 3 Re-verify" outlineGrey onClick={stepReceiveFunds.onVerify}>
+                <Trans i18nKey="common.reverify" />
+              </Button>
+              <Button data-test-id="modal-continue-button" primary disabled={disableContinue} onClick={stepReceiveFunds.onContinue}>
+                <Trans i18nKey="common.continue" />
+              </Button>
+            </Box>
+          ) : null}
+        </>
+    );
+  }
+}
+
+const StepReceiveFundsOnBack = (
+  props: StepProps
+) => {
+  const {
+    transitionTo,
+    onChangeAddressVerified,
+    onResetSkip
+  } = props;
+  transitionTo("account");
+  onChangeAddressVerified(null);
+  onResetSkip();
+};
+
+export default {
+  StepReceiveFunds: connect(null, mapDispatchToProps)(StepReceiveFunds),
+  StepReceiveFundsFooter,
+  StepReceiveFundsOnBack
+};

@@ -36,6 +36,10 @@ const appVersionsRequired = {
   Ethereum: ">= 1.9.17",
   Solana: ">= 1.2.0",
   "Cardano ADA": ">= 4.1.0",
+  "MimbleWimble Coin": ">= 3.1.0",
+  "MimbleWimble Coin Floonet": ">= 3.1.0",
+  Grin: ">= 3.1.0",
+  "Grin Testnet": ">= 3.1.0",
 };
 export function mustUpgrade(
   deviceModel: DeviceModelId,

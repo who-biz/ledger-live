@@ -45,4 +45,8 @@ setSupportedCurrencies([
   "hedera",
   "cardano",
   "filecoin",
+  "mimblewimble_coin",
+  "mimblewimble_coin_floonet",
+  "grin",
+  "grin_testnet",
 ]);

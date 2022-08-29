@@ -140,7 +140,7 @@ export function testBridge<T extends TransactionCommon>(
           })
           .pipe(
             filter((e) => e.type === "discovered"),
-            map((e) => e.account),
+            map((e: any) => e.account),
             reduce((all, a) => all.concat(a), [] as Account[])
           )
           .toPromise();

@@ -30,7 +30,8 @@ import Switch from "~/renderer/components/Switch";
 import type { StepProps } from "..";
 import InfoCircle from "~/renderer/icons/InfoCircle";
 import ToolTip from "~/renderer/components/Tooltip";
-import byFamily from "~/renderer/generated/NoAssociatedAccounts";
+import byFamilyNoAssociatedAccounts from "~/renderer/generated/NoAssociatedAccounts";
+import byFamilyStepImport from "~/renderer/generated/StepImport";
 
 // $FlowFixMe
 const remapTransportError = (err: mixed, appName: string): Error => {
@@ -279,7 +280,7 @@ class StepImport extends PureComponent<StepProps, { showAllCreatedAccounts: bool
     });
 
     let creatable;
-    const NoAssociatedAccounts = byFamily[currency.family];
+    const NoAssociatedAccounts = byFamilyNoAssociatedAccounts[currency.family];
     if (alreadyEmptyAccount) {
       creatable = (
         <Trans i18nKey="addAccounts.createNewAccount.noOperationOnLastAccount" parent="div">
@@ -360,18 +361,20 @@ class StepImport extends PureComponent<StepProps, { showAllCreatedAccounts: bool
 
 export default StepImport;
 
-export const StepImportFooter = ({
-  transitionTo,
-  setScanStatus,
-  scanStatus,
-  onClickAdd,
-  onCloseModal,
-  checkedAccountsIds,
-  scannedAccounts,
-  currency,
-  err,
-  t,
-}: StepProps) => {
+export const StepImportFooter = (props: StepProps) => {
+  const {
+    transitionTo,
+    setScanStatus,
+    scanStatus,
+    onClickAdd,
+    onCloseModal,
+    checkedAccountsIds,
+    scannedAccounts,
+    currency,
+    err,
+    t,
+  } = props;
+
   const dispatch = useDispatch();
   const willCreateAccount = checkedAccountsIds.some(id => {
     const account = scannedAccounts.find(a => a.id === id);
@@ -405,6 +408,12 @@ export const StepImportFooter = ({
     onCloseModal();
     dispatch(openModal("MODAL_FULL_NODE", { skipNodeSetup: true }));
   };
+
+  // custom family UI for StepImportFooter
+  const CustomStepImport = byFamilyStepImport[currency.family];
+  if (CustomStepImport && CustomStepImport.StepImportFooter) {
+    return <CustomStepImport.StepImportFooter {...props} />;
+  }
 
   return (
     <>

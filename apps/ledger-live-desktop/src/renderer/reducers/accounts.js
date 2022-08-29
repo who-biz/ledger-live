@@ -82,11 +82,13 @@ const handlers: Object = {
 export const accountsSelector = (state: { accounts: AccountsState }): Account[] => state.accounts;
 
 // NB some components don't need to refresh every time an account is updated, usually it's only
-// when the balance/name/length/starred/swapHistory of accounts changes.
+// when the balance/name/length/starred/swapHistory/freshAddressPath of accounts changes.
 const accountHash = (a: AccountLike) =>
   `${a.type === "Account" ? a.name : ""}-${a.id}${
     a.starred ? "-*" : ""
-  }-${a.balance.toString()}-swapHistory(${a.swapHistory.length})`;
+  }-${a.balance.toString()}-swapHistory(${a.swapHistory.length})${
+    a.type === "Account" ? `-freshAddressPath${a.freshAddresses.length ? a.freshAddresses[0].derivationPath : a.freshAddressPath}` : ""
+  }`;
 
 const shallowAccountsSelectorCreator = createSelectorCreator(defaultMemoize, (a, b) =>
   isEqual(flattenAccounts(a).map(accountHash), flattenAccounts(b).map(accountHash)),

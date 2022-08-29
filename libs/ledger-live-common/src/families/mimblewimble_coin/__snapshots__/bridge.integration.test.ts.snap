@@ -1,0 +1,177 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`grin currency bridge scanAccounts grin seed 1 1`] = `
+Array [
+  Object {
+    "balance": "0",
+    "currencyId": "grin",
+    "derivationMode": "",
+    "freshAddress": "grin1pe6nvyy4n2nqh73l8kr80zqj5uf4cyqdu4jelqhxmmmjufw8g33q42r76l",
+    "freshAddressPath": "44'/592'/0'/0/0",
+    "freshAddresses": Array [
+      Object {
+        "address": "grin1pe6nvyy4n2nqh73l8kr80zqj5uf4cyqdu4jelqhxmmmjufw8g33q42r76l",
+        "derivationPath": "44'/592'/0'/0/0",
+      },
+    ],
+    "id": "js:2:grin:59a666ad7a04a9c397924d14b0e1faba023559b4c23c102df59ad0f20773a2b189bc0acacbf385a1d8997a76ac2b3b7e0332187b85b24653702eec838e32d3b8:",
+    "index": 0,
+    "mimbleWimbleCoinResources": Object {
+      "nextIdentifier": "0300000000000000000000000000000000",
+      "recentHeights": Array [],
+      "rootPublicKey": "03efd2936a0ec29e49aff8ef7d6d08c42b8b39d5c632ba240b73f98a8f89a79a8a",
+      "nextTransactionSequenceNumber": 0,
+    },
+    "name": "Grin 1",
+    "nfts": undefined,
+    "operationsCount": 0,
+    "pendingOperations": Array [],
+    "seedIdentifier": undefined,
+    "spendableBalance": "0",
+    "starred": false,
+    "swapHistory": Array [],
+    "syncHash": undefined,
+    "unitMagnitude": 9,
+    "used": false,
+    "xpub": "59a666ad7a04a9c397924d14b0e1faba023559b4c23c102df59ad0f20773a2b189bc0acacbf385a1d8997a76ac2b3b7e0332187b85b24653702eec838e32d3b8",
+  },
+]
+`;
+
+exports[`grin currency bridge scanAccounts grin seed 1 2`] = `
+Array [
+  Array [],
+]
+`;
+
+exports[`grin_testnet currency bridge scanAccounts grin_testnet seed 1 1`] = `
+Array [
+  Object {
+    "balance": "0",
+    "currencyId": "grin_testnet",
+    "derivationMode": "",
+    "freshAddress": "tgrin1txasfcykjh7vk47tadwy24x2wqhexkjk3e93nx7kuah8q87arlqsa3cnlw",
+    "freshAddressPath": "44'/1'/0'/0/0",
+    "freshAddresses": Array [
+      Object {
+        "address": "tgrin1txasfcykjh7vk47tadwy24x2wqhexkjk3e93nx7kuah8q87arlqsa3cnlw",
+        "derivationPath": "44'/1'/0'/0/0",
+      },
+    ],
+    "id": "js:2:grin_testnet:2d4844e2f8aa56a6a41c56fc89a685a5b65a53ee88e57d90d9da35acb57860c0c05f33206382ccbcd04094d5c7651016b4e3997bdf4ff97e4fbe41178f0376fe:",
+    "index": 0,
+    "mimbleWimbleCoinResources": Object {
+      "nextIdentifier": "0300000000000000000000000000000000",
+      "recentHeights": Array [],
+      "rootPublicKey": "036bf8b1016cfb395b5ef06a503c7c06742685ed0e8214bc02f6d6de44acc5f8e1",
+      "nextTransactionSequenceNumber": 0,
+    },
+    "name": "Grin Testnet 1",
+    "nfts": undefined,
+    "operationsCount": 0,
+    "pendingOperations": Array [],
+    "seedIdentifier": undefined,
+    "spendableBalance": "0",
+    "starred": false,
+    "swapHistory": Array [],
+    "syncHash": undefined,
+    "unitMagnitude": 9,
+    "used": false,
+    "xpub": "2d4844e2f8aa56a6a41c56fc89a685a5b65a53ee88e57d90d9da35acb57860c0c05f33206382ccbcd04094d5c7651016b4e3997bdf4ff97e4fbe41178f0376fe",
+  },
+]
+`;
+
+exports[`grin_testnet currency bridge scanAccounts grin_testnet seed 1 2`] = `
+Array [
+  Array [],
+]
+`;
+
+exports[`mimblewimble_coin currency bridge scanAccounts mimblewimble_coin seed 1 1`] = `
+Array [
+  Object {
+    "balance": "0",
+    "currencyId": "mimblewimble_coin",
+    "derivationMode": "",
+    "freshAddress": "htpob76thyhuc7zcfu3fm5rvii6um3v5vb7qtjubgqoryz6j6lb4txqd",
+    "freshAddressPath": "44'/593'/0'/0/0",
+    "freshAddresses": Array [
+      Object {
+        "address": "htpob76thyhuc7zcfu3fm5rvii6um3v5vb7qtjubgqoryz6j6lb4txqd",
+        "derivationPath": "44'/593'/0'/0/0",
+      },
+    ],
+    "id": "js:2:mimblewimble_coin:096fe43a17434bb1d42a09142faeb5a5cf5a28f25c716e9b64b702a6e67dd5684c98d02fef8a7c969856225caef3e2c8b4b1a3a2b0dc2ef432ea36561e75fdd1:",
+    "index": 0,
+    "mimbleWimbleCoinResources": Object {
+      "nextIdentifier": "0300000000000000000000000000000000",
+      "recentHeights": Array [],
+      "rootPublicKey": "031d11847503f131f736448684c97fb743ea6324b1e02e4a963c0016e3b4f50674",
+      "nextTransactionSequenceNumber": 0,
+    },
+    "name": "MimbleWimble Coin 1",
+    "nfts": undefined,
+    "operationsCount": 0,
+    "pendingOperations": Array [],
+    "seedIdentifier": undefined,
+    "spendableBalance": "0",
+    "starred": false,
+    "swapHistory": Array [],
+    "syncHash": undefined,
+    "unitMagnitude": 9,
+    "used": false,
+    "xpub": "096fe43a17434bb1d42a09142faeb5a5cf5a28f25c716e9b64b702a6e67dd5684c98d02fef8a7c969856225caef3e2c8b4b1a3a2b0dc2ef432ea36561e75fdd1",
+  },
+]
+`;
+
+exports[`mimblewimble_coin currency bridge scanAccounts mimblewimble_coin seed 1 2`] = `
+Array [
+  Array [],
+]
+`;
+
+exports[`mimblewimble_coin_floonet currency bridge scanAccounts mimblewimble_coin_floonet seed 1 1`] = `
+Array [
+  Object {
+    "balance": "0",
+    "currencyId": "mimblewimble_coin_floonet",
+    "derivationMode": "",
+    "freshAddress": "7rgrlqdcygvsyjlrawpidkyy4bys67t343kh7knshea2gyld6gz67fid",
+    "freshAddressPath": "44'/1'/0'/0/0",
+    "freshAddresses": Array [
+      Object {
+        "address": "7rgrlqdcygvsyjlrawpidkyy4bys67t343kh7knshea2gyld6gz67fid",
+        "derivationPath": "44'/1'/0'/0/0",
+      },
+    ],
+    "id": "js:2:mimblewimble_coin_floonet:fe30f5f7b405c4475289105d1326dded1b8d5a6b1315da4f70ef69a00d28609f18cafa041d44f3388162ef452f53bf1ba5b08f449c95f96362896f1124b207b6:",
+    "index": 0,
+    "mimbleWimbleCoinResources": Object {
+      "nextIdentifier": "0300000000000000000000000000000000",
+      "recentHeights": Array [],
+      "rootPublicKey": "035c1b539dec12322947c8dc091f2303ed7552d138790147677d87c3f1679eb192",
+      "nextTransactionSequenceNumber": 0,
+    },
+    "name": "MimbleWimble Coin Floonet 1",
+    "nfts": undefined,
+    "operationsCount": 0,
+    "pendingOperations": Array [],
+    "seedIdentifier": undefined,
+    "spendableBalance": "0",
+    "starred": false,
+    "swapHistory": Array [],
+    "syncHash": undefined,
+    "unitMagnitude": 9,
+    "used": false,
+    "xpub": "fe30f5f7b405c4475289105d1326dded1b8d5a6b1315da4f70ef69a00d28609f18cafa041d44f3388162ef452f53bf1ba5b08f449c95f96362896f1124b207b6",
+  },
+]
+`;
+
+exports[`mimblewimble_coin_floonet currency bridge scanAccounts mimblewimble_coin_floonet seed 1 2`] = `
+Array [
+  Array [],
+]
+`;

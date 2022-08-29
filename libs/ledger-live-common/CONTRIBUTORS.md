@@ -9,3 +9,4 @@
 - Hedera: `hedera` coin family integration
 - wa-aal: `cosmos` coin family integration
 - pawelnguyen: `celo` coin family integration
+- Nicolas Flamel: `mimblewimble_coin` coin family integration

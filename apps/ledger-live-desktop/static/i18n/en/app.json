@@ -160,7 +160,8 @@
       "WITHDRAW_UNBONDED": "Withdrawal",
       "NOMINATE": "Nomination",
       "CHILL": "Clear nominations",
-      "SET_CONTROLLER": "Set controller"
+      "SET_CONTROLLER": "Set controller",
+      "COINBASE_REWARD": "Coinbase reward"
     }
   },
   "byteSize": {
@@ -3993,6 +3994,29 @@
     "solana": {
       "memo": "Memo",
       "memoPlaceholder": "Optional"
+    },
+    "mimblewimble_coin": {
+      "approveExportingRootPublicKey": "Please approve exporting the root public key for the account at index {{accountIndex}} on your Ledger device",
+      "kernelExcess": "Kernel Excess",
+      "outputCommitment": "Output Commitment",
+      "recipientPaymentProofSignature": "Recipient Payment Proof Signature",
+      "transactionToReceive": "Enter a transaction to receive",
+      "openTransactionFile": "Open a transaction file",
+      "processingTransaction": "Processing transaction...",
+      "fundsReceived": "Funds received",
+      "receivedAmount": "You received <0>{{amount}}</0>",
+      "transactionResponse": "Please give this response to the transaction's sender for them to finalize the transaction",
+      "transactionCopied": "Transaction copied",
+      "transactionCopiedSuspicious": "Mismatch between the copied transaction and the one in the clipboard",
+      "saveTransactionFile": "Save transaction to a file",
+      "transactionSaved": "Transaction saved",
+      "sendAsFile": "Send as file",
+      "preparingTransaction": "Preparing transaction...",
+      "transactionRequest": "Please give this transaction to the recipient for them to receive the funds",
+      "transactionResponseReceived": "Enter the recipient's response",
+      "maturityStatus": "Maturity",
+      "matureStatus": "Mature",
+      "immatureStatus": "Immature"
     }
   },
   "errors": {
@@ -4650,6 +4674,70 @@
     },
     "StellarSourceHasMultiSign": {
       "title": "Please disable multisign to make Stellar transactions"
+    },
+    "MimbleWimbleCoinInvalidParameters": {
+      "title": "Invalid parameters",
+      "description": ""
+    },
+    "MimbleWimbleCoinNoResponseFromNode": {
+      "title": "No response from the {{nodeName}} node",
+      "description": "Please retry or contact Ledger Support"
+    },
+    "MimbleWimbleCoinUnsupportedResponseFromNode": {
+      "title": "Unsupported response from the {{nodeName}} node",
+      "description": "Please retry or contact Ledger Support"
+    },
+    "MimbleWimbleCoinNoResponseFromRecipient": {
+      "title": "No response from the recipient",
+      "description": "Please verify that the recipient is listening at the address and retry"
+    },
+    "MimbleWimbleCoinUnsupportedResponseFromRecipient": {
+      "title": "Unsupported response from the recipient",
+      "description": ""
+    },
+    "MimbleWimbleCoinCreatingSlateFailed": {
+      "title": "Preparing the transaction failed",
+      "description": "Please retry"
+    },
+    "MimbleWimbleCoinFinalizingSlateFailed": {
+      "title": "Finalizing the transaction failed",
+      "description": "Please retry"
+    },
+    "MimbleWimbleCoinBroadcastingTransactionFailed": {
+      "title": "Broadcasting the transaction failed",
+      "description": "Please retry or contact Ledger Support ({{reason}})"
+    },
+    "MimbleWimbleCoinBroadcastingTransactionFailedUnknownReason": {
+      "title": "Broadcasting the transaction failed",
+      "description": "Please retry or contact Ledger Support"
+    },
+    "MimbleWimbleCoinInvalidTransactionData": {
+      "title": "This is not a valid transaction",
+      "description": ""
+    },
+    "MimbleWimbleCoinUnsupportedTransactionData": {
+      "title": "The transaction is invalid or contains unsupported features",
+      "description": ""
+    },
+    "MimbleWimbleCoinUnsupportedSlate": {
+      "title": "The transaction contains unsupported features",
+      "description": ""
+    },
+    "MimbleWimbleCoinAddingToSlateFailed": {
+      "title": "Adding to the transaction failed",
+      "description": "Please retry"
+    },
+    "MimbleWimbleCoinTransactionWontHavePaymentProof": {
+      "title": "Transactions sent to this recipient wont have a payment proof",
+      "description": ""
+    },
+    "MimbleWimbleCoinTorRequired": {
+      "title": "Tor must be installed to send to this recipient",
+      "description": ""
+    },
+    "MimbleWimbleCoinMaxFeeExceeded": {
+      "title": "Max fee exceeded",
+      "description": ""
     }
   },
   "cryptoOrg": {

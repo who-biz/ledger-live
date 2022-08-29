@@ -13,6 +13,8 @@ import { command } from "~/renderer/commands";
 import type { StepProps } from "../Body";
 import { mockedEventEmitter } from "~/renderer/components/debug/DebugMock";
 import { getEnv } from "@ledgerhq/live-common/env";
+import invariant from "invariant";
+import byFamily from "~/renderer/generated/ReceiveStepConnectDevice";
 
 const connectAppExec = command("connectApp");
 
@@ -39,14 +41,27 @@ export default function StepConnectDevice({
   );
 }
 
-export function StepConnectDeviceFooter({
-  t,
-  transitionTo,
-  onSkipConfirm,
-  device,
-  eventType,
-  currencyName,
-}: StepProps) {
+export function StepConnectDeviceFooter(props: StepProps) {
+  const {
+    account,
+    parentAccount,
+    t,
+    transitionTo,
+    onSkipConfirm,
+    device,
+    eventType,
+    currencyName,
+  } = props;
+
+  const mainAccount = account ? getMainAccount(account, parentAccount) : null;
+  invariant(account && mainAccount, "No account given");
+
+  // custom family UI for StepConnectDeviceFooter
+  const CustomStepConnectDevice = byFamily[mainAccount.currency.family];
+  if (CustomStepConnectDevice && CustomStepConnectDevice.StepConnectDeviceFooter) {
+    return <CustomStepConnectDevice.StepConnectDeviceFooter {...props} />;
+  }
+
   return (
     <Box horizontal flow={2}>
       <TrackPage

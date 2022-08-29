@@ -26,6 +26,8 @@ import getTransactionId from "./getTransactionId";
 import scanDescriptors from "./scanDescriptors";
 import getAppAndVersion from "./getAppAndVersion";
 import { commands as bridgeProxyCommands } from "~/renderer/bridge/proxy-commands";
+import getTransactionResponse from "./getTransactionResponse";
+import prepareTransaction from "./prepareTransaction";
 
 export const commandsById = {
   appOpExec,
@@ -55,6 +57,8 @@ export const commandsById = {
   scanDescriptors,
   signMessage,
   getAppAndVersion,
+  getTransactionResponse,
+  prepareTransaction,
 };
 
 export type Commands = typeof commandsById;
