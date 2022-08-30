@@ -146,9 +146,6 @@ export default class SlateUtils {
           bitWriter.setBits(bytes.readUInt8(i), Common.BITS_IN_A_BYTE);
         }
         else {
-          if(bytes.readUInt8(i) >= Math.pow(2, numberOfDigits % Common.BITS_IN_A_BYTE)) {
-            throw new MimbleWimbleCoinInvalidParameters("Invalid uint64 value");
-          }
           bitWriter.setBits(bytes.readUInt8(i), numberOfDigits % Common.BITS_IN_A_BYTE);
         }
       }

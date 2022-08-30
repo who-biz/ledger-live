@@ -1347,7 +1347,7 @@ export default class Slate {
             default:
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate features");
           }
-          if(!slate.lockHeight.isEqualTo(0) && slate.timeToLiveCutOffHeight && slate.timeToLiveCutOffHeight.isLessThan(slate.lockHeight)) {
+          if(slate.timeToLiveCutOffHeight && slate.timeToLiveCutOffHeight.isLessThan(slate.lockHeight)) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate time to live cut off height");
           }
           if(purpose === Slate.Purpose.SEND_RESPONSE) {
@@ -1398,7 +1398,7 @@ export default class Slate {
             }
             slate.lockHeight = new BigNumber(0);
           }
-          if("ttl" in serializedSlate && serializedSlate.ttl !== null && (!Common.isNumberString(serializedSlate.ttl) || !new BigNumber(serializedSlate.ttl).isInteger() || new BigNumber(serializedSlate.ttl).isNegative() || (!slate.lockHeight.isEqualTo(0) && new BigNumber(serializedSlate.ttl).isLessThan(slate.lockHeight)))) {
+          if("ttl" in serializedSlate && serializedSlate.ttl !== null && (!Common.isNumberString(serializedSlate.ttl) || !new BigNumber(serializedSlate.ttl).isInteger() || new BigNumber(serializedSlate.ttl).isLessThan(slate.lockHeight))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate time to live cut off height");
           }
           slate.timeToLiveCutOffHeight = ("ttl" in serializedSlate && serializedSlate.ttl !== null) ? new BigNumber(serializedSlate.ttl) : null;
