@@ -610,7 +610,9 @@ export default class Slate {
       return false;
     }
     if((this.originalVersion instanceof BigNumber && (!(slate.originalVersion instanceof BigNumber) || !this.originalVersion.isEqualTo(slate.originalVersion))) || (typeof this.originalVersion === "string" && (typeof slate.originalVersion !== "string" || this.originalVersion !== slate.originalVersion))) {
-      return false;
+      if(!(this.originalVersion instanceof BigNumber) || !(slate.originalVersion instanceof BigNumber) || !this.originalVersion.isEqualTo(2) || !slate.originalVersion.isEqualTo(3)) {
+        return false;
+      }
     }
     if((this.version instanceof BigNumber && (!(slate.version instanceof BigNumber) || this.version.isLessThan(slate.version))) || (typeof this.version === "string" && (typeof slate.version !== "string" || this.version !== slate.version))) {
       return false;
