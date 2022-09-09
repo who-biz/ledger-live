@@ -80,4 +80,8 @@ export default class Common {
   ): boolean {
     return character >= " ".charCodeAt(0) && character <= "~".charCodeAt(0);
   }
+
+  public static isReactNative(): boolean {
+    return typeof navigator !== "undefined" && navigator.product === "ReactNative";
+  }
 }

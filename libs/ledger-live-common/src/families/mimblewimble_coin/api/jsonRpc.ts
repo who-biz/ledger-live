@@ -37,10 +37,16 @@ export default class JsonRpc {
     let response: {
       data: any
     };
+    let platformSettings: {[key: string]: any} = {};
+    if(!Common.isReactNative()) {
+      platformSettings = {
+        ...platformSettings,
+        httpAgent: useTor ? torAgent : new http.Agent(),
+        httpsAgent:  useTor ? torAgent : new https.Agent()
+      };
+    }
     try {
       response = await axios({
-        httpAgent: useTor ? torAgent : new http.Agent(),
-        httpsAgent:  useTor ? torAgent : new https.Agent(),
         url: `${url}/v2/foreign`,
         method: "POST",
         headers: {
@@ -64,7 +70,8 @@ export default class JsonRpc {
           ) {
             return null;
           }
-        }
+        },
+        ...platformSettings
       });
     }
     catch(

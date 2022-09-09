@@ -96,7 +96,7 @@ export default class Sync {
                 ) {
                   continue;
                 }
-                if(Secp256k1Zkp.verifyBulletproof(outputProof, outputCommitment, [])) {
+                if(Secp256k1Zkp.verifyBulletproof(outputProof, outputCommitment, Buffer.alloc(0))) {
                   const outputHeight = new BigNumber(output.height);
                   let identifierHeight: BigNumber | null = messageComponents.identifier.getHeight(cryptocurrency);
                   if(identifierHeight) {
@@ -205,7 +205,7 @@ export default class Sync {
                           switchType
                         } = ProofBuilder.decodeMessage(message);
                         if(amount.isEqualTo(operations[i].value) && identifier.serialize().equals(operations[i].extra.identifier.serialize()) && switchType === operations[i].extra.switchType) {
-                          if(Secp256k1Zkp.verifyBulletproof(proof, operations[i].extra.outputCommitment, [])) {
+                          if(Secp256k1Zkp.verifyBulletproof(proof, operations[i].extra.outputCommitment, Buffer.alloc(0))) {
                             ownsOutput = true;
                           }
                         }

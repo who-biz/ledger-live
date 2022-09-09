@@ -199,8 +199,8 @@ export default class MimbleWimbleCoin {
     const proofBuilder = new ProofBuilder(rootPublicKey);
     const rewindNonce = proofBuilder.getRewindNonce(commitment);
     const message = ProofBuilder.encodeMessage(identifier, switchType);
-    const proof = Secp256k1Zkp.createBulletproofBlindless(tauX, tOne, tTwo, commitment, amount.toFixed(), rewindNonce, [], message);
-    if(proof === Secp256k1Zkp.OPERATION_FAILED || !Secp256k1Zkp.verifyBulletproof(proof, commitment, [])) {
+    const proof = Secp256k1Zkp.createBulletproofBlindless(tauX, tOne, tTwo, commitment, amount.toFixed(), rewindNonce, Buffer.alloc(0), message);
+    if(proof === Secp256k1Zkp.OPERATION_FAILED || !Secp256k1Zkp.verifyBulletproof(proof, commitment, Buffer.alloc(0))) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid proof");
     }
     return Buffer.from(proof);

@@ -8,7 +8,7 @@ export default class ProofBuilder {
 
   private rewindHash: Buffer;
 
-  private static readonly MESSAGE_START = new Uint8Array([0, 0]);
+  private static readonly MESSAGE_START = Buffer.from([0, 0]);
   private static readonly MESSAGE_SWITCH_TYPE_INDEX = ProofBuilder.MESSAGE_START.length;
   private static readonly MESSAGE_IDENTIFIER_INDEX = ProofBuilder.MESSAGE_SWITCH_TYPE_INDEX + 1;
   private static readonly MESSAGE_LENGTH = ProofBuilder.MESSAGE_IDENTIFIER_INDEX + Identifier.LENGTH;

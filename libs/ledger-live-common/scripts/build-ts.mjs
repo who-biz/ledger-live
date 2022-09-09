@@ -26,19 +26,11 @@ await Promise.all([
   within(async () => {
     $.prefix = prefix;
     process.env.NODE_ENV = "production";
-    try {
-      await $`pnpm tsc --project src/tsconfig.json`;
-    }
-    catch(error) {
-    }
+    await $`pnpm tsc --project src/tsconfig.json`;
   }),
   within(async () => {
     $.prefix = prefix;
     process.env.NODE_ENV = "production";
-    try {
-      await $`pnpm tsc --project src/tsconfig.json -m ES6 --outDir lib-es`;
-    }
-    catch(error) {
-    }
+    await $`pnpm tsc --project src/tsconfig.json -m ES6 --outDir lib-es`;
   }),
 ]);

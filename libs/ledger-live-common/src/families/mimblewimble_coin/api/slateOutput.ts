@@ -194,7 +194,7 @@ export default class SlateOutput {
   }
 
   private verifyProof(): boolean {
-    return Secp256k1Zkp.verifyBulletproof(this.proof, this.commitment, []);
+    return Secp256k1Zkp.verifyBulletproof(this.proof, this.commitment, Buffer.alloc(0));
   }
 
   private getFeaturesAsText(): string {
