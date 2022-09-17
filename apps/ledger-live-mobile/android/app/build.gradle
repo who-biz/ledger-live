@@ -310,6 +310,8 @@ dependencies {
 
     compile project(':react-native-video')
     implementation "androidx.appcompat:appcompat:1.0.0"
+    
+    compile project(':react-native-aes-crypto')
 
     // Adjust
     implementation 'com.google.android.gms:play-services-analytics:10.0.1'

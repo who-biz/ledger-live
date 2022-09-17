@@ -149,11 +149,11 @@ export default class SlateKernel {
     throw new MimbleWimbleCoinInvalidParameters("Invalid slate kernel features");
   }
 
-  public setSignature(
+  public async setSignature(
     signature: Buffer
-  ): boolean {
+  ): Promise<boolean> {
     this.signature = signature;
-    return this.verifySignature();
+    return await this.verifySignature();
   }
 
   public getHash(): Buffer {
@@ -282,10 +282,10 @@ export default class SlateKernel {
     return Buffer.from(blake2b(blake2b.BYTES).update(data!).digest());
   }
 
-  public static unserialize(
+  public static async unserialize(
     serializedSlateKernel: {[key: string]: any} | BitReader,
     slate: Slate
-  ): SlateKernel {
+  ): Promise<SlateKernel> {
     const slateKernel = Object.create(SlateKernel.prototype);
     switch((slate.version instanceof BigNumber) ? (slate.version as BigNumber).toFixed() : slate.version) {
       case "2":
@@ -334,17 +334,16 @@ export default class SlateKernel {
           default:
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate kernel features");
         }
-        if(!("excess_sig" in serializedSlateKernel) || !Common.isHexString(serializedSlateKernel.excess_sig) || !Secp256k1Zkp.isValidSingleSignerSignature(Buffer.from(serializedSlateKernel.excess_sig, "hex"))) {
+        if(!("excess_sig" in serializedSlateKernel) || !Common.isHexString(serializedSlateKernel.excess_sig) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidSingleSignerSignature(Buffer.from(serializedSlateKernel.excess_sig, "hex")))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate kernel signature");
         }
         {
-          const signature = Secp256k1Zkp.singleSignerSignatureFromData(Buffer.from(serializedSlateKernel.excess_sig, "hex"));
-          if(signature === Secp256k1Zkp.OPERATION_FAILED) {
+          slateKernel.signature = await Common.resolveIfPromise(Secp256k1Zkp.singleSignerSignatureFromData(Buffer.from(serializedSlateKernel.excess_sig, "hex")));
+          if(slateKernel.signature === Secp256k1Zkp.OPERATION_FAILED) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate kernel signature");
           }
-          slateKernel.signature = Buffer.from(signature);
         }
-        if(!("excess" in serializedSlateKernel) || !Common.isHexString(serializedSlateKernel.excess) || (!Buffer.from(serializedSlateKernel.excess, "hex").equals(Buffer.alloc(Crypto.COMMITMENT_LENGTH)) && !Secp256k1Zkp.isValidCommit(Buffer.from(serializedSlateKernel.excess, "hex")))) {
+        if(!("excess" in serializedSlateKernel) || !Common.isHexString(serializedSlateKernel.excess) || (!Buffer.from(serializedSlateKernel.excess, "hex").equals(Buffer.alloc(Crypto.COMMITMENT_LENGTH)) && !await Common.resolveIfPromise(Secp256k1Zkp.isValidCommit(Buffer.from(serializedSlateKernel.excess, "hex"))))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate kernel excess");
         }
         slateKernel.excess = Buffer.from(serializedSlateKernel.excess, "hex");
@@ -363,34 +362,33 @@ export default class SlateKernel {
         }
         slateKernel.fee = fee;
         const excess = SlateUtils.uncompressCommitment(bitReader);
-        if(!excess.equals(Buffer.alloc(Crypto.COMMITMENT_LENGTH)) && !Secp256k1Zkp.isValidCommit(excess)) {
+        if(!excess.equals(Buffer.alloc(Crypto.COMMITMENT_LENGTH)) && !await Common.resolveIfPromise(Secp256k1Zkp.isValidCommit(excess))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate kernel excess");
         }
         slateKernel.excess = excess;
         {
           const signature = SlateUtils.uncompressSingleSignerSignature(bitReader);
-          if(!Secp256k1Zkp.isValidSingleSignerSignature(signature)) {
+          if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidSingleSignerSignature(signature))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate kernel signature");
           }
-          slateKernel.signature = Secp256k1Zkp.singleSignerSignatureFromData(signature);
+          slateKernel.signature = await Common.resolveIfPromise(Secp256k1Zkp.singleSignerSignatureFromData(signature));
         }
         if(slateKernel.signature === Secp256k1Zkp.OPERATION_FAILED) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate kernel signature");
         }
-        slateKernel.signature = Buffer.from(slateKernel.signature);
         break;
       default:
         throw new MimbleWimbleCoinInvalidParameters("Invalid slate version");
     }
     if(slateKernel.isComplete()) {
-      if(!slateKernel.verifySignature()) {
+      if(!await slateKernel.verifySignature()) {
         throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate kernel signature");
       }
     }
     return slateKernel;
   }
 
-  private verifySignature(): boolean {
+  private async verifySignature(): Promise<boolean> {
     let message: Buffer;
     try {
       message = SlateKernel.signatureMessage(this.features, this.fee, this.lockHeight, this.relativeHeight);
@@ -400,11 +398,11 @@ export default class SlateKernel {
     ) {
       return false;
     }
-    const publicKey = Secp256k1Zkp.pedersenCommitToPublicKey(this.excess);
+    const publicKey = await Common.resolveIfPromise(Secp256k1Zkp.pedersenCommitToPublicKey(this.excess));
     if(publicKey === Secp256k1Zkp.OPERATION_FAILED) {
       return false;
     }
-    return Secp256k1Zkp.verifySingleSignerSignature(this.signature, message, Secp256k1Zkp.NO_PUBLIC_NONCE, publicKey, publicKey, false);
+    return await Common.resolveIfPromise(Secp256k1Zkp.verifySingleSignerSignature(this.signature, message, Secp256k1Zkp.NO_PUBLIC_NONCE, publicKey, publicKey, false));
   }
 
   private getFeaturesAsText(): string {

@@ -19,16 +19,16 @@ import Identifier from "./api/identifier";
 import Consensus from "./api/consensus";
 import Slatepack from "./api/slatepack";
 
-const buildOptimisticOperation = (
+const buildOptimisticOperation = async (
   account: Account,
   slate: Slate,
   commitment: Buffer,
   identifier: Identifier,
   switchType: number
-): Operation => {
+): Promise<Operation> => {
   let kernelExcess: Buffer;
   try {
-    kernelExcess = slate.getExcess();
+    kernelExcess = await slate.getExcess();
   }
   catch(
     error: any
@@ -37,7 +37,7 @@ const buildOptimisticOperation = (
   }
   let kernelOffset: Buffer;
   try {
-    kernelOffset = slate.getOffsetExcess();
+    kernelOffset = await slate.getOffsetExcess();
   }
   catch(
     error: any
@@ -113,7 +113,7 @@ export default async (
   }
   let slate: Slate;
   try {
-    slate = Slate.unserialize(serializedSlate, account.currency, Slate.Purpose.SEND_INITIAL);
+    slate = await Slate.unserialize(serializedSlate, account.currency, Slate.Purpose.SEND_INITIAL);
   }
   catch(
     error: any
@@ -174,11 +174,11 @@ export default async (
   for(let uniqueKernelOffset: boolean = false; !uniqueKernelOffset;) {
     uniqueKernelOffset = true;
     if(slate.isCompact()) {
-      slate.createOffset();
+      await slate.createOffset();
     }
     let kernelOffset: Buffer;
     try {
-      kernelOffset = slate.getOffsetExcess();
+      kernelOffset = await slate.getOffsetExcess();
     }
     catch(
       error: any
@@ -240,7 +240,7 @@ export default async (
   slate.addParticipant(new SlateParticipant(SlateParticipant.SENDER_ID.plus(1), publicBlindExcess, publicNonce));
   let publicNonceSum: Buffer;
   try {
-    publicNonceSum = slate.getPublicNonceSum();
+    publicNonceSum = await slate.getPublicNonceSum();
   }
   catch(
     error: any
@@ -249,7 +249,7 @@ export default async (
   }
   let publicBlindExcessSum: Buffer;
   try {
-    publicBlindExcessSum = slate.getPublicBlindExcessSum();
+    publicBlindExcessSum = await slate.getPublicBlindExcessSum();
   }
   catch(
     error: any
@@ -259,7 +259,7 @@ export default async (
   let excess: Buffer | null = null;
   if(slate.hasPaymentProof()) {
     try {
-      excess = slate.getExcess();
+      excess = await slate.getExcess();
     }
     catch(
       error: any
@@ -272,11 +272,11 @@ export default async (
     paymentProofSignature
   } = await mimbleWimbleCoin.getTransactionSignature(publicNonceSum, publicBlindExcessSum, slate.getKernelFeatures(), slate.lockHeight, slate.relativeHeight, excess, null);
   slate.getParticipant(SlateParticipant.SENDER_ID.plus(1))!.partialSignature = partialSignature;
-  if(!slate.verifyPartialSignatures()) {
+  if(!await slate.verifyPartialSignatures()) {
     throw new MimbleWimbleCoinAddingToSlateFailed("Failed setting slate participant's partial signature");
   }
   if(slate.hasPaymentProof()) {
-    if(!slate.setRecipientPaymentProofSignature(paymentProofSignature!)) {
+    if(!await slate.setRecipientPaymentProofSignature(paymentProofSignature!)) {
       throw new MimbleWimbleCoinAddingToSlateFailed("Failed setting slate's recipient payment proof signature");
     }
   }
@@ -284,7 +284,7 @@ export default async (
   ++bipPath[Crypto.BIP44_PATH_INDEX_INDEX];
   const newDerivationPath = BIPPath.fromPathArray(bipPath).toString(true);
   const newAddress = await mimbleWimbleCoin.getAddress(newDerivationPath);
-  const serializedSlateResponse = slate.serialize(Slate.Purpose.SEND_RESPONSE, Slatepack.isSlatepack(transaction, account.currency));
+  const serializedSlateResponse = await slate.serialize(Slate.Purpose.SEND_RESPONSE, Slatepack.isSlatepack(transaction, account.currency));
   return {
     transactionResponse: (serializedSlateResponse instanceof Buffer) ? await Slatepack.encode(account, serializedSlateResponse, mimbleWimbleCoin, senderAddress) : JSONBigNumber.stringify(serializedSlateResponse),
     freshAddress: {
@@ -292,6 +292,6 @@ export default async (
         derivationPath: newDerivationPath
     },
     nextIdentifier: (account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextIdentifier.getNext().serialize().toString("hex"),
-    operation: toOperationRaw(buildOptimisticOperation(account, slate, commitment, (account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextIdentifier.withHeight(account.currency, tipHeight.plus(1)), Crypto.SwitchType.REGULAR))
+    operation: toOperationRaw(await buildOptimisticOperation(account, slate, commitment, (account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextIdentifier.withHeight(account.currency, tipHeight.plus(1)), Crypto.SwitchType.REGULAR))
   };
 }

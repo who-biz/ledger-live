@@ -9,9 +9,9 @@ import ProofBuilder from "../api/proofBuilder";
 import SlateKernel from "../api/slateKernel";
 import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp-wasm";
 import { MimbleWimbleCoinInvalidParameters } from "../errors";
-import crypto from "crypto";
 import Slatepack from "../api/slatepack";
 import Age from "../api/age";
+import Common from "../api/common";
 
 export default class MimbleWimbleCoin {
 
@@ -96,7 +96,7 @@ export default class MimbleWimbleCoin {
     if(status === MimbleWimbleCoin.Status.USER_REJECTED) {
       throw new UserRefusedOnDevice();
     }
-    const rootPublicKey = getRootPublicKeyResponse.subarray(0, getRootPublicKeyResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+    const rootPublicKey = Common.subarray(getRootPublicKeyResponse, 0, getRootPublicKeyResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     return rootPublicKey;
   }
 
@@ -125,7 +125,7 @@ export default class MimbleWimbleCoin {
     buffer.writeUInt32LE(bipPath[Crypto.BIP44_PATH_ACCOUNT_INDEX] & ~Crypto.HARDENED_PATH_MASK, 0);
     buffer.writeUInt32LE((bipPath.length <= Crypto.BIP44_PATH_INDEX_INDEX) ? Crypto.BIP44_PATH_DEFAULT_INDEX : bipPath[Crypto.BIP44_PATH_INDEX_INDEX], Uint32Array.BYTES_PER_ELEMENT);
     const getAddressResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.GET_ADDRESS, addressType, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.SUCCESS]);
-    const address = getAddressResponse.subarray(0, getAddressResponse.length - MimbleWimbleCoin.STATUS_LENGTH).toString();
+    const address = Common.subarray(getAddressResponse, 0, getAddressResponse.length - MimbleWimbleCoin.STATUS_LENGTH).toString();
     if(verify) {
       const verifyAddressResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.VERIFY_ADDRESS, addressType, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.USER_REJECTED, MimbleWimbleCoin.Status.SUCCESS]);
       const status = verifyAddressResponse.readUInt16BE(verifyAddressResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
@@ -158,7 +158,7 @@ export default class MimbleWimbleCoin {
     buffer.writeBigUInt64LE(BigInt(amount.toFixed()), Uint32Array.BYTES_PER_ELEMENT + Identifier.LENGTH);
     buffer.writeUInt8(switchType, Uint32Array.BYTES_PER_ELEMENT + Identifier.LENGTH + BigUint64Array.BYTES_PER_ELEMENT);
     const getCommitmentResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.GET_COMMITMENT, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.SUCCESS]);
-    const commitment = getCommitmentResponse.subarray(0, getCommitmentResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+    const commitment = Common.subarray(getCommitmentResponse, 0, getCommitmentResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     return commitment;
   }
 
@@ -192,18 +192,18 @@ export default class MimbleWimbleCoin {
     buffer.writeBigUInt64LE(BigInt(amount.toFixed()), Uint32Array.BYTES_PER_ELEMENT + Identifier.LENGTH);
     buffer.writeUInt8(switchType, Uint32Array.BYTES_PER_ELEMENT + Identifier.LENGTH + BigUint64Array.BYTES_PER_ELEMENT);
     const getBulletproofComponentsResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.GET_BULLETPROOF_COMPONENTS, messageType, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.SUCCESS]);
-    const tauX = getBulletproofComponentsResponse.subarray(0, Crypto.TAU_X_LENGTH);
-    const tOne = getBulletproofComponentsResponse.subarray(Crypto.TAU_X_LENGTH, Crypto.TAU_X_LENGTH + Crypto.SECP256K1_PUBLIC_KEY_LENGTH);
-    const tTwo = getBulletproofComponentsResponse.subarray(Crypto.TAU_X_LENGTH + Crypto.SECP256K1_PUBLIC_KEY_LENGTH, Crypto.TAU_X_LENGTH + Crypto.SECP256K1_PUBLIC_KEY_LENGTH + Crypto.SECP256K1_PUBLIC_KEY_LENGTH);
+    const tauX = Common.subarray(getBulletproofComponentsResponse, 0, Crypto.TAU_X_LENGTH);
+    const tOne = Common.subarray(getBulletproofComponentsResponse, Crypto.TAU_X_LENGTH, Crypto.TAU_X_LENGTH + Crypto.SECP256K1_PUBLIC_KEY_LENGTH);
+    const tTwo = Common.subarray(getBulletproofComponentsResponse, Crypto.TAU_X_LENGTH + Crypto.SECP256K1_PUBLIC_KEY_LENGTH, Crypto.TAU_X_LENGTH + Crypto.SECP256K1_PUBLIC_KEY_LENGTH + Crypto.SECP256K1_PUBLIC_KEY_LENGTH);
     const commitment = await this.getCommitment(path, identifier, amount, switchType);
     const proofBuilder = new ProofBuilder(rootPublicKey);
-    const rewindNonce = proofBuilder.getRewindNonce(commitment);
+    const rewindNonce = await proofBuilder.getRewindNonce(commitment);
     const message = ProofBuilder.encodeMessage(identifier, switchType);
-    const proof = Secp256k1Zkp.createBulletproofBlindless(tauX, tOne, tTwo, commitment, amount.toFixed(), rewindNonce, Buffer.alloc(0), message);
-    if(proof === Secp256k1Zkp.OPERATION_FAILED || !Secp256k1Zkp.verifyBulletproof(proof, commitment, Buffer.alloc(0))) {
+    const proof = await Common.resolveIfPromise(Secp256k1Zkp.createBulletproofBlindless(tauX, tOne, tTwo, commitment, amount.toFixed(), rewindNonce, Buffer.alloc(0), message));
+    if(proof === Secp256k1Zkp.OPERATION_FAILED || !await Common.resolveIfPromise(Secp256k1Zkp.verifyBulletproof(proof, commitment, Buffer.alloc(0)))) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid proof");
     }
-    return Buffer.from(proof);
+    return proof;
   }
 
   public async startTransaction(
@@ -288,19 +288,19 @@ export default class MimbleWimbleCoin {
 
   public async getTransactionPublicKey(): Promise<Buffer> {
     const getTransactionPublicKeyResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.CONTINUE_TRANSACTION_GET_PUBLIC_KEY, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, undefined, [MimbleWimbleCoin.Status.SUCCESS]);
-    const transactionPublicKey = getTransactionPublicKeyResponse.subarray(0, getTransactionPublicKeyResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+    const transactionPublicKey = Common.subarray(getTransactionPublicKeyResponse, 0, getTransactionPublicKeyResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     return transactionPublicKey;
   }
 
   public async getTransactionPublicNonce(): Promise<Buffer> {
     const getTransactionPublicNonceResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.CONTINUE_TRANSACTION_GET_PUBLIC_NONCE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, undefined, [MimbleWimbleCoin.Status.SUCCESS]);
-    const transactionPublicNonce = getTransactionPublicNonceResponse.subarray(0, getTransactionPublicNonceResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+    const transactionPublicNonce = Common.subarray(getTransactionPublicNonceResponse, 0, getTransactionPublicNonceResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     return transactionPublicNonce;
   }
 
   public async getTransactionEncryptedSecretNonce(): Promise<Buffer> {
     const getTransactionEncryptedSecretNonceResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.CONTINUE_TRANSACTION_GET_ENCRYPTED_SECRET_NONCE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, undefined, [MimbleWimbleCoin.Status.SUCCESS]);
-    const transactionEncryptedSecretNonce = getTransactionEncryptedSecretNonceResponse.subarray(0, getTransactionEncryptedSecretNonceResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+    const transactionEncryptedSecretNonce = Common.subarray(getTransactionEncryptedSecretNonceResponse, 0, getTransactionEncryptedSecretNonceResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     return transactionEncryptedSecretNonce;
   }
 
@@ -391,10 +391,10 @@ export default class MimbleWimbleCoin {
     if(status === MimbleWimbleCoin.Status.USER_REJECTED) {
       throw new UserRefusedOnDevice();
     }
-    const partialSignature = finishTransactionResponse.subarray(0, Crypto.SINGLE_SIGNER_SIGNATURE_LENGTH);
+    const partialSignature = Common.subarray(finishTransactionResponse, 0, Crypto.SINGLE_SIGNER_SIGNATURE_LENGTH);
     let paymentProofSignature: Buffer | null;
     if(finishTransactionResponse.length - MimbleWimbleCoin.STATUS_LENGTH > Crypto.SINGLE_SIGNER_SIGNATURE_LENGTH) {
-      paymentProofSignature = finishTransactionResponse.subarray(Crypto.SINGLE_SIGNER_SIGNATURE_LENGTH, finishTransactionResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+      paymentProofSignature = Common.subarray(finishTransactionResponse, Crypto.SINGLE_SIGNER_SIGNATURE_LENGTH, finishTransactionResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     }
     else {
       paymentProofSignature = null;
@@ -428,19 +428,19 @@ export default class MimbleWimbleCoin {
     buffer.writeUInt32LE((bipPath.length <= Crypto.BIP44_PATH_INDEX_INDEX) ? Crypto.BIP44_PATH_DEFAULT_INDEX : bipPath[Crypto.BIP44_PATH_INDEX_INDEX], Uint32Array.BYTES_PER_ELEMENT);
     buffer.write(recipientAddress, Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT);
     const startEncryptingSlateResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.START_ENCRYPTING_SLATE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.SUCCESS]);
-    const nonce = startEncryptingSlateResponse.subarray(0, startEncryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+    const nonce = Common.subarray(startEncryptingSlateResponse, 0, startEncryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     let encryptedSlatepackData: Buffer = Buffer.alloc(0);
     for(let i: number = 0; i < Math.ceil(slatepackData.length / MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH); ++i) {
-      const decryptedChunk = slatepackData.subarray(i * MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH, Math.min(slatepackData.length, (i + 1) * MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH));
+      const decryptedChunk = Common.subarray(slatepackData, i * MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH, Math.min(slatepackData.length, (i + 1) * MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH));
       const continueEncryptingSlateResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.CONTINUE_ENCRYPTING_SLATE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, decryptedChunk, [MimbleWimbleCoin.Status.SUCCESS]);
-      const encryptedChunk = continueEncryptingSlateResponse.subarray(0, continueEncryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+      const encryptedChunk = Common.subarray(continueEncryptingSlateResponse, 0, continueEncryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
       const temp = Buffer.alloc(encryptedSlatepackData.length + encryptedChunk.length);
       encryptedSlatepackData.copy(temp, 0);
       encryptedChunk.copy(temp, encryptedSlatepackData.length);
       encryptedSlatepackData = temp;
     }
     const finishEncryptingSlateResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.FINISH_ENCRYPTING_SLATE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, undefined, [MimbleWimbleCoin.Status.SUCCESS]);
-    const tag = finishEncryptingSlateResponse.subarray(0, finishEncryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+    const tag = Common.subarray(finishEncryptingSlateResponse, 0, finishEncryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     const temp = Buffer.alloc(encryptedSlatepackData.length + tag.length);
     encryptedSlatepackData.copy(temp, 0);
     tag.copy(temp, encryptedSlatepackData.length);
@@ -476,26 +476,23 @@ export default class MimbleWimbleCoin {
     nonce.copy(buffer, Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT);
     buffer.write(senderAddress, Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + nonce.length);
     await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.START_DECRYPTING_SLATE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.SUCCESS]);
-    const encryptedData = encryptedSlatepackData.subarray(0, encryptedSlatepackData.length - Crypto.CHACHA20_POLY1305_TAG_LENGTH);
-    const tag = encryptedSlatepackData.subarray(encryptedSlatepackData.length - Crypto.CHACHA20_POLY1305_TAG_LENGTH);
+    const encryptedData = Common.subarray(encryptedSlatepackData, 0, encryptedSlatepackData.length - Crypto.CHACHA20_POLY1305_TAG_LENGTH);
+    const tag = Common.subarray(encryptedSlatepackData, encryptedSlatepackData.length - Crypto.CHACHA20_POLY1305_TAG_LENGTH);
     const decryptedChunks: Buffer[] = [];
     for(let i: number = 0; i < Math.ceil(encryptedData.length / MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH); ++i) {
-      const encryptedChunk = encryptedData.subarray(i * MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH, Math.min(encryptedData.length, (i + 1) * MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH));
+      const encryptedChunk = Common.subarray(encryptedData, i * MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH, Math.min(encryptedData.length, (i + 1) * MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH));
       const continueDecryptingSlateResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.CONTINUE_DECRYPTING_SLATE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, encryptedChunk, [MimbleWimbleCoin.Status.SUCCESS]);
-      const decryptedChunk = continueDecryptingSlateResponse.subarray(0, continueDecryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+      const decryptedChunk = Common.subarray(continueDecryptingSlateResponse, 0, continueDecryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
       decryptedChunks.push(decryptedChunk);
     }
     const finishDecryptingSlateResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.FINISH_DECRYPTING_SLATE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, tag, [MimbleWimbleCoin.Status.SUCCESS]);
-    const key = finishDecryptingSlateResponse.subarray(0, finishDecryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+    const key = Common.subarray(finishDecryptingSlateResponse, 0, finishDecryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     let slatepackData: Buffer = Buffer.alloc(0);
     for(const decryptedChunk of decryptedChunks) {
-      const decipher = crypto.createDecipheriv(MimbleWimbleCoin.SLATE_DECRYPTED_CHUNK_DECRYPTION_ALGORITHM, key, MimbleWimbleCoin.SLATE_DECRYPTED_CHUNK_DECRYPTION_INITIALIZATION_VECTOR);
-      const chunkStart = decipher.update(decryptedChunk);
-      const chunkEnd = decipher.final();
-      const temp = Buffer.alloc(slatepackData.length + chunkStart.length + chunkEnd.length);
+      const chunk = await Crypto.aesDecrypt(MimbleWimbleCoin.SLATE_DECRYPTED_CHUNK_DECRYPTION_ALGORITHM, key, MimbleWimbleCoin.SLATE_DECRYPTED_CHUNK_DECRYPTION_INITIALIZATION_VECTOR, decryptedChunk);
+      const temp = Buffer.alloc(slatepackData.length + chunk.length);
       slatepackData.copy(temp, 0);
-      chunkStart.copy(temp, slatepackData.length);
-      chunkEnd.copy(temp, slatepackData.length + chunkStart.length);
+      chunk.copy(temp, slatepackData.length);
       slatepackData = temp;
     }
     return slatepackData;
@@ -536,26 +533,23 @@ export default class MimbleWimbleCoin {
     encryptedFileKey.copy(buffer, Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + nonce.length + ephemeralX25519PublicKey.length);
     payloadKeyNonce.copy(buffer, Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + nonce.length + ephemeralX25519PublicKey.length + encryptedFileKey.length);
     await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.START_DECRYPTING_SLATE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.SUCCESS]);
-    const encryptedData = encryptedAgeData.subarray(0, encryptedAgeData.length - Crypto.CHACHA20_POLY1305_TAG_LENGTH);
-    const tag = encryptedAgeData.subarray(encryptedAgeData.length - Crypto.CHACHA20_POLY1305_TAG_LENGTH);
+    const encryptedData = Common.subarray(encryptedAgeData, 0, encryptedAgeData.length - Crypto.CHACHA20_POLY1305_TAG_LENGTH);
+    const tag = Common.subarray(encryptedAgeData, encryptedAgeData.length - Crypto.CHACHA20_POLY1305_TAG_LENGTH);
     const decryptedChunks: Buffer[] = [];
     for(let i: number = 0; i < Math.ceil(encryptedData.length / MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH); ++i) {
-      const encryptedChunk = encryptedData.subarray(i * MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH, Math.min(encryptedData.length, (i + 1) * MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH));
+      const encryptedChunk = Common.subarray(encryptedData, i * MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH, Math.min(encryptedData.length, (i + 1) * MimbleWimbleCoin.MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH));
       const continueDecryptingSlateResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.CONTINUE_DECRYPTING_SLATE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, encryptedChunk, [MimbleWimbleCoin.Status.SUCCESS]);
-      const decryptedChunk = continueDecryptingSlateResponse.subarray(0, continueDecryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+      const decryptedChunk = Common.subarray(continueDecryptingSlateResponse, 0, continueDecryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
       decryptedChunks.push(decryptedChunk);
     }
     const finishDecryptingSlateResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.FINISH_DECRYPTING_SLATE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, tag, [MimbleWimbleCoin.Status.SUCCESS]);
-    const key = finishDecryptingSlateResponse.subarray(0, finishDecryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
+    const key = Common.subarray(finishDecryptingSlateResponse, 0, finishDecryptingSlateResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     let ageData: Buffer = Buffer.alloc(0);
     for(const decryptedChunk of decryptedChunks) {
-      const decipher = crypto.createDecipheriv(MimbleWimbleCoin.SLATE_DECRYPTED_CHUNK_DECRYPTION_ALGORITHM, key, MimbleWimbleCoin.SLATE_DECRYPTED_CHUNK_DECRYPTION_INITIALIZATION_VECTOR);
-      const chunkStart = decipher.update(decryptedChunk);
-      const chunkEnd = decipher.final();
-      const temp = Buffer.alloc(ageData.length + chunkStart.length + chunkEnd.length);
+      const chunk = await Crypto.aesDecrypt(MimbleWimbleCoin.SLATE_DECRYPTED_CHUNK_DECRYPTION_ALGORITHM, key, MimbleWimbleCoin.SLATE_DECRYPTED_CHUNK_DECRYPTION_INITIALIZATION_VECTOR, decryptedChunk);
+      const temp = Buffer.alloc(ageData.length + chunk.length);
       ageData.copy(temp, 0);
-      chunkStart.copy(temp, ageData.length);
-      chunkEnd.copy(temp, ageData.length + chunkStart.length);
+      chunk.copy(temp, ageData.length);
       ageData = temp;
     }
     return ageData;

@@ -40,7 +40,6 @@ export default class JsonRpc {
     let platformSettings: {[key: string]: any} = {};
     if(!Common.isReactNative()) {
       platformSettings = {
-        ...platformSettings,
         httpAgent: useTor ? torAgent : new http.Agent(),
         httpsAgent:  useTor ? torAgent : new https.Agent()
       };

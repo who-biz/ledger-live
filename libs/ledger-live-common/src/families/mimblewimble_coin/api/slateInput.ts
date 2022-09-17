@@ -93,10 +93,10 @@ export default class SlateInput {
     return true;
   }
 
-  public static unserialize(
+  public static async unserialize(
     serializedSlateInput: {[key: string]: any} | BitReader,
     slate: Slate
-  ): SlateInput {
+  ): Promise<SlateInput> {
     const slateInput = Object.create(SlateInput.prototype);
     switch((slate.version instanceof BigNumber) ? (slate.version as BigNumber).toFixed() : slate.version) {
       case "2":
@@ -108,7 +108,7 @@ export default class SlateInput {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate input features");
         }
         slateInput.features = SlateInput.getTextAsFeatures(serializedSlateInput.features);
-        if(!("commit" in serializedSlateInput) || !Common.isHexString(serializedSlateInput.commit) || !Secp256k1Zkp.isValidCommit(Buffer.from(serializedSlateInput.commit, "hex"))) {
+        if(!("commit" in serializedSlateInput) || !Common.isHexString(serializedSlateInput.commit) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidCommit(Buffer.from(serializedSlateInput.commit, "hex")))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate input commitment");
         }
         slateInput.commitment = Buffer.from(serializedSlateInput.commit, "hex");
@@ -122,7 +122,7 @@ export default class SlateInput {
           }
           slateInput.features = features;
           const commitment = SlateUtils.uncompressCommitment(bitReader);
-          if(!Secp256k1Zkp.isValidCommit(commitment)) {
+          if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidCommit(commitment))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate input commitment");
           }
           slateInput.commitment = commitment;
@@ -132,7 +132,7 @@ export default class SlateInput {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate input features");
           }
           slateInput.features = ("f" in serializedSlateInput) ? serializedSlateInput.f.toNumber() : SlateInput.Features.PLAIN;
-          if(!("c" in serializedSlateInput) || !Common.isHexString(serializedSlateInput.c) || !Secp256k1Zkp.isValidCommit(Buffer.from(serializedSlateInput.c, "hex"))) {
+          if(!("c" in serializedSlateInput) || !Common.isHexString(serializedSlateInput.c) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidCommit(Buffer.from(serializedSlateInput.c, "hex")))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate input commitment");
           }
           slateInput.commitment = Buffer.from(serializedSlateInput.c, "hex");

@@ -3,6 +3,7 @@ import bs58check from "bs58check";
 import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp-wasm";
 import type { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import { MimbleWimbleCoinInvalidParameters } from "../errors";
+import Common from "./common";
 
 export default class Mqs {
 
@@ -12,29 +13,29 @@ export default class Mqs {
   private constructor() {
   }
 
-  public static mqsAddressToPublicKey(
+  public static async mqsAddressToPublicKey(
     mqsAddress: string,
     cryptocurrency: CryptoCurrency
-  ): Buffer {
+  ): Promise<Buffer> {
     const decodedAddress = bs58check.decode(mqsAddress);
     if(decodedAddress.length !== Mqs.VERSION_LENGTH + Crypto.SECP256K1_PUBLIC_KEY_LENGTH) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid MQS address");
     }
     const version = Mqs.getAddressVersion(cryptocurrency);
-    if(!decodedAddress.subarray(0, Mqs.VERSION_LENGTH).equals(version)) {
+    if(!Common.subarray(decodedAddress, 0, Mqs.VERSION_LENGTH).equals(version)) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid MQS address");
     }
-    if(!Secp256k1Zkp.isValidPublicKey(decodedAddress.subarray(Mqs.VERSION_LENGTH))) {
+    if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidPublicKey(Common.subarray(decodedAddress, Mqs.VERSION_LENGTH)))) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid MQS address");
     }
-    return decodedAddress.subarray(Mqs.VERSION_LENGTH);
+    return Common.subarray(decodedAddress, Mqs.VERSION_LENGTH);
   }
 
-  public static publicKeyToMqsAddress(
+  public static async publicKeyToMqsAddress(
     publicKey: Buffer,
     cryptocurrency: CryptoCurrency
-  ): string {
-    if(!Secp256k1Zkp.isValidPublicKey(publicKey)) {
+  ): Promise<string> {
+    if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidPublicKey(publicKey))) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid public key");
     }
     const version = Mqs.getAddressVersion(cryptocurrency);

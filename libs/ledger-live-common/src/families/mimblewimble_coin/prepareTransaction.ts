@@ -152,12 +152,12 @@ export default async (
       throw new MimbleWimbleCoinCreatingSlateFailed("Failed adding output to slate");
     }
   }
-  slate.createOffset();
+  await slate.createOffset();
   for(let uniqueKernelOffset: boolean = false; !uniqueKernelOffset;) {
     uniqueKernelOffset = true;
     let kernelOffset: Buffer;
     try {
-      kernelOffset = slate.getOffsetExcess();
+      kernelOffset = await slate.getOffsetExcess();
     }
     catch(
       error: any
@@ -167,7 +167,7 @@ export default async (
     for(const pendingOperation of account.pendingOperations) {
       if(pendingOperation.type !== "OUT" && pendingOperation.extra.kernelOffset && pendingOperation.extra.kernelOffset.equals(kernelOffset)) {
         uniqueKernelOffset = false;
-        slate.createOffset();
+        await slate.createOffset();
         break;
       }
     }
@@ -177,7 +177,7 @@ export default async (
     for(const operation of account.operations) {
       if(operation.type !== "OUT" && operation.extra.kernelOffset && operation.extra.kernelOffset.equals(kernelOffset)) {
         uniqueKernelOffset = false;
-        slate.createOffset();
+        await slate.createOffset();
         break;
       }
     }
@@ -194,7 +194,7 @@ export default async (
   const publicNonce = await mimbleWimbleCoin.getTransactionPublicNonce();
   slate.addParticipant(new SlateParticipant(SlateParticipant.SENDER_ID, publicBlindExcess, publicNonce));
   const encryptedSecretNonce = await mimbleWimbleCoin.getTransactionEncryptedSecretNonce();
-  const serializedSlate = slate.serialize(Slate.Purpose.SEND_INITIAL, true);
+  const serializedSlate = await slate.serialize(Slate.Purpose.SEND_INITIAL, true);
   return {
     transactionData: (serializedSlate instanceof Buffer) ? await Slatepack.encode(account, serializedSlate, mimbleWimbleCoin, slate.recipientPaymentProofAddress) : JSONBigNumber.stringify(serializedSlate),
     height: slate.height!.toFixed(),

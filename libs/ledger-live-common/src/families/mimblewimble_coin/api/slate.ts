@@ -7,7 +7,6 @@ import SlateKernel from "./slateKernel";
 import SlateParticipant from "./slateParticipant";
 import Crypto from "./crypto";
 import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp-wasm";
-import crypto from "crypto";
 import Consensus from "./consensus";
 import Common from "./common";
 import { MimbleWimbleCoinInvalidParameters } from "../errors";
@@ -80,10 +79,10 @@ export default class Slate {
     this.originalVersion = this.version;
   }
 
-  public serialize(
+  public async serialize(
     purpose: number,
     preferBinary: boolean
-  ): {[key: string]: any} | Buffer {
+  ): Promise<{[key: string]: any} | Buffer> {
     switch((this.version instanceof BigNumber) ? this.version.toFixed() : this.version) {
       case "2":
       case "3":
@@ -94,10 +93,10 @@ export default class Slate {
           id: this.id,
           lock_height: this.lockHeight.toFixed(),
           num_participants: this.numberOfParticipants,
-          participant_data: this.participants.map((
+          participant_data: this.participants.map(async (
             participant: SlateParticipant
-          ): {[key: string]: any} | undefined => {
-            return participant.serialize(this);
+          ): Promise<{[key: string]: any} | undefined> => {
+            return await participant.serialize(this);
           }),
           tx: {
             body: {
@@ -167,11 +166,11 @@ export default class Slate {
           SlateUtils.compressBoolean(bitWriter, false);
         }
         if(purpose === Slate.Purpose.SEND_INITIAL) {
-          this.getParticipant(SlateParticipant.SENDER_ID)!.serialize(this, bitWriter);
+          await this.getParticipant(SlateParticipant.SENDER_ID)!.serialize(this, bitWriter);
           if(this.hasPaymentProof()) {
             SlateUtils.compressBoolean(bitWriter, true);
-            SlateUtils.compressPaymentProofAddress(bitWriter, this.senderPaymentProofAddress as string, this.cryptocurrency);
-            SlateUtils.compressPaymentProofAddress(bitWriter, this.recipientPaymentProofAddress as string, this.cryptocurrency);
+            await SlateUtils.compressPaymentProofAddress(bitWriter, this.senderPaymentProofAddress as string, this.cryptocurrency);
+            await SlateUtils.compressPaymentProofAddress(bitWriter, this.recipientPaymentProofAddress as string, this.cryptocurrency);
           }
           else {
             SlateUtils.compressBoolean(bitWriter, false);
@@ -197,11 +196,11 @@ export default class Slate {
               SlateUtils.compressBoolean(bitWriter, false);
             }
           }
-          this.getParticipant(SlateParticipant.SENDER_ID.plus(1))!.serialize(this, bitWriter);
+          await this.getParticipant(SlateParticipant.SENDER_ID.plus(1))!.serialize(this, bitWriter);
           if(this.hasPaymentProof()) {
             SlateUtils.compressBoolean(bitWriter, true);
-            SlateUtils.compressPaymentProofAddress(bitWriter, this.senderPaymentProofAddress as string, this.cryptocurrency);
-            SlateUtils.compressPaymentProofAddress(bitWriter, this.recipientPaymentProofAddress as string, this.cryptocurrency);
+            await SlateUtils.compressPaymentProofAddress(bitWriter, this.senderPaymentProofAddress as string, this.cryptocurrency);
+            await SlateUtils.compressPaymentProofAddress(bitWriter, this.recipientPaymentProofAddress as string, this.cryptocurrency);
             if(this.recipientPaymentProofSignature) {
               SlateUtils.compressBoolean(bitWriter, true);
               SlateUtils.compressPaymentProofSignature(bitWriter, this.recipientPaymentProofSignature as Buffer);
@@ -260,10 +259,10 @@ export default class Slate {
           }
           SlateUtils.writeUint8(bitWriter, 1);
           if(purpose === Slate.Purpose.SEND_INITIAL) {
-            this.getParticipant(SlateParticipant.SENDER_ID)!.serialize(this, bitWriter);
+            await this.getParticipant(SlateParticipant.SENDER_ID)!.serialize(this, bitWriter);
           }
           else {
-            this.getParticipant(SlateParticipant.SENDER_ID.plus(1))!.serialize(this, bitWriter);
+            await this.getParticipant(SlateParticipant.SENDER_ID.plus(1))!.serialize(this, bitWriter);
           }
           let componentFields: number = 0;
           if(purpose === Slate.Purpose.SEND_RESPONSE) {
@@ -365,7 +364,7 @@ export default class Slate {
               amt: this.amount.toFixed(),
               fee: this.fee.toFixed(),
               sigs: [
-                this.getParticipant(SlateParticipant.SENDER_ID)!.serialize(this)
+                await this.getParticipant(SlateParticipant.SENDER_ID)!.serialize(this)
               ]
             };
           }
@@ -381,7 +380,7 @@ export default class Slate {
               ...serializedSlate,
               off: this.offset.toString("hex"),
               sigs: [
-                this.getParticipant(SlateParticipant.SENDER_ID.plus(1))!.serialize(this)
+                await this.getParticipant(SlateParticipant.SENDER_ID.plus(1))!.serialize(this)
               ],
               coms: inputsAndOutputs
             };
@@ -427,11 +426,11 @@ export default class Slate {
     this.id = uuidv4();
   }
 
-  public setRecipientPaymentProofSignature(
+  public async setRecipientPaymentProofSignature(
     signature: Buffer
-  ): boolean {
+  ): Promise<boolean> {
     this.recipientPaymentProofSignature = signature;
-    return this.verifyRecipientPaymentProofSignature();
+    return await this.verifyRecipientPaymentProofSignature();
   }
 
   public getParticipant(
@@ -496,23 +495,23 @@ export default class Slate {
     return true;
   }
 
-  public createOffset() {
+  public async createOffset() {
     do {
-      crypto.randomFillSync(this.offset);
-    } while(!Secp256k1Zkp.isValidSecretKey(this.offset));
+      this.offset = await Crypto.randomBytes(Crypto.SECP256K1_PRIVATE_KEY_LENGTH);
+    } while(!await Common.resolveIfPromise(Secp256k1Zkp.isValidSecretKey(this.offset)));
   }
 
-  public combineOffsets(
+  public async combineOffsets(
     slate: Slate
-  ): boolean {
-    const combinedOffset = Secp256k1Zkp.blindSum([this.offset, slate.offset], []);
+  ): Promise<boolean> {
+    const combinedOffset = await Common.resolveIfPromise(Secp256k1Zkp.blindSum([this.offset, slate.offset], []));
     if(combinedOffset === Secp256k1Zkp.OPERATION_FAILED) {
       return false;
     }
-    if(!Secp256k1Zkp.isValidSecretKey(combinedOffset)) {
+    if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidSecretKey(combinedOffset))) {
       return false;
     }
-    this.offset = Buffer.from(combinedOffset);
+    this.offset = combinedOffset;
     return true;
   }
 
@@ -522,55 +521,55 @@ export default class Slate {
     this.participants.push(participant);
   }
 
-  public getPublicBlindExcessSum(): Buffer {
-    const publicBlindExcessSum = Secp256k1Zkp.combinePublicKeys(this.participants.map((
+  public async getPublicBlindExcessSum(): Promise<Buffer> {
+    const publicBlindExcessSum = await Common.resolveIfPromise(Secp256k1Zkp.combinePublicKeys(this.participants.map((
       participant: SlateParticipant
     ): Buffer => {
       return participant.publicBlindExcess;
-    }));
+    })));
     if(publicBlindExcessSum === Secp256k1Zkp.OPERATION_FAILED) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid slate participants");
     }
-    return Buffer.from(publicBlindExcessSum);
+    return publicBlindExcessSum;
   }
 
-  public getPublicNonceSum(): Buffer {
-    const publicNonceSum = Secp256k1Zkp.combinePublicKeys(this.participants.map((
+  public async getPublicNonceSum(): Promise<Buffer> {
+    const publicNonceSum = await Common.resolveIfPromise(Secp256k1Zkp.combinePublicKeys(this.participants.map((
       participant: SlateParticipant
     ): Buffer => {
       return participant.publicNonce;
-    }));
+    })));
     if(publicNonceSum === Secp256k1Zkp.OPERATION_FAILED) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid slate participants");
     }
-    return Buffer.from(publicNonceSum);
+    return publicNonceSum;
   }
 
-  public getOffsetExcess(): Buffer {
-    const offsetExcess = Secp256k1Zkp.pedersenCommit(this.offset, "0");
+  public async getOffsetExcess(): Promise<Buffer> {
+    const offsetExcess = await Common.resolveIfPromise(Secp256k1Zkp.pedersenCommit(this.offset, "0"));
     if(offsetExcess === Secp256k1Zkp.OPERATION_FAILED) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid slate offset");
     }
-    return Buffer.from(offsetExcess);
+    return offsetExcess;
   }
 
-  public getExcess(): Buffer {
+  public async getExcess(): Promise<Buffer> {
     if(this.isCompact()) {
-      const publicBlindExcessSum = this.getPublicBlindExcessSum();
-      const excess = Secp256k1Zkp.publicKeyToPedersenCommit(publicBlindExcessSum);
+      const publicBlindExcessSum = await this.getPublicBlindExcessSum();
+      const excess = await Common.resolveIfPromise(Secp256k1Zkp.publicKeyToPedersenCommit(publicBlindExcessSum));
       if(excess === Secp256k1Zkp.OPERATION_FAILED) {
         throw new MimbleWimbleCoinInvalidParameters("Invalid slate public blind excess sum");
       }
-      return Buffer.from(excess);
+      return excess;
     }
     else {
-      const offsetExcess = this.getOffsetExcess();
-      const transactionExcess = this.getCommitmentsSum();
-      const excess = Secp256k1Zkp.pedersenCommitSum([transactionExcess], [offsetExcess]);
+      const offsetExcess = await this.getOffsetExcess();
+      const transactionExcess = await this.getCommitmentsSum();
+      const excess = await Common.resolveIfPromise(Secp256k1Zkp.pedersenCommitSum([transactionExcess], [offsetExcess]));
       if(excess === Secp256k1Zkp.OPERATION_FAILED) {
         throw new MimbleWimbleCoinInvalidParameters("Invalid slate transaction excess and/or slate offset excess");
       }
-      return Buffer.from(excess);
+      return excess;
     }
   }
 
@@ -689,7 +688,7 @@ export default class Slate {
     return SlateKernel.Features.PLAIN;
   }
 
-  public verifyPartialSignatures(): boolean {
+  public async verifyPartialSignatures(): Promise<boolean> {
     let message: Buffer;
     try {
       message = SlateKernel.signatureMessage(this.getKernelFeatures(), this.fee, this.lockHeight, this.relativeHeight);
@@ -701,7 +700,7 @@ export default class Slate {
     }
     let publicNonceSum: Buffer;
     try {
-      publicNonceSum = this.getPublicNonceSum();
+      publicNonceSum = await this.getPublicNonceSum();
     }
     catch(
       error: any
@@ -710,7 +709,7 @@ export default class Slate {
     }
     let publicBlindExcessSum: Buffer;
     try {
-      publicBlindExcessSum = this.getPublicBlindExcessSum();
+      publicBlindExcessSum = await this.getPublicBlindExcessSum();
     }
     catch(
       error: any
@@ -719,7 +718,7 @@ export default class Slate {
     }
     for(const participant of this.participants) {
       if(participant.isComplete()) {
-        if(!Secp256k1Zkp.verifySingleSignerSignature(participant.partialSignature, message, publicNonceSum, participant.publicBlindExcess, publicBlindExcessSum, true)) {
+        if(!await Common.resolveIfPromise(Secp256k1Zkp.verifySingleSignerSignature(participant.partialSignature, message, publicNonceSum, participant.publicBlindExcess, publicBlindExcessSum, true))) {
           return false;
         }
       }
@@ -727,9 +726,9 @@ export default class Slate {
     return true;
   }
 
-  public setFinalSignature(
+  public async setFinalSignature(
     finalSignature: Buffer
-  ): boolean {
+  ): Promise<boolean> {
     if(this.kernels.length !== 1) {
       return false;
     }
@@ -737,14 +736,14 @@ export default class Slate {
       return false;
     }
     try {
-      this.kernels[0].excess = this.getExcess();
+      this.kernels[0].excess = await this.getExcess();
     }
     catch(
       error: any
     ) {
       return false;
     }
-    if(!this.kernels[0].setSignature(finalSignature)) {
+    if(!await this.kernels[0].setSignature(finalSignature)) {
       return false;
     }
     if(!this.sort()) {
@@ -765,13 +764,13 @@ export default class Slate {
     if(!this.kernels[0].isComplete()) {
       return false;
     }
-    if(!this.verifyKernelSums()) {
+    if(!await this.verifyKernelSums()) {
       return false;
     }
     if(this.hasPaymentProof() && !this.recipientPaymentProofSignature) {
       return false;
     }
-    if(!this.verifyRecipientPaymentProofSignature()) {
+    if(!await this.verifyRecipientPaymentProofSignature()) {
       return false
     }
     if(!this.verifyNoRecentDuplicateKernels()) {
@@ -807,12 +806,12 @@ export default class Slate {
     return bodyWeight.multipliedBy(baseFee);
   }
 
-  public static unserialize(
+  public static async unserialize(
     serializedSlate: {[key: string]: any} | Buffer,
     cryptocurrency: CryptoCurrency,
     purpose: number,
     initialSendSlate: Slate | null = null
-  ): Slate {
+  ): Promise<Slate> {
     const slate = Object.create(Slate.prototype);
     slate.cryptocurrency = cryptocurrency;
     switch(Slate.detectVersion(serializedSlate, cryptocurrency)) {
@@ -870,10 +869,10 @@ export default class Slate {
         if(!("inputs" in serializedSlate.tx.body) || !Array.isArray(serializedSlate.tx.body.inputs)) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate inputs");
         }
-        slate.inputs = serializedSlate.tx.body.inputs.map((
+        slate.inputs = serializedSlate.tx.body.inputs.map(async (
           input: {[key: string]: any}
-        ): SlateInput => {
-          return SlateInput.unserialize(input, slate);
+        ): Promise<SlateInput> => {
+          return await SlateInput.unserialize(input, slate);
         });
         if(!slate.inputs.length) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate inputs");
@@ -881,30 +880,30 @@ export default class Slate {
         if(!("outputs" in serializedSlate.tx.body) || !Array.isArray(serializedSlate.tx.body.outputs)) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate outputs");
         }
-        slate.outputs = serializedSlate.tx.body.outputs.map((
+        slate.outputs = serializedSlate.tx.body.outputs.map(async (
           output: {[key: string]: any}
-        ): SlateOutput => {
-          return SlateOutput.unserialize(output, slate);
+        ): Promise<SlateOutput> => {
+          return await SlateOutput.unserialize(output, slate);
         });
         if(!("kernels" in serializedSlate.tx.body) || !Array.isArray(serializedSlate.tx.body.kernels)) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate kernels");
         }
-        slate.kernels = serializedSlate.tx.body.kernels.map((
+        slate.kernels = serializedSlate.tx.body.kernels.map(async (
           kernel: {[key: string]: any}
-        ): SlateKernel => {
-          return SlateKernel.unserialize(kernel, slate);
+        ): Promise<SlateKernel> => {
+          return await SlateKernel.unserialize(kernel, slate);
         });
-        if(!("offset" in serializedSlate.tx) || !Common.isHexString(serializedSlate.tx.offset) || !Secp256k1Zkp.isValidSecretKey(Buffer.from(serializedSlate.tx.offset, "hex"))) {
+        if(!("offset" in serializedSlate.tx) || !Common.isHexString(serializedSlate.tx.offset) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidSecretKey(Buffer.from(serializedSlate.tx.offset, "hex")))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate offset");
         }
         slate.offset = Buffer.from(serializedSlate.tx.offset, "hex");
         if(!("participant_data" in serializedSlate) || !Array.isArray(serializedSlate.participant_data) || slate.numberOfParticipants.isLessThan(serializedSlate.participant_data.length)) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participants");
         }
-        slate.participants = serializedSlate.participant_data.map((
+        slate.participants = serializedSlate.participant_data.map(async (
           participant: {[key: string]: any}
-        ): SlateParticipant => {
-          return SlateParticipant.unserialize(participant, slate);
+        ): Promise<SlateParticipant> => {
+          return await SlateParticipant.unserialize(participant, slate);
         });
         if(slate.version.isGreaterThanOrEqualTo(3)) {
           if(!("ttl_cutoff_height" in serializedSlate) || (serializedSlate.ttl_cutoff_height !== null && (!Common.isNumberString(serializedSlate.ttl_cutoff_height) || !new BigNumber(serializedSlate.ttl_cutoff_height).isInteger() || new BigNumber(serializedSlate.ttl_cutoff_height).isLessThanOrEqualTo(slate.height) || new BigNumber(serializedSlate.ttl_cutoff_height).isLessThan(slate.lockHeight)))) {
@@ -937,7 +936,7 @@ export default class Slate {
             switch(serializedSlate.payment_proof.sender_address.length) {
               case Mqs.ADDRESS_LENGTH:
                 try {
-                  Mqs.mqsAddressToPublicKey(serializedSlate.payment_proof.sender_address, slate.cryptocurrency);
+                  await Mqs.mqsAddressToPublicKey(serializedSlate.payment_proof.sender_address, slate.cryptocurrency);
                 }
                 catch(
                   error: any
@@ -1043,13 +1042,13 @@ export default class Slate {
           slate.inputs = [];
           slate.outputs = [];
           slate.participants = [];
-          slate.participants.push(SlateParticipant.unserialize(bitReader, slate));
+          slate.participants.push(await SlateParticipant.unserialize(bitReader, slate));
           if(SlateUtils.uncompressBoolean(bitReader)) {
-            const senderPaymentProofAddress = SlateUtils.uncompressPaymentProofAddress(bitReader, slate.cryptocurrency);
+            const senderPaymentProofAddress = await SlateUtils.uncompressPaymentProofAddress(bitReader, slate.cryptocurrency);
             switch(senderPaymentProofAddress.length) {
               case Mqs.ADDRESS_LENGTH:
                 try {
-                  Mqs.mqsAddressToPublicKey(senderPaymentProofAddress, slate.cryptocurrency);
+                  await Mqs.mqsAddressToPublicKey(senderPaymentProofAddress, slate.cryptocurrency);
                 }
                 catch(
                   error: any
@@ -1071,7 +1070,7 @@ export default class Slate {
                 throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate payment proof");
             }
             slate.senderPaymentProofAddress = senderPaymentProofAddress;
-            const recipientPaymentProofAddress = SlateUtils.uncompressPaymentProofAddress(bitReader, slate.cryptocurrency);
+            const recipientPaymentProofAddress = await SlateUtils.uncompressPaymentProofAddress(bitReader, slate.cryptocurrency);
             if(recipientPaymentProofAddress.length !== Tor.ADDRESS_LENGTH) {
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate payment proof");
             }
@@ -1113,26 +1112,26 @@ export default class Slate {
             return new SlateParticipant(participant.id, participant.publicBlindExcess, participant.publicNonce, participant.partialSignature, participant.message, participant.messageSignature);
           });
           const offset = SlateUtils.uncompressOffset(bitReader);
-          if(!Secp256k1Zkp.isValidSecretKey(offset)) {
+          if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidSecretKey(offset))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate offset");
           }
           slate.offset = offset;
           const outputs: SlateOutput[] = [];
           do {
-            outputs.push(SlateOutput.unserialize(bitReader, slate));
+            outputs.push(await SlateOutput.unserialize(bitReader, slate));
           } while(SlateUtils.uncompressBoolean(bitReader));
           slate.kernels = [];
           slate.addOutputs(outputs, false);
           do {
-            slate.kernels.push(SlateKernel.unserialize(bitReader, slate));
+            slate.kernels.push(await SlateKernel.unserialize(bitReader, slate));
           } while(SlateUtils.uncompressBoolean(bitReader));
-          slate.participants.push(SlateParticipant.unserialize(bitReader, slate));
+          slate.participants.push(await SlateParticipant.unserialize(bitReader, slate));
           if(SlateUtils.uncompressBoolean(bitReader)) {
-            const senderPaymentProofAddress = SlateUtils.uncompressPaymentProofAddress(bitReader, slate.cryptocurrency);
+            const senderPaymentProofAddress = await SlateUtils.uncompressPaymentProofAddress(bitReader, slate.cryptocurrency);
             switch(senderPaymentProofAddress.length) {
               case Mqs.ADDRESS_LENGTH:
                 try {
-                  Mqs.mqsAddressToPublicKey(senderPaymentProofAddress, slate.cryptocurrency);
+                  await Mqs.mqsAddressToPublicKey(senderPaymentProofAddress, slate.cryptocurrency);
                 }
                 catch(
                   error: any
@@ -1154,7 +1153,7 @@ export default class Slate {
                 throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate payment proof");
             }
             slate.senderPaymentProofAddress = senderPaymentProofAddress;
-            const recipientPaymentProofAddress = SlateUtils.uncompressPaymentProofAddress(bitReader, slate.cryptocurrency);
+            const recipientPaymentProofAddress = await SlateUtils.uncompressPaymentProofAddress(bitReader, slate.cryptocurrency);
             if(recipientPaymentProofAddress.length !== Tor.ADDRESS_LENGTH) {
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate payment proof");
             }
@@ -1204,7 +1203,7 @@ export default class Slate {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate purpose");
           }
           const offset = SlateUtils.uncompressOffset(bitReader);
-          if((purpose === Slate.Purpose.SEND_INITIAL && !offset.equals(Buffer.alloc(Crypto.SECP256K1_PRIVATE_KEY_LENGTH))) || (purpose === Slate.Purpose.SEND_RESPONSE && !Secp256k1Zkp.isValidSecretKey(offset))) {
+          if((purpose === Slate.Purpose.SEND_INITIAL && !offset.equals(Buffer.alloc(Crypto.SECP256K1_PRIVATE_KEY_LENGTH))) || (purpose === Slate.Purpose.SEND_RESPONSE && !await Common.resolveIfPromise(Secp256k1Zkp.isValidSecretKey(offset)))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate offset");
           }
           slate.offset = offset;
@@ -1272,7 +1271,7 @@ export default class Slate {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participants");
           }
           for(let i: number = 0; i < participantsLength; ++i) {
-            slate.participants.push(SlateParticipant.unserialize(bitReader, slate));
+            slate.participants.push(await SlateParticipant.unserialize(bitReader, slate));
           }
           const componentFields = SlateUtils.readUint8(bitReader);
           if(purpose === Slate.Purpose.SEND_RESPONSE) {
@@ -1300,10 +1299,10 @@ export default class Slate {
             const inputsAndOutputsLength = SlateUtils.readUint16(bitReader);
             for(let i: number = 0; i < inputsAndOutputsLength; ++i) {
               if(SlateUtils.readUint8(bitReader)) {
-                outputs.push(SlateOutput.unserialize(bitReader, slate));
+                outputs.push(await SlateOutput.unserialize(bitReader, slate));
               }
               else {
-                inputs.push(SlateInput.unserialize(bitReader, slate));
+                inputs.push(await SlateInput.unserialize(bitReader, slate));
               }
             }
             slate.kernels = [];
@@ -1418,7 +1417,7 @@ export default class Slate {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participants");
           }
           for(const serializedSlateParticipant of serializedSlate.sigs) {
-            slate.participants.push(SlateParticipant.unserialize(serializedSlateParticipant, slate));
+            slate.participants.push(await SlateParticipant.unserialize(serializedSlateParticipant, slate));
           }
           if("proof" in serializedSlate && serializedSlate.proof !== null) {
             if(!Common.isPureObject(serializedSlate.proof)) {
@@ -1498,10 +1497,10 @@ export default class Slate {
                 throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate inputs and outputs");
               }
               if("p" in inputOrOutput && inputOrOutput["p"] !== null) {
-                outputs.push(SlateOutput.unserialize(inputOrOutput, slate));
+                outputs.push(await SlateOutput.unserialize(inputOrOutput, slate));
               }
               else {
-                inputs.push(SlateInput.unserialize(inputOrOutput, slate));
+                inputs.push(await SlateInput.unserialize(inputOrOutput, slate));
               }
             }
             slate.kernels = [];
@@ -1515,7 +1514,7 @@ export default class Slate {
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate fee");
             }
             slate.fee = ("fee" in serializedSlate) ? new BigNumber(serializedSlate.fee) : initialSendSlate!.fee;
-            if(!("off" in serializedSlate) || !Common.isHexString(serializedSlate.off) || !Secp256k1Zkp.isValidSecretKey(Buffer.from(serializedSlate.off, "hex"))) {
+            if(!("off" in serializedSlate) || !Common.isHexString(serializedSlate.off) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidSecretKey(Buffer.from(serializedSlate.off, "hex")))) {
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate offset");
             }
             slate.offset = Buffer.from(serializedSlate.off, "hex");
@@ -1540,10 +1539,10 @@ export default class Slate {
     if(!senderParticipantExists) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participants");
     }
-    if(!slate.verifyPartialSignatures()) {
+    if(!await slate.verifyPartialSignatures()) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate partial signature(s)");
     }
-    if(!slate.verifyRecipientPaymentProofSignature()) {
+    if(!await slate.verifyRecipientPaymentProofSignature()) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate payment proof");
     }
     if(!slate.verifyWeight()) {
@@ -1565,7 +1564,7 @@ export default class Slate {
       throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate kernels");
     }
     if(slate.kernels[0].isComplete()) {
-      if(!slate.verifyKernelSums()) {
+      if(!await slate.verifyKernelSums()) {
         throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate kernel sums");
       }
     }
@@ -1596,8 +1595,8 @@ export default class Slate {
     }
   }
 
-  private getPaymentProofMessage(): Buffer {
-    const excess = this.getExcess();
+  private async getPaymentProofMessage(): Promise<Buffer> {
+    const excess = await this.getExcess();
     switch(this.cryptocurrency.id) {
       case "mimblewimble_coin":
       case "mimblewimble_coin_floonet":
@@ -1707,7 +1706,7 @@ export default class Slate {
     return true;
   }
 
-  private verifyKernelSums(): boolean {
+  private async verifyKernelSums(): Promise<boolean> {
     const kernelExcesses = this.kernels.map((
       kernel: SlateKernel
     ): Buffer => {
@@ -1718,14 +1717,14 @@ export default class Slate {
         kernelExcesses.splice(i--, 1);
       }
     }
-    const kernelsSum = Secp256k1Zkp.pedersenCommitSum(kernelExcesses, []);
+    const kernelsSum = await Common.resolveIfPromise(Secp256k1Zkp.pedersenCommitSum(kernelExcesses, []));
     if(kernelsSum === Secp256k1Zkp.OPERATION_FAILED) {
       return false;
     }
     const kernelCommits: Buffer[] = [kernelsSum];
     let offsetExcess: Buffer;
     try {
-      offsetExcess = this.getOffsetExcess();
+      offsetExcess = await this.getOffsetExcess();
     }
     catch(
       error: any
@@ -1733,20 +1732,20 @@ export default class Slate {
       return false;
     }
     kernelCommits.push(offsetExcess);
-    const kernelsSumWithOffset = Secp256k1Zkp.pedersenCommitSum(kernelCommits, []);
+    const kernelsSumWithOffset = await Common.resolveIfPromise(Secp256k1Zkp.pedersenCommitSum(kernelCommits, []));
     if(kernelsSumWithOffset === Secp256k1Zkp.OPERATION_FAILED) {
       return false;
     }
     let commitmentsSum: Buffer;
     try {
-      commitmentsSum = this.getCommitmentsSum();
+      commitmentsSum = await this.getCommitmentsSum();
     }
     catch(
       error: any
     ) {
       return false;
     }
-    return commitmentsSum.equals(Buffer.from(kernelsSumWithOffset));
+    return commitmentsSum.equals(kernelsSumWithOffset);
   }
 
   private getOverage(): BigNumber {
@@ -1763,7 +1762,7 @@ export default class Slate {
     return overage;
   }
 
-  private getCommitmentsSum(): Buffer {
+  private async getCommitmentsSum(): Promise<Buffer> {
     const inputCommitments = this.inputs.map((
       input: SlateInput
     ): Buffer => {
@@ -1776,15 +1775,15 @@ export default class Slate {
     });
     const overage = this.getOverage();
     if(!overage.isZero()) {
-      const overCommitment = Secp256k1Zkp.pedersenCommit(Buffer.alloc(Crypto.SECP256K1_PRIVATE_KEY_LENGTH), overage.absoluteValue().toFixed());
+      const overCommitment = await Common.resolveIfPromise(Secp256k1Zkp.pedersenCommit(Buffer.alloc(Crypto.SECP256K1_PRIVATE_KEY_LENGTH), overage.absoluteValue().toFixed()));
       if(overCommitment === Secp256k1Zkp.OPERATION_FAILED) {
         throw new MimbleWimbleCoinInvalidParameters("Invalid slate overage");
       }
       if(overage.isNegative()) {
-        inputCommitments.push(Buffer.from(overCommitment));
+        inputCommitments.push(overCommitment);
       }
       else {
-        outputCommitments.push(Buffer.from(overCommitment));
+        outputCommitments.push(overCommitment);
       }
     }
     for(let i: number = 0; i < inputCommitments.length; ++i) {
@@ -1797,11 +1796,11 @@ export default class Slate {
         outputCommitments.splice(i--, 1);
       }
     }
-    const commitmentsSum = Secp256k1Zkp.pedersenCommitSum(outputCommitments, inputCommitments);
+    const commitmentsSum = await Common.resolveIfPromise(Secp256k1Zkp.pedersenCommitSum(outputCommitments, inputCommitments));
     if(commitmentsSum === Secp256k1Zkp.OPERATION_FAILED) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid slate output commitments and/or slate input commitments");
     }
-    return Buffer.from(commitmentsSum);
+    return commitmentsSum;
   }
 
   private updateKernel() {
@@ -1850,11 +1849,11 @@ export default class Slate {
     return true;
   }
 
-  private verifyRecipientPaymentProofSignature(): boolean {
+  private async verifyRecipientPaymentProofSignature(): Promise<boolean> {
     if(this.recipientPaymentProofSignature) {
       let message: Buffer;
       try {
-        message = this.getPaymentProofMessage();
+        message = await this.getPaymentProofMessage();
       }
       catch(
         error: any
@@ -1888,7 +1887,7 @@ export default class Slate {
         default:
           return false;
       }
-      return Ed25519.verify(message, this.recipientPaymentProofSignature, recipientPaymentProofPublicKey);
+      return await Common.resolveIfPromise(Ed25519.verify(message, this.recipientPaymentProofSignature, recipientPaymentProofPublicKey));
     }
     return true;
   }

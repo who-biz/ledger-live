@@ -1,6 +1,5 @@
 import Ed25519 from "@nicolasflamel/ed25519-wasm";
 import X25519 from "@nicolasflamel/x25519-wasm";
-import crypto from "crypto";
 import Crypto from "./crypto";
 import hkdf from "futoin-hkdf";
 import chacha from "chacha";
@@ -27,40 +26,37 @@ export default class Age {
   private constructor() {
   }
 
-  public static encrypt(
+  public static async encrypt(
     data: Buffer,
     recipientEd25519PublicKey: Buffer
-  ): Buffer {
-    let recipientX25519PublicKey: Buffer = X25519.publicKeyFromEd25519PublicKey(recipientEd25519PublicKey);
+  ): Promise<Buffer> {
+    const recipientX25519PublicKey = await Common.resolveIfPromise(X25519.publicKeyFromEd25519PublicKey(recipientEd25519PublicKey));
     if(recipientX25519PublicKey === X25519.OPERATION_FAILED) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid recipient Ed25519 public key");
     }
-    recipientX25519PublicKey = Buffer.from(recipientX25519PublicKey);
     if(recipientX25519PublicKey.equals(Buffer.alloc(Crypto.X25519_PUBLIC_KEY_LENGTH))) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid recipient Ed25519 public key");
     }
     let ephemeralX25519PublicKey: Buffer;
     let sharedSecret: Buffer;
     while(true) {
-      const ephemeralEd25519SecretKey = crypto.randomFillSync(Buffer.alloc(Crypto.ED25519_PRIVATE_KEY_LENGTH));
-      const ephemeralX25519SecretKey = X25519.secretKeyFromEd25519SecretKey(ephemeralEd25519SecretKey);
+      const ephemeralEd25519SecretKey = await Crypto.randomBytes(Crypto.ED25519_PRIVATE_KEY_LENGTH);
+      const ephemeralX25519SecretKey = await Common.resolveIfPromise(X25519.secretKeyFromEd25519SecretKey(ephemeralEd25519SecretKey));
       if(ephemeralX25519SecretKey === X25519.OPERATION_FAILED) {
         continue;
       }
-      const ephemeralEd25519PublicKey = Ed25519.publicKeyFromSecretKey(ephemeralEd25519SecretKey);
+      const ephemeralEd25519PublicKey = await Common.resolveIfPromise(Ed25519.publicKeyFromSecretKey(ephemeralEd25519SecretKey));
       if(ephemeralEd25519PublicKey === Ed25519.OPERATION_FAILED) {
         continue;
       }
-      ephemeralX25519PublicKey = X25519.publicKeyFromEd25519PublicKey(ephemeralEd25519PublicKey);
+      ephemeralX25519PublicKey = await Common.resolveIfPromise(X25519.publicKeyFromEd25519PublicKey(ephemeralEd25519PublicKey));
       if(ephemeralX25519PublicKey === X25519.OPERATION_FAILED) {
         continue;
       }
-      ephemeralX25519PublicKey = Buffer.from(ephemeralX25519PublicKey);
-      sharedSecret = X25519.sharedSecretKeyFromSecretKeyAndPublicKey(ephemeralX25519SecretKey, recipientX25519PublicKey);
+      sharedSecret = await Common.resolveIfPromise(X25519.sharedSecretKeyFromSecretKeyAndPublicKey(ephemeralX25519SecretKey, recipientX25519PublicKey));
       if(sharedSecret === X25519.OPERATION_FAILED) {
         continue;
       }
-      sharedSecret = Buffer.from(sharedSecret);
       if(sharedSecret.equals(Buffer.alloc(Crypto.X25519_PRIVATE_KEY_LENGTH))) {
         continue;
       }
@@ -75,7 +71,7 @@ export default class Age {
       hash: "SHA-256"
     });
     const cipher = chacha.createCipher(wrapKey, Buffer.alloc(Crypto.CHACHA20_POLY1305_NONCE_LENGTH));
-    const fileKey = crypto.randomFillSync(Buffer.alloc(Age.FILE_KEY_LENGTH));
+    const fileKey = await Crypto.randomBytes(Age.FILE_KEY_LENGTH);
     const encryptedFileKeyStart = cipher.update(fileKey);
     const encryptedFileKeyEnd = cipher.final();
     const encryptedFileKeyTag = cipher.getAuthTag();
@@ -89,7 +85,7 @@ export default class Age {
       hash: "SHA-256"
     });
     const mac = createHmac("sha256", hmacKey).update(ageHeader).digest();
-    const nonce = crypto.randomFillSync(Buffer.alloc(Age.PAYLOAD_NONCE_LENGTH));
+    const nonce = await Crypto.randomBytes(Age.PAYLOAD_NONCE_LENGTH);
     const payloadKey = hkdf(fileKey, 32, {
       salt: nonce,
       info: "payload",
@@ -101,7 +97,7 @@ export default class Age {
       if(i === Number.MAX_SAFE_INTEGER) {
         throw new MimbleWimbleCoinInvalidParameters("Invalid data");
       }
-      const chunk = data.subarray(i * Age.MAXIMUM_PAYLOAD_CHUNK_LENGTH, (i + 1) * Age.MAXIMUM_PAYLOAD_CHUNK_LENGTH);
+      const chunk = Common.subarray(data, i * Age.MAXIMUM_PAYLOAD_CHUNK_LENGTH, (i + 1) * Age.MAXIMUM_PAYLOAD_CHUNK_LENGTH);
       const nonce = Buffer.alloc(Crypto.CHACHA20_POLY1305_NONCE_LENGTH);
       nonce.writeBigInt64BE(BigInt(i), Crypto.CHACHA20_POLY1305_NONCE_LENGTH - 1 - BigUint64Array.BYTES_PER_ELEMENT);
       nonce.writeUInt8((i === Math.max(Math.ceil(data.length / Age.MAXIMUM_PAYLOAD_CHUNK_LENGTH), 1) - 1) ? 1 : 0, Crypto.CHACHA20_POLY1305_NONCE_LENGTH - 1);
@@ -129,7 +125,7 @@ export default class Age {
   ): Promise<Buffer> {
     let endOfHeaderIndex: number = -1;
     for(let newlineIndex: number = ageFile.indexOf("\n".charCodeAt(0)); newlineIndex !== -1; newlineIndex = ageFile.indexOf("\n".charCodeAt(0), newlineIndex + "\n".length)) {
-      if(ageFile.subarray(newlineIndex, newlineIndex + `\n${Age.HEADER_MAC_LINE_PREFIX} `.length).equals(Buffer.from(`\n${Age.HEADER_MAC_LINE_PREFIX} `))) {
+      if(Common.subarray(ageFile, newlineIndex, newlineIndex + `\n${Age.HEADER_MAC_LINE_PREFIX} `.length).equals(Buffer.from(`\n${Age.HEADER_MAC_LINE_PREFIX} `))) {
         endOfHeaderIndex = ageFile.indexOf("\n".charCodeAt(0), newlineIndex + `\n${Age.HEADER_MAC_LINE_PREFIX} `.length);
         break;
       }
@@ -142,8 +138,8 @@ export default class Age {
         throw new MimbleWimbleCoinInvalidParameters("Invalid age file");
       }
     }
-    const ageHeader = ageFile.subarray(0, endOfHeaderIndex + "\n".length).toString();
-    const agePayload = ageFile.subarray(endOfHeaderIndex + "\n".length);
+    const ageHeader = Common.subarray(ageFile, 0, endOfHeaderIndex + "\n".length).toString();
+    const agePayload = Common.subarray(ageFile, endOfHeaderIndex + "\n".length);
     if(!ageHeader.startsWith(`${Age.HEADER_VERSION_LINE}\n${Age.HEADER_STANZA_LINE_PREFIX} `)) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid age file");
     }
@@ -223,13 +219,13 @@ export default class Age {
     if(agePayload.length < Age.PAYLOAD_NONCE_LENGTH + Crypto.CHACHA20_POLY1305_TAG_LENGTH) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid age file");
     }
-    const payloadNonce = agePayload.subarray(0, Age.PAYLOAD_NONCE_LENGTH);
+    const payloadNonce = Common.subarray(agePayload, 0, Age.PAYLOAD_NONCE_LENGTH);
     let data: Buffer = Buffer.alloc(0);
     for(let i: number = 0; i < Math.ceil((agePayload.length - Age.PAYLOAD_NONCE_LENGTH) / (Age.MAXIMUM_PAYLOAD_CHUNK_LENGTH + Crypto.CHACHA20_POLY1305_TAG_LENGTH)); ++i) {
       if(i === Number.MAX_SAFE_INTEGER) {
         throw new MimbleWimbleCoinInvalidParameters("Invalid age file");
       }
-      const chunk = agePayload.subarray(Age.PAYLOAD_NONCE_LENGTH + i * (Age.MAXIMUM_PAYLOAD_CHUNK_LENGTH + Crypto.CHACHA20_POLY1305_TAG_LENGTH), Age.PAYLOAD_NONCE_LENGTH + (i + 1) * (Age.MAXIMUM_PAYLOAD_CHUNK_LENGTH + Crypto.CHACHA20_POLY1305_TAG_LENGTH));
+      const chunk = Common.subarray(agePayload, Age.PAYLOAD_NONCE_LENGTH + i * (Age.MAXIMUM_PAYLOAD_CHUNK_LENGTH + Crypto.CHACHA20_POLY1305_TAG_LENGTH), Age.PAYLOAD_NONCE_LENGTH + (i + 1) * (Age.MAXIMUM_PAYLOAD_CHUNK_LENGTH + Crypto.CHACHA20_POLY1305_TAG_LENGTH));
       if(chunk.length < Crypto.CHACHA20_POLY1305_TAG_LENGTH) {
         throw new MimbleWimbleCoinInvalidParameters("Invalid age file");
       }

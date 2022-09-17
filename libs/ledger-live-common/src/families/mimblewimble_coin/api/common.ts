@@ -84,4 +84,20 @@ export default class Common {
   public static isReactNative(): boolean {
     return typeof navigator !== "undefined" && navigator.product === "ReactNative";
   }
+
+  public static subarray(
+    buffer: Buffer,
+    start: number = 0,
+    end?: number
+  ): Buffer {
+    const result = buffer.subarray(start, end);
+    return (result instanceof Buffer) ? result : Buffer.from(result);
+  }
+
+  public static async resolveIfPromise(
+    value: any
+  ): Promise<any> {
+    const result: any = (value instanceof Promise) ? await value : value;
+    return (result instanceof Uint8Array && !(result instanceof Buffer)) ? Buffer.from(result) : result;
+  }
 }

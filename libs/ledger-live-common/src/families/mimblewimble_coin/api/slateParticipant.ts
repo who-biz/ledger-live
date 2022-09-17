@@ -36,10 +36,10 @@ export default class SlateParticipant {
     this.messageSignature = messageSignature;
   }
 
-  public serialize(
+  public async serialize(
     slate: Slate,
     bitWriter: BitWriter | null = null
-  ): {[key: string]: any} | undefined {
+  ): Promise<{[key: string]: any} | undefined> {
     switch((slate.version instanceof BigNumber) ? (slate.version as BigNumber).toFixed() : slate.version) {
       case "2":
       case "3":
@@ -63,7 +63,7 @@ export default class SlateParticipant {
         }
         if(this.message !== null && this.messageSignature) {
           SlateUtils.compressBoolean(bitWriter!, true);
-          SlateUtils.compressParticipantMessage(bitWriter!, this.message);
+          await SlateUtils.compressParticipantMessage(bitWriter!, this.message);
           SlateUtils.compressSingleSignerSignature(bitWriter!, this.messageSignature);
         }
         else {
@@ -76,11 +76,11 @@ export default class SlateParticipant {
           bitWriter.setBytes(this.publicBlindExcess);
           bitWriter.setBytes(this.publicNonce);
           if(this.isComplete()) {
-            const partialSignature = Secp256k1Zkp.uncompactSingleSignerSignature(this.partialSignature!);
+            const partialSignature = await Common.resolveIfPromise(Secp256k1Zkp.uncompactSingleSignerSignature(this.partialSignature!));
             if(partialSignature === Secp256k1Zkp.OPERATION_FAILED) {
               throw new MimbleWimbleCoinInvalidParameters("Invalid slate participant partial signature");
             }
-            SlateUtils.compressSingleSignerSignature(bitWriter, Buffer.from(partialSignature));
+            SlateUtils.compressSingleSignerSignature(bitWriter, partialSignature);
           }
         }
         else {
@@ -134,10 +134,10 @@ export default class SlateParticipant {
     return true;
   }
 
-  public static unserialize(
+  public static async unserialize(
     serializedSlateParticipant: {[key: string]: any} | BitReader,
     slate: Slate
-  ): SlateParticipant {
+  ): Promise<SlateParticipant> {
     const slateParticipant = Object.create(SlateParticipant.prototype);
     switch((slate.version instanceof BigNumber) ? (slate.version as BigNumber).toFixed() : slate.version) {
       case "2":
@@ -149,48 +149,44 @@ export default class SlateParticipant {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant ID");
         }
         slateParticipant.id = new BigNumber(serializedSlateParticipant.id);
-        if(!("public_blind_excess" in serializedSlateParticipant) || !Common.isHexString(serializedSlateParticipant.public_blind_excess) || !Secp256k1Zkp.isValidPublicKey(Buffer.from(serializedSlateParticipant.public_blind_excess, "hex"))) {
+        if(!("public_blind_excess" in serializedSlateParticipant) || !Common.isHexString(serializedSlateParticipant.public_blind_excess) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidPublicKey(Buffer.from(serializedSlateParticipant.public_blind_excess, "hex")))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public blind excess");
         }
-        slateParticipant.publicBlindExcess = Secp256k1Zkp.publicKeyFromData(Buffer.from(serializedSlateParticipant.public_blind_excess, "hex"));
+        slateParticipant.publicBlindExcess = await Common.resolveIfPromise(Secp256k1Zkp.publicKeyFromData(Buffer.from(serializedSlateParticipant.public_blind_excess, "hex")));
         if(slateParticipant.publicBlindExcess === Secp256k1Zkp.OPERATION_FAILED) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public blind excess");
         }
-        slateParticipant.publicBlindExcess = Buffer.from(slateParticipant.publicBlindExcess);
-        if(!("public_nonce" in serializedSlateParticipant) || !Common.isHexString(serializedSlateParticipant.public_nonce) || !Secp256k1Zkp.isValidPublicKey(Buffer.from(serializedSlateParticipant.public_nonce, "hex"))) {
+        if(!("public_nonce" in serializedSlateParticipant) || !Common.isHexString(serializedSlateParticipant.public_nonce) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidPublicKey(Buffer.from(serializedSlateParticipant.public_nonce, "hex")))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public nonce");
         }
-        slateParticipant.publicNonce = Secp256k1Zkp.publicKeyFromData(Buffer.from(serializedSlateParticipant.public_nonce, "hex"));
+        slateParticipant.publicNonce = await Common.resolveIfPromise(Secp256k1Zkp.publicKeyFromData(Buffer.from(serializedSlateParticipant.public_nonce, "hex")));
         if(slateParticipant.publicNonce === Secp256k1Zkp.OPERATION_FAILED) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public nonce");
         }
-        slateParticipant.publicNonce = Buffer.from(slateParticipant.publicNonce);
         if(!("message" in serializedSlateParticipant) || (serializedSlateParticipant.message !== null && typeof serializedSlateParticipant.message !== "string")) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant message");
         }
         slateParticipant.message = serializedSlateParticipant.message;
-        if(!("part_sig" in serializedSlateParticipant) || (serializedSlateParticipant.part_sig !== null && (!Common.isHexString(serializedSlateParticipant.part_sig) || !Secp256k1Zkp.isValidSingleSignerSignature(Buffer.from(serializedSlateParticipant.part_sig, "hex"))))) {
+        if(!("part_sig" in serializedSlateParticipant) || (serializedSlateParticipant.part_sig !== null && (!Common.isHexString(serializedSlateParticipant.part_sig) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidSingleSignerSignature(Buffer.from(serializedSlateParticipant.part_sig, "hex")))))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant partial signature");
         }
         if(serializedSlateParticipant.part_sig !== null) {
-          slateParticipant.partialSignature = Secp256k1Zkp.singleSignerSignatureFromData(Buffer.from(serializedSlateParticipant.part_sig, "hex"));
+          slateParticipant.partialSignature = await Common.resolveIfPromise(Secp256k1Zkp.singleSignerSignatureFromData(Buffer.from(serializedSlateParticipant.part_sig, "hex")));
           if(slateParticipant.partialSignature === Secp256k1Zkp.OPERATION_FAILED) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant partial signature");
           }
-          slateParticipant.partialSignature = Buffer.from(slateParticipant.partialSignature);
         }
         else {
           slateParticipant.partialSignature = null;
         }
-        if(!("message_sig" in serializedSlateParticipant) || (serializedSlateParticipant.message_sig === null && slateParticipant.message !== null) || (serializedSlateParticipant.message_sig !== null && (!Common.isHexString(serializedSlateParticipant.message_sig) || !Secp256k1Zkp.isValidSingleSignerSignature(Buffer.from(serializedSlateParticipant.message_sig, "hex")) || slateParticipant.message === null))) {
+        if(!("message_sig" in serializedSlateParticipant) || (serializedSlateParticipant.message_sig === null && slateParticipant.message !== null) || (serializedSlateParticipant.message_sig !== null && (!Common.isHexString(serializedSlateParticipant.message_sig) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidSingleSignerSignature(Buffer.from(serializedSlateParticipant.message_sig, "hex"))) || slateParticipant.message === null))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant message signature");
         }
         if(serializedSlateParticipant.message_sig !== null) {
-          slateParticipant.messageSignature = Secp256k1Zkp.singleSignerSignatureFromData(Buffer.from(serializedSlateParticipant.message_sig, "hex"));
+          slateParticipant.messageSignature = await Common.resolveIfPromise(Secp256k1Zkp.singleSignerSignatureFromData(Buffer.from(serializedSlateParticipant.message_sig, "hex")));
           if(slateParticipant.messageSignature === Secp256k1Zkp.OPERATION_FAILED) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant message signature");
           }
-          slateParticipant.messageSignature = Buffer.from(slateParticipant.messageSignature);
         }
         else {
           slateParticipant.messageSignature = null;
@@ -203,48 +199,44 @@ export default class SlateParticipant {
         const bitReader = serializedSlateParticipant;
         slateParticipant.id = new BigNumber(slate.participants.length);
         const publicBlindExcess = SlateUtils.uncompressSecp256k1PublicKey(bitReader);
-        if(!Secp256k1Zkp.isValidPublicKey(publicBlindExcess)) {
+        if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidPublicKey(publicBlindExcess))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public blind excess");
         }
-        slateParticipant.publicBlindExcess = Secp256k1Zkp.publicKeyFromData(publicBlindExcess);
+        slateParticipant.publicBlindExcess = await Common.resolveIfPromise(Secp256k1Zkp.publicKeyFromData(publicBlindExcess));
         if(slateParticipant.publicBlindExcess === Secp256k1Zkp.OPERATION_FAILED) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public blind excess");
         }
-        slateParticipant.publicBlindExcess = Buffer.from(slateParticipant.publicBlindExcess);
         const publicNonce = SlateUtils.uncompressSecp256k1PublicKey(bitReader);
-        if(!Secp256k1Zkp.isValidPublicKey(publicNonce)) {
+        if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidPublicKey(publicNonce))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public nonde");
         }
-        slateParticipant.publicNonce = Secp256k1Zkp.publicKeyFromData(publicNonce);
+        slateParticipant.publicNonce = await Common.resolveIfPromise(Secp256k1Zkp.publicKeyFromData(publicNonce));
         if(slateParticipant.publicNonce === Secp256k1Zkp.OPERATION_FAILED) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public nonce");
         }
-        slateParticipant.publicNonce = Buffer.from(slateParticipant.publicNonce);
         if(SlateUtils.uncompressBoolean(bitReader)) {
           const partialSignature = SlateUtils.uncompressSingleSignerSignature(bitReader);
-          if(!Secp256k1Zkp.isValidSingleSignerSignature(partialSignature)) {
+          if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidSingleSignerSignature(partialSignature))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant partial signature");
           }
-          slateParticipant.partialSignature = Secp256k1Zkp.singleSignerSignatureFromData(partialSignature);
+          slateParticipant.partialSignature = await Common.resolveIfPromise(Secp256k1Zkp.singleSignerSignatureFromData(partialSignature));
           if(slateParticipant.partialSignature === Secp256k1Zkp.OPERATION_FAILED) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant partial signature");
           }
-          slateParticipant.partialSignature = Buffer.from(slateParticipant.partialSignature);
         }
         else {
           slateParticipant.partialSignature = null;
         }
         if(SlateUtils.uncompressBoolean(bitReader)) {
-          slateParticipant.message = SlateUtils.uncompressParticipantMessage(bitReader);
+          slateParticipant.message = await SlateUtils.uncompressParticipantMessage(bitReader);
           const messageSignature = SlateUtils.uncompressSingleSignerSignature(bitReader);
-          if(!Secp256k1Zkp.isValidSingleSignerSignature(messageSignature)) {
+          if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidSingleSignerSignature(messageSignature))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant message signature");
           }
-          slateParticipant.messageSignature = Secp256k1Zkp.singleSignerSignatureFromData(messageSignature);
+          slateParticipant.messageSignature = await Common.resolveIfPromise(Secp256k1Zkp.singleSignerSignatureFromData(messageSignature));
           if(slateParticipant.messageSignature === Secp256k1Zkp.OPERATION_FAILED) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant message signature");
           }
-          slateParticipant.messageSignature = Buffer.from(slateParticipant.messageSignature);
         }
         else {
           slateParticipant.message = null;
@@ -259,60 +251,54 @@ export default class SlateParticipant {
           const bitReader = serializedSlateParticipant;
           const hasPartialSignature = SlateUtils.readUint8(bitReader);
           const publicBlindExcess = bitReader.getBytes(Crypto.SECP256K1_PUBLIC_KEY_LENGTH);
-          if(!Secp256k1Zkp.isValidPublicKey(publicBlindExcess)) {
+          if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidPublicKey(publicBlindExcess))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public blind excess");
           }
-          slateParticipant.publicBlindExcess = Secp256k1Zkp.publicKeyFromData(publicBlindExcess);
+          slateParticipant.publicBlindExcess = await Common.resolveIfPromise(Secp256k1Zkp.publicKeyFromData(publicBlindExcess));
           if(slateParticipant.publicBlindExcess === Secp256k1Zkp.OPERATION_FAILED) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public blind excess");
           }
-          slateParticipant.publicBlindExcess = Buffer.from(slateParticipant.publicBlindExcess);
           const publicNonce = bitReader.getBytes(Crypto.SECP256K1_PUBLIC_KEY_LENGTH);
-          if(!Secp256k1Zkp.isValidPublicKey(publicNonce)) {
+          if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidPublicKey(publicNonce))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public nonce");
           }
-          slateParticipant.publicNonce = Secp256k1Zkp.publicKeyFromData(publicNonce);
+          slateParticipant.publicNonce = await Common.resolveIfPromise(Secp256k1Zkp.publicKeyFromData(publicNonce));
           if(slateParticipant.publicNonce === Secp256k1Zkp.OPERATION_FAILED) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public nonce");
           }
-          slateParticipant.publicNonce = Buffer.from(slateParticipant.publicNonce);
           if(hasPartialSignature) {
-            const partialSignature = Secp256k1Zkp.compactSingleSignerSignature(SlateUtils.uncompressSingleSignerSignature(bitReader));
-            if(partialSignature === Secp256k1Zkp.OPERATION_FAILED || !Secp256k1Zkp.isValidSingleSignerSignature(partialSignature)) {
+            slateParticipant.partialSignature = await Common.resolveIfPromise(Secp256k1Zkp.compactSingleSignerSignature(SlateUtils.uncompressSingleSignerSignature(bitReader)));
+            if(slateParticipant.partialSignature === Secp256k1Zkp.OPERATION_FAILED || !await Common.resolveIfPromise(Secp256k1Zkp.isValidSingleSignerSignature(slateParticipant.partialSignature))) {
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant partial signature");
             }
-            slateParticipant.partialSignature = Buffer.from(partialSignature);
           }
           else {
             slateParticipant.partialSignature = null;
           }
         }
         else {
-          if(!("xs" in serializedSlateParticipant) || !Common.isHexString(serializedSlateParticipant.xs) || !Secp256k1Zkp.isValidPublicKey(Buffer.from(serializedSlateParticipant.xs, "hex"))) {
+          if(!("xs" in serializedSlateParticipant) || !Common.isHexString(serializedSlateParticipant.xs) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidPublicKey(Buffer.from(serializedSlateParticipant.xs, "hex")))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public blind excess");
           }
-          slateParticipant.publicBlindExcess = Secp256k1Zkp.publicKeyFromData(Buffer.from(serializedSlateParticipant.xs, "hex"));
+          slateParticipant.publicBlindExcess = await Common.resolveIfPromise(Secp256k1Zkp.publicKeyFromData(Buffer.from(serializedSlateParticipant.xs, "hex")));
           if(slateParticipant.publicBlindExcess === Secp256k1Zkp.OPERATION_FAILED) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public blind excess");
           }
-          slateParticipant.publicBlindExcess = Buffer.from(slateParticipant.publicBlindExcess);
-          if(!("nonce" in serializedSlateParticipant) || !Common.isHexString(serializedSlateParticipant.nonce) || !Secp256k1Zkp.isValidPublicKey(Buffer.from(serializedSlateParticipant.nonce, "hex"))) {
+          if(!("nonce" in serializedSlateParticipant) || !Common.isHexString(serializedSlateParticipant.nonce) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidPublicKey(Buffer.from(serializedSlateParticipant.nonce, "hex")))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public nonce");
           }
-          slateParticipant.publicNonce = Secp256k1Zkp.publicKeyFromData(Buffer.from(serializedSlateParticipant.nonce, "hex"));
+          slateParticipant.publicNonce = await Common.resolveIfPromise(Secp256k1Zkp.publicKeyFromData(Buffer.from(serializedSlateParticipant.nonce, "hex")));
           if(slateParticipant.publicNonce === Secp256k1Zkp.OPERATION_FAILED) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant public nonce");
           }
-          slateParticipant.publicNonce = Buffer.from(slateParticipant.publicNonce);
-          if("part" in serializedSlateParticipant && serializedSlateParticipant.part !== null && (!Common.isHexString(serializedSlateParticipant.part) || !Secp256k1Zkp.isValidSingleSignerSignature(Buffer.from(serializedSlateParticipant.part, "hex")))) {
+          if("part" in serializedSlateParticipant && serializedSlateParticipant.part !== null && (!Common.isHexString(serializedSlateParticipant.part) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidSingleSignerSignature(Buffer.from(serializedSlateParticipant.part, "hex"))))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant partial signature");
           }
           if("part" in serializedSlateParticipant && serializedSlateParticipant.part !== null) {
-            slateParticipant.partialSignature = Secp256k1Zkp.singleSignerSignatureFromData(Buffer.from(serializedSlateParticipant.part, "hex"));
+            slateParticipant.partialSignature = await Common.resolveIfPromise(Secp256k1Zkp.singleSignerSignatureFromData(Buffer.from(serializedSlateParticipant.part, "hex")));
             if(slateParticipant.partialSignature === Secp256k1Zkp.OPERATION_FAILED) {
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant partial signature");
             }
-            slateParticipant.partialSignature = Buffer.from(slateParticipant.partialSignature);
           }
           else {
             slateParticipant.partialSignature = null;
@@ -323,15 +309,15 @@ export default class SlateParticipant {
         throw new MimbleWimbleCoinInvalidParameters("Invalid slate version");
     }
     if(slateParticipant.messageSignature) {
-      if(!slateParticipant.verifyMessageSignature()) {
+      if(!await slateParticipant.verifyMessageSignature()) {
         throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participant message signature");
       }
     }
     return slateParticipant;
   }
 
-  private verifyMessageSignature(): boolean {
+  private async verifyMessageSignature(): Promise<boolean> {
     const messageHash = Buffer.from(blake2b(blake2b.BYTES).update(Buffer.from(this.message!)).digest());
-    return Secp256k1Zkp.verifySingleSignerSignature(this.messageSignature, messageHash, Secp256k1Zkp.NO_PUBLIC_NONCE, this.publicBlindExcess, this.publicBlindExcess, false);
+    return await Common.resolveIfPromise(Secp256k1Zkp.verifySingleSignerSignature(this.messageSignature, messageHash, Secp256k1Zkp.NO_PUBLIC_NONCE, this.publicBlindExcess, this.publicBlindExcess, false));
   }
 }

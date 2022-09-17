@@ -72,7 +72,7 @@ export default class Sync {
               let rewindNonce: Buffer;
               const outputCommitment = Buffer.from(output.commitment, "hex");
               try {
-                rewindNonce = proofBuilder.getRewindNonce(outputCommitment);
+                rewindNonce = await proofBuilder.getRewindNonce(outputCommitment);
               }
               catch(
                 error: any
@@ -80,7 +80,7 @@ export default class Sync {
                 continue;
               }
               const outputProof = Buffer.from(output.proof, "hex");
-              const bulletproof = Secp256k1Zkp.rewindBulletproof(outputProof, outputCommitment, rewindNonce);
+              const bulletproof = await Common.resolveIfPromise(Secp256k1Zkp.rewindBulletproof(outputProof, outputCommitment, rewindNonce));
               if(bulletproof !== Secp256k1Zkp.OPERATION_FAILED) {
                 const amount = new BigNumber(bulletproof["Value"]);
                 const message = Buffer.from(bulletproof["Message"]);
@@ -96,7 +96,7 @@ export default class Sync {
                 ) {
                   continue;
                 }
-                if(Secp256k1Zkp.verifyBulletproof(outputProof, outputCommitment, Buffer.alloc(0))) {
+                if(await Common.resolveIfPromise(Secp256k1Zkp.verifyBulletproof(outputProof, outputCommitment, Buffer.alloc(0)))) {
                   const outputHeight = new BigNumber(output.height);
                   let identifierHeight: BigNumber | null = messageComponents.identifier.getHeight(cryptocurrency);
                   if(identifierHeight) {
@@ -195,8 +195,8 @@ export default class Sync {
                   let ownsOutput: boolean = false;
                   if(height) {
                     try {
-                      const rewindNonce = proofBuilder.getRewindNonce(operations[i].extra.outputCommitment);
-                      const bulletproof = Secp256k1Zkp.rewindBulletproof(proof, operations[i].extra.outputCommitment, rewindNonce);
+                      const rewindNonce = await proofBuilder.getRewindNonce(operations[i].extra.outputCommitment);
+                      const bulletproof = await Common.resolveIfPromise(Secp256k1Zkp.rewindBulletproof(proof, operations[i].extra.outputCommitment, rewindNonce));
                       if(bulletproof !== Secp256k1Zkp.OPERATION_FAILED) {
                         const amount = new BigNumber(bulletproof["Value"]);
                         const message = Buffer.from(bulletproof["Message"]);
@@ -205,7 +205,7 @@ export default class Sync {
                           switchType
                         } = ProofBuilder.decodeMessage(message);
                         if(amount.isEqualTo(operations[i].value) && identifier.serialize().equals(operations[i].extra.identifier.serialize()) && switchType === operations[i].extra.switchType) {
-                          if(Secp256k1Zkp.verifyBulletproof(proof, operations[i].extra.outputCommitment, Buffer.alloc(0))) {
+                          if(await Common.resolveIfPromise(Secp256k1Zkp.verifyBulletproof(proof, operations[i].extra.outputCommitment, Buffer.alloc(0)))) {
                             ownsOutput = true;
                           }
                         }

@@ -47,6 +47,16 @@ target 'ledgerlivemobile' do
 
   pod 'React-RCTText', :path => rct_text, :modular_headers => true
 
+  pod 'smaz-react', :path => '../node_modules/@nicolasflamel/smaz-react'
+
+  pod 'ed25519-react', :path => '../node_modules/@nicolasflamel/ed25519-react'
+
+  pod 'x25519-react', :path => '../node_modules/@nicolasflamel/x25519-react'
+
+  pod 'secp256k1-zkp-react', :path => '../node_modules/@nicolasflamel/secp256k1-zkp-react'
+
+  pod 'react-native-aes', :path => '../node_modules/react-native-aes-crypto'
+
   target 'ledgerlivemobileTests' do
     inherit! :search_paths
     # Pods for testing

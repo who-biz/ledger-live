@@ -2,6 +2,7 @@ import base32 from "hi-base32";
 import Crypto from "./crypto";
 import { SHA3 } from "sha3";
 import { MimbleWimbleCoinInvalidParameters } from "../errors";
+import Common from "./common";
 
 export default class Tor {
 
@@ -28,13 +29,13 @@ export default class Tor {
     decodedAddress.copy(buffer, Tor.ADDRESS_CHECKSUM_SEED.length, 0, Crypto.ED25519_PUBLIC_KEY_LENGTH);
     buffer.writeUInt8(Tor.ADDRESS_VERSION, Tor.ADDRESS_CHECKSUM_SEED.length + Crypto.ED25519_PUBLIC_KEY_LENGTH);
     const checksum = new SHA3(256).update(buffer).digest();
-    if(!checksum.subarray(0, Tor.ADDRESS_CHECKSUM_LENGTH).equals(decodedAddress.subarray(Crypto.ED25519_PUBLIC_KEY_LENGTH, Crypto.ED25519_PUBLIC_KEY_LENGTH + Tor.ADDRESS_CHECKSUM_LENGTH))) {
+    if(!Common.subarray(checksum, 0, Tor.ADDRESS_CHECKSUM_LENGTH).equals(Common.subarray(decodedAddress, Crypto.ED25519_PUBLIC_KEY_LENGTH, Crypto.ED25519_PUBLIC_KEY_LENGTH + Tor.ADDRESS_CHECKSUM_LENGTH))) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid Tor address");
     }
     if(decodedAddress.readUInt8(Crypto.ED25519_PUBLIC_KEY_LENGTH + Tor.ADDRESS_CHECKSUM_LENGTH) !== Tor.ADDRESS_VERSION) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid Tor address");
     }
-    return decodedAddress.subarray(0, Crypto.ED25519_PUBLIC_KEY_LENGTH);
+    return Common.subarray(decodedAddress, 0, Crypto.ED25519_PUBLIC_KEY_LENGTH);
   }
 
   public static publicKeyToTorAddress(

@@ -23,16 +23,17 @@ import SlateParticipant from "./api/slateParticipant";
 import { MimbleWimbleCoinInvalidParameters, MimbleWimbleCoinUnsupportedResponseFromNode, MimbleWimbleCoinUnsupportedResponseFromRecipient, MimbleWimbleCoinCreatingSlateFailed, MimbleWimbleCoinFinalizingSlateFailed } from "./errors";
 import Tor from "./api/tor";
 import Slatepack from "./api/slatepack";
+import Common from "./api/common";
 
-const buildOptimisticOperation = (
+const buildOptimisticOperation = async (
   account: Account,
   transaction: Transaction,
   slate: Slate,
   timestamp: Date
-): Operation => {
+): Promise<Operation> => {
   let kernelExcess: Buffer;
   try {
-    kernelExcess = slate.getExcess();
+    kernelExcess = await slate.getExcess();
   }
   catch(
     error: any
@@ -59,7 +60,7 @@ const buildOptimisticOperation = (
   };
 };
 
-const buildChangeOperation = (
+const buildChangeOperation = async (
   account: Account,
   slate: Slate,
   amount: BigNumber,
@@ -67,10 +68,10 @@ const buildChangeOperation = (
   identifier: Identifier,
   switchType: number,
   timestamp: Date
-): Operation | null => {
+): Promise<Operation | null> => {
   let kernelExcess: Buffer;
   try {
-    kernelExcess = slate.getExcess();
+    kernelExcess = await slate.getExcess();
   }
   catch(
     error: any
@@ -79,7 +80,7 @@ const buildChangeOperation = (
   }
   let kernelOffset: Buffer;
   try {
-    kernelOffset = slate.getOffsetExcess();
+    kernelOffset = await slate.getOffsetExcess();
   }
   catch(
     error: any
@@ -280,12 +281,12 @@ export default (
           slate.offset = transaction.offset!;
         }
         else {
-          slate.createOffset();
+          await slate.createOffset();
           for(let uniqueKernelOffset: boolean = false; !uniqueKernelOffset;) {
             uniqueKernelOffset = true;
             let kernelOffset: Buffer;
             try {
-              kernelOffset = slate.getOffsetExcess();
+              kernelOffset = await slate.getOffsetExcess();
             }
             catch(
               error: any
@@ -295,7 +296,7 @@ export default (
             for(const pendingOperation of account.pendingOperations) {
               if(pendingOperation.type !== "OUT" && pendingOperation.extra.kernelOffset && pendingOperation.extra.kernelOffset.equals(kernelOffset)) {
                 uniqueKernelOffset = false;
-                slate.createOffset();
+                await slate.createOffset();
                 break;
               }
             }
@@ -305,7 +306,7 @@ export default (
             for(const operation of account.operations) {
               if(operation.type !== "OUT" && operation.extra.kernelOffset && operation.extra.kernelOffset.equals(kernelOffset)) {
                 uniqueKernelOffset = false;
-                slate.createOffset();
+                await slate.createOffset();
                 break;
               }
             }
@@ -335,7 +336,7 @@ export default (
         let serializedSlateResponse: {[key: string]: any} | Buffer;
         if(transactionAlreadyPrepared) {
           const response = transaction.transactionResponse!.trim();
-          if(slate.serialize(Slate.Purpose.SEND_INITIAL, true) instanceof Buffer) {
+          if(await slate.serialize(Slate.Purpose.SEND_INITIAL, true) instanceof Buffer) {
             try {
               let senderAddress: string | null;
               ({
@@ -367,7 +368,7 @@ export default (
           }
         }
         else {
-          const serializedSlate = slate.serialize(Slate.Purpose.SEND_INITIAL, false);
+          const serializedSlate = await slate.serialize(Slate.Purpose.SEND_INITIAL, false);
           if(serializedSlate instanceof Buffer) {
             const response = await WalletApi.getSerializedSlateResponse(recipientAddress, await Slatepack.encode(account, serializedSlate, mimbleWimbleCoin, slate.recipientPaymentProofAddress));
             try {
@@ -404,7 +405,7 @@ export default (
         await mimbleWimbleCoin.setTransactionEncryptedSecretNonce(encryptedSecretNonce);
         let slateResponse: Slate;
         try {
-          slateResponse = Slate.unserialize(serializedSlateResponse, slate.cryptocurrency, Slate.Purpose.SEND_RESPONSE, slate);
+          slateResponse = await Slate.unserialize(serializedSlateResponse, slate.cryptocurrency, Slate.Purpose.SEND_RESPONSE, slate);
         }
         catch(
           error: any
@@ -421,13 +422,13 @@ export default (
           throw new MimbleWimbleCoinUnsupportedResponseFromRecipient("Invalid slate response outputs");
         }
         if(slate.isCompact()) {
-          if(!slateResponse.combineOffsets(slate)) {
+          if(!await slateResponse.combineOffsets(slate)) {
             throw new MimbleWimbleCoinFinalizingSlateFailed("Failed combining slate response's offset with the slate's offset");
           }
         }
         let publicNonceSum: Buffer;
         try {
-          publicNonceSum = slateResponse.getPublicNonceSum();
+          publicNonceSum = await slateResponse.getPublicNonceSum();
         }
         catch(
           error: any
@@ -436,7 +437,7 @@ export default (
         }
         let publicBlindExcessSum: Buffer;
         try {
-          publicBlindExcessSum = slateResponse.getPublicBlindExcessSum();
+          publicBlindExcessSum = await slateResponse.getPublicBlindExcessSum();
         }
         catch(
           error: any
@@ -446,7 +447,7 @@ export default (
         let excess: Buffer | null = null;
         if(slateResponse.hasPaymentProof()) {
           try {
-            excess = slateResponse.getExcess();
+            excess = await slateResponse.getExcess();
           }
           catch(
             error: any
@@ -464,7 +465,7 @@ export default (
           type: "device-signature-granted"
         });
         slateResponse.getParticipant(SlateParticipant.SENDER_ID)!.partialSignature = partialSignature;
-        if(!slateResponse.verifyPartialSignatures()) {
+        if(!await slateResponse.verifyPartialSignatures()) {
           throw new MimbleWimbleCoinFinalizingSlateFailed("Invalid partial signature(s) in slate response");
         }
         const partialSignatures: Buffer[] = [];
@@ -476,20 +477,20 @@ export default (
             throw new MimbleWimbleCoinFinalizingSlateFailed("Missing partial signature(s) in slate response");
           }
         }
-        const finalSignature = Secp256k1Zkp.addSingleSignerSignatures(partialSignatures, publicNonceSum);
+        const finalSignature = await Common.resolveIfPromise(Secp256k1Zkp.addSingleSignerSignatures(partialSignatures, publicNonceSum));
         if(finalSignature === Secp256k1Zkp.OPERATION_FAILED) {
           throw new MimbleWimbleCoinFinalizingSlateFailed("Failed creating final signature");
         }
         const message = SlateKernel.signatureMessage(slateResponse.getKernelFeatures(), slateResponse.fee, slateResponse.lockHeight, slateResponse.relativeHeight);
-        if(!Secp256k1Zkp.verifySingleSignerSignature(finalSignature, message, Secp256k1Zkp.NO_PUBLIC_NONCE, publicBlindExcessSum, publicBlindExcessSum, true)) {
+        if(!await Common.resolveIfPromise(Secp256k1Zkp.verifySingleSignerSignature(finalSignature, message, Secp256k1Zkp.NO_PUBLIC_NONCE, publicBlindExcessSum, publicBlindExcessSum, true))) {
           throw new MimbleWimbleCoinFinalizingSlateFailed("Invalid final signature");
         }
-        if(!slateResponse.setFinalSignature(Buffer.from(finalSignature))) {
+        if(!await slateResponse.setFinalSignature(finalSignature)) {
           throw new MimbleWimbleCoinFinalizingSlateFailed("Failed setting slate response's final signature");
         }
         const timestamp = new Date();
-        const operation = buildOptimisticOperation(account, transaction, slateResponse, timestamp);
-        const changeOperation = buildChangeOperation(account, slateResponse, change, commitment, currentIdentifier.withHeight(account.currency, slateResponse.height!), Crypto.SwitchType.REGULAR, timestamp);
+        const operation = await buildOptimisticOperation(account, transaction, slateResponse, timestamp);
+        const changeOperation = await buildChangeOperation(account, slateResponse, change, commitment, currentIdentifier.withHeight(account.currency, slateResponse.height!), Crypto.SwitchType.REGULAR, timestamp);
         const bipPath = BIPPath.fromString(account.freshAddresses[0].derivationPath).toPathArray();
         ++bipPath[Crypto.BIP44_PATH_INDEX_INDEX];
         const newDerivationPath = BIPPath.fromPathArray(bipPath).toString(true);

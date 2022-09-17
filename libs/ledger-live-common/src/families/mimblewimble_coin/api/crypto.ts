@@ -1,3 +1,21 @@
+import Common from "./common";
+const crypto = Common.isReactNative() ? null : require("crypto");
+const Aes = ((): any => {
+  if(Common.isReactNative()) {
+    try {
+      return require("react-native-aes-crypto").default;
+    }
+    catch(
+      error: any
+    ) {
+      throw error;
+    }
+  }
+  else {
+    return null;
+  }
+})();
+
 export default class Crypto {
 
   public static readonly HARDENED_PATH_MASK = 0x80000000;
@@ -29,5 +47,36 @@ export default class Crypto {
   public static readonly BASE64_PADDING_CHARACTER = "=";
 
   private constructor() {
+  }
+
+  public static async aesDecrypt(
+    algorithm: string,
+    key: Buffer,
+    initializationVector: Buffer,
+    data: Buffer
+  ): Promise<Buffer> {
+    if(Common.isReactNative()) {
+      return Buffer.from(await Aes.decrypt(data.toString("base64"), key.toString("hex"), initializationVector.toString("hex"), algorithm), "base64");
+    }
+    else {
+      const decipher = crypto.createDecipheriv(algorithm, key, initializationVector);
+      const start = decipher.update(data);
+      const end = decipher.final();
+      const result = Buffer.alloc(start.length + end.length);
+      start.copy(result, 0);
+      end.copy(result, start.length);
+      return result;
+    }
+  }
+
+  public static async randomBytes(
+    numberOfBytes: number
+  ): Promise<Buffer> {
+    if(Common.isReactNative()) {
+      return Buffer.from(await Aes.randomKey(numberOfBytes), "hex");
+    }
+    else {
+      return crypto.randomFillSync(Buffer.alloc(numberOfBytes));
+    }
   }
 }

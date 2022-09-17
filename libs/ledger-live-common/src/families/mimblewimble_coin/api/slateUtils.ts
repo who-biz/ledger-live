@@ -51,7 +51,7 @@ export default class SlateUtils {
       data.subarray(Uint32Array.BYTES_PER_ELEMENT, Uint32Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT).reverse();
       data.subarray(Uint32Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT, Uint32Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT).reverse();
     }
-    return `${data.subarray(0, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH).toString("hex")}-${data.subarray(Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH).toString("hex")}-${data.subarray(Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH + Common.UUID_THIRD_SECTION_SERIALIZED_LENGTH).toString("hex")}-${data.subarray(Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH + Common.UUID_THIRD_SECTION_SERIALIZED_LENGTH, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH + Common.UUID_THIRD_SECTION_SERIALIZED_LENGTH + Common.UUID_FOURTH_SECTION_SERIALIZED_LENGTH).toString("hex")}-${data.subarray(Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH + Common.UUID_THIRD_SECTION_SERIALIZED_LENGTH + Common.UUID_FOURTH_SECTION_SERIALIZED_LENGTH, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH + Common.UUID_THIRD_SECTION_SERIALIZED_LENGTH + Common.UUID_FOURTH_SECTION_SERIALIZED_LENGTH + Common.UUID_FIFTH_SECTION_SERIALIZED_LENGTH).toString("hex")}`;
+    return `${Common.subarray(data, 0, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH).toString("hex")}-${Common.subarray(data, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH).toString("hex")}-${Common.subarray(data, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH + Common.UUID_THIRD_SECTION_SERIALIZED_LENGTH).toString("hex")}-${Common.subarray(data, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH + Common.UUID_THIRD_SECTION_SERIALIZED_LENGTH, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH + Common.UUID_THIRD_SECTION_SERIALIZED_LENGTH + Common.UUID_FOURTH_SECTION_SERIALIZED_LENGTH).toString("hex")}-${Common.subarray(data, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH + Common.UUID_THIRD_SECTION_SERIALIZED_LENGTH + Common.UUID_FOURTH_SECTION_SERIALIZED_LENGTH, Common.UUID_FIRST_SECTION_SERIALIZED_LENGTH + Common.UUID_SECOND_SECTION_SERIALIZED_LENGTH + Common.UUID_THIRD_SECTION_SERIALIZED_LENGTH + Common.UUID_FOURTH_SECTION_SERIALIZED_LENGTH + Common.UUID_FIFTH_SECTION_SERIALIZED_LENGTH).toString("hex")}`;
   }
 
   public static compressId(
@@ -137,7 +137,7 @@ export default class SlateUtils {
     }
     let bytes: Buffer = Buffer.alloc(BigUint64Array.BYTES_PER_ELEMENT);
     bytes.writeBigUInt64BE(BigInt(reducedValue.toFixed()), 0);
-    bytes = bytes.subarray(bytes.length - Math.ceil(numberOfDigits / Common.BITS_IN_A_BYTE));
+    bytes = Common.subarray(bytes, bytes.length - Math.ceil(numberOfDigits / Common.BITS_IN_A_BYTE));
     for(let i: number = 0; i < bytes.length; ++i) {
       if(numberOfDigits % Common.BITS_IN_A_BYTE) {
         if(i !== bytes.length - 1) {
@@ -155,19 +155,19 @@ export default class SlateUtils {
     }
   }
 
-  public static uncompressPaymentProofAddress(
+  public static async uncompressPaymentProofAddress(
     bitReader: BitReader,
     cryptocurrency: CryptoCurrency
-  ): string {
+  ): Promise<string> {
     if(SlateUtils.uncompressBoolean(bitReader)) {
-      return Mqs.publicKeyToMqsAddress(SlateUtils.uncompressSecp256k1PublicKey(bitReader), cryptocurrency);
+      return await Mqs.publicKeyToMqsAddress(SlateUtils.uncompressSecp256k1PublicKey(bitReader), cryptocurrency);
     }
     else {
       return Tor.publicKeyToTorAddress(bitReader.getBytes(Crypto.ED25519_PUBLIC_KEY_LENGTH));
     }
   }
 
-  public static compressPaymentProofAddress(
+  public static async compressPaymentProofAddress(
     bitWriter: BitWriter,
     paymentProofAddress: string,
     cryptocurrency: CryptoCurrency
@@ -175,7 +175,7 @@ export default class SlateUtils {
     switch(paymentProofAddress.length) {
       case Mqs.ADDRESS_LENGTH:
         SlateUtils.compressBoolean(bitWriter, true);
-        SlateUtils.compressSecp256k1PublicKey(bitWriter, Mqs.mqsAddressToPublicKey(paymentProofAddress, cryptocurrency));
+        SlateUtils.compressSecp256k1PublicKey(bitWriter, await Mqs.mqsAddressToPublicKey(paymentProofAddress, cryptocurrency));
         break;
       case Tor.ADDRESS_LENGTH:
         SlateUtils.compressBoolean(bitWriter, false);
@@ -220,22 +220,22 @@ export default class SlateUtils {
     bitWriter.setBytes(singleSignerSignature);
   }
 
-  public static uncompressParticipantMessage(
+  public static async uncompressParticipantMessage(
     bitReader: BitReader
-  ): string {
+  ): Promise<string> {
     const numberOfBytes = bitReader.getBits(SlateUtils.COMPRESSED_PARTICIPANT_MESSAGE_NUMBER_OF_BYTES_LENGTH);
-    const message = Smaz.decompress(bitReader.getBytes(numberOfBytes));
+    const message = await Common.resolveIfPromise(Smaz.decompress(bitReader.getBytes(numberOfBytes)));
     if(message === Smaz.OPERATION_FAILED) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid participant message");
     }
-    return Buffer.from(message).toString();
+    return message.toString();
   }
 
-  public static compressParticipantMessage(
+  public static async compressParticipantMessage(
     bitWriter: BitWriter,
     message: string
   ) {
-    const compressedMessage = Smaz.compress(Buffer.from(message));
+    const compressedMessage = await Common.resolveIfPromise(Smaz.compress(Buffer.from(message)));
     if(compressedMessage === Smaz.OPERATION_FAILED) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid participant message");
     }
@@ -243,7 +243,7 @@ export default class SlateUtils {
       throw new MimbleWimbleCoinInvalidParameters("Invalid participant message");
     }
     bitWriter.setBits(compressedMessage.length, SlateUtils.COMPRESSED_PARTICIPANT_MESSAGE_NUMBER_OF_BYTES_LENGTH);
-    bitWriter.setBytes(Buffer.from(compressedMessage));
+    bitWriter.setBytes(compressedMessage);
   }
 
   public static uncompressOffset(

@@ -109,10 +109,10 @@ export default class SlateOutput {
     return true;
   }
 
-  public static unserialize(
+  public static async unserialize(
     serializedSlateOutput: {[key: string]: any} | BitReader,
     slate: Slate
-  ): SlateOutput {
+  ): Promise<SlateOutput> {
     const slateOutput = Object.create(SlateOutput.prototype);
     switch((slate.version instanceof BigNumber) ? (slate.version as BigNumber).toFixed() : slate.version) {
       case "2":
@@ -124,7 +124,7 @@ export default class SlateOutput {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate output features");
         }
         slateOutput.features = SlateOutput.getTextAsFeatures(serializedSlateOutput.features);
-        if(!("commit" in serializedSlateOutput) || !Common.isHexString(serializedSlateOutput.commit) || !Secp256k1Zkp.isValidCommit(Buffer.from(serializedSlateOutput.commit, "hex"))) {
+        if(!("commit" in serializedSlateOutput) || !Common.isHexString(serializedSlateOutput.commit) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidCommit(Buffer.from(serializedSlateOutput.commit, "hex")))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate output commitment");
         }
         slateOutput.commitment = Buffer.from(serializedSlateOutput.commit, "hex");
@@ -140,7 +140,7 @@ export default class SlateOutput {
         slateOutput.features = SlateOutput.Features.PLAIN;
         const bitReader = serializedSlateOutput;
         const commitment = SlateUtils.uncompressCommitment(bitReader);
-        if(!Secp256k1Zkp.isValidCommit(commitment)) {
+        if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidCommit(commitment))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate output commitment");
         }
         slateOutput.commitment = commitment;
@@ -159,7 +159,7 @@ export default class SlateOutput {
           }
           slateOutput.features = features;
           const commitment = SlateUtils.uncompressCommitment(bitReader);
-          if(!Secp256k1Zkp.isValidCommit(commitment)) {
+          if(!await Common.resolveIfPromise(Secp256k1Zkp.isValidCommit(commitment))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate output commitment");
           }
           slateOutput.commitment = commitment;
@@ -174,7 +174,7 @@ export default class SlateOutput {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate output features");
           }
           slateOutput.features = ("f" in serializedSlateOutput) ? serializedSlateOutput.f.toNumber() : SlateOutput.Features.PLAIN;
-          if(!("c" in serializedSlateOutput) || !Common.isHexString(serializedSlateOutput.c) || !Secp256k1Zkp.isValidCommit(Buffer.from(serializedSlateOutput.c, "hex"))) {
+          if(!("c" in serializedSlateOutput) || !Common.isHexString(serializedSlateOutput.c) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidCommit(Buffer.from(serializedSlateOutput.c, "hex")))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate output commitment");
           }
           slateOutput.commitment = Buffer.from(serializedSlateOutput.c, "hex");
@@ -187,14 +187,14 @@ export default class SlateOutput {
       default:
         throw new MimbleWimbleCoinInvalidParameters("Invalid slate version");
     }
-    if(!slateOutput.verifyProof()) {
+    if(!await slateOutput.verifyProof()) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate output proof");
     }
     return slateOutput;
   }
 
-  private verifyProof(): boolean {
-    return Secp256k1Zkp.verifyBulletproof(this.proof, this.commitment, Buffer.alloc(0));
+  private async verifyProof(): Promise<boolean> {
+    return await Common.resolveIfPromise(Secp256k1Zkp.verifyBulletproof(this.proof, this.commitment, Buffer.alloc(0)));
   }
 
   private getFeaturesAsText(): string {

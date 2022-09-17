@@ -124,9 +124,9 @@ export default class Slatepack {
     if(decodedPayload.length < Slatepack.DATA_CHECKSUM_LENGTH) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
     }
-    const dataChecksum = decodedPayload.subarray(0, Slatepack.DATA_CHECKSUM_LENGTH);
-    const data = decodedPayload.subarray(Slatepack.DATA_CHECKSUM_LENGTH);
-    const expectedDataChecksum = new shajs.sha256().update(new shajs.sha256().update(data).digest()).digest().subarray(0, Slatepack.DATA_CHECKSUM_LENGTH);
+    const dataChecksum = Common.subarray(decodedPayload, 0, Slatepack.DATA_CHECKSUM_LENGTH);
+    const data = Common.subarray(decodedPayload, Slatepack.DATA_CHECKSUM_LENGTH);
+    const expectedDataChecksum = Common.subarray(new shajs.sha256().update(new shajs.sha256().update(data).digest()).digest(), 0, Slatepack.DATA_CHECKSUM_LENGTH);
     if(!dataChecksum.equals(expectedDataChecksum)) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
     }
@@ -138,7 +138,7 @@ export default class Slatepack {
             throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
           }
           const version = data.readUInt8(0);
-          const senderPublicKey = data.subarray(Uint8Array.BYTES_PER_ELEMENT, Uint8Array.BYTES_PER_ELEMENT  + Crypto.ED25519_PUBLIC_KEY_LENGTH);
+          const senderPublicKey = Common.subarray(data, Uint8Array.BYTES_PER_ELEMENT, Uint8Array.BYTES_PER_ELEMENT  + Crypto.ED25519_PUBLIC_KEY_LENGTH);
           let senderAddress: string;
           try {
             senderAddress = Tor.publicKeyToTorAddress(senderPublicKey);
@@ -148,7 +148,7 @@ export default class Slatepack {
           ) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
           }
-          const recipientPublicKey = data.subarray(Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH, Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH);
+          const recipientPublicKey = Common.subarray(data, Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH, Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH);
           let recipientAddress: string;
           try {
             recipientAddress = Tor.publicKeyToTorAddress(recipientPublicKey);
@@ -161,18 +161,18 @@ export default class Slatepack {
           if(recipientAddress !== account.freshAddresses[0].address) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
           }
-          const nonce = data.subarray(Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH, Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.CHACHA20_POLY1305_NONCE_LENGTH);
+          const nonce = Common.subarray(data, Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH, Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.CHACHA20_POLY1305_NONCE_LENGTH);
           const length = data.readUInt16BE(Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.CHACHA20_POLY1305_NONCE_LENGTH);
           if(length !== data.length - Uint8Array.BYTES_PER_ELEMENT - Crypto.ED25519_PUBLIC_KEY_LENGTH - Crypto.ED25519_PUBLIC_KEY_LENGTH - Crypto.CHACHA20_POLY1305_NONCE_LENGTH - Uint16Array.BYTES_PER_ELEMENT) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
           }
-          const encryptedSlatepackData = data.subarray(Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.CHACHA20_POLY1305_NONCE_LENGTH + Uint16Array.BYTES_PER_ELEMENT);
+          const encryptedSlatepackData = Common.subarray(data, Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.CHACHA20_POLY1305_NONCE_LENGTH + Uint16Array.BYTES_PER_ELEMENT);
           const decryptedSlatepackData = await mimbleWimbleCoin.decryptSlatepackData(account.freshAddresses[0].derivationPath, nonce, encryptedSlatepackData, senderAddress);
           if(decryptedSlatepackData.length < Int32Array.BYTES_PER_ELEMENT) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
           }
           const expectedChecksum = decryptedSlatepackData.readInt32BE(decryptedSlatepackData.length - Int32Array.BYTES_PER_ELEMENT);
-          const serializedSlate = decryptedSlatepackData.subarray(0, decryptedSlatepackData.length - Int32Array.BYTES_PER_ELEMENT);
+          const serializedSlate = Common.subarray(decryptedSlatepackData, 0, decryptedSlatepackData.length - Int32Array.BYTES_PER_ELEMENT);
           const buffer = Buffer.alloc(Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH + serializedSlate.length);
           buffer.writeUInt8(version, 0);
           senderPublicKey.copy(buffer, Uint8Array.BYTES_PER_ELEMENT);
@@ -195,7 +195,7 @@ export default class Slatepack {
           if(length !== data.length - Uint8Array.BYTES_PER_ELEMENT - Uint16Array.BYTES_PER_ELEMENT) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
           }
-          const serializedSlate = data.subarray(Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT);
+          const serializedSlate = Common.subarray(data, Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT);
           return {
             serializedSlate,
             senderAddress: null
@@ -232,7 +232,7 @@ export default class Slatepack {
           throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
         }
         if(isEncrypted) {
-          const ageFile = data.subarray(Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + optionalFieldsLength + BigUint64Array.BYTES_PER_ELEMENT);
+          const ageFile = Common.subarray(data, Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + optionalFieldsLength + BigUint64Array.BYTES_PER_ELEMENT);
           const ageData = await Age.decrypt(account, ageFile, mimbleWimbleCoin);
           if(ageData.length < Uint32Array.BYTES_PER_ELEMENT) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
@@ -241,7 +241,7 @@ export default class Slatepack {
           if(ageData.length < Uint32Array.BYTES_PER_ELEMENT + metadataLength) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
           }
-          const metadata = ageData.subarray(Uint32Array.BYTES_PER_ELEMENT, Uint32Array.BYTES_PER_ELEMENT + metadataLength);
+          const metadata = Common.subarray(ageData, Uint32Array.BYTES_PER_ELEMENT, Uint32Array.BYTES_PER_ELEMENT + metadataLength);
           if(metadata.length < Uint16Array.BYTES_PER_ELEMENT) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
           }
@@ -261,7 +261,7 @@ export default class Slatepack {
               throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
             }
           }
-          const senderAddress = metadata.subarray(Uint16Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT, Uint16Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + senderAddressLength).toString();
+          const senderAddress = Common.subarray(metadata, Uint16Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT, Uint16Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + senderAddressLength).toString();
           try {
             Slatepack.slatepackAddressToPublicKey(senderAddress, account.currency);
           }
@@ -270,14 +270,14 @@ export default class Slatepack {
           ) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid Slatepack");
           }
-          const serializedSlate = ageData.subarray(Uint32Array.BYTES_PER_ELEMENT + metadataLength);
+          const serializedSlate = Common.subarray(ageData, Uint32Array.BYTES_PER_ELEMENT + metadataLength);
           return {
             serializedSlate,
             senderAddress
           };
         }
         else {
-          const serializedSlate = data.subarray(Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + optionalFieldsLength + BigUint64Array.BYTES_PER_ELEMENT);
+          const serializedSlate = Common.subarray(data, Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + optionalFieldsLength + BigUint64Array.BYTES_PER_ELEMENT);
           return {
             serializedSlate,
             senderAddress: null
@@ -344,7 +344,7 @@ export default class Slatepack {
             nonce.copy(data, Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH);
             data.writeUInt16BE(encryptedSlatepackData.length, Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.CHACHA20_POLY1305_NONCE_LENGTH);
             encryptedSlatepackData.copy(data, Uint8Array.BYTES_PER_ELEMENT + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.ED25519_PUBLIC_KEY_LENGTH + Crypto.CHACHA20_POLY1305_NONCE_LENGTH + Uint16Array.BYTES_PER_ELEMENT);
-            const dataChecksum = new shajs.sha256().update(new shajs.sha256().update(data).digest()).digest().subarray(0, Slatepack.DATA_CHECKSUM_LENGTH);
+            const dataChecksum = Common.subarray(new shajs.sha256().update(new shajs.sha256().update(data).digest()).digest(), 0, Slatepack.DATA_CHECKSUM_LENGTH);
             const decodedPayload = Buffer.alloc(Slatepack.DATA_CHECKSUM_LENGTH + data.length);
             dataChecksum.copy(decodedPayload, 0);
             data.copy(decodedPayload, Slatepack.DATA_CHECKSUM_LENGTH);
@@ -377,7 +377,7 @@ export default class Slatepack {
             ageData.writeUInt32BE(metadata.length, 0);
             metadata.copy(ageData, Uint32Array.BYTES_PER_ELEMENT);
             serializedSlate.copy(ageData, Uint32Array.BYTES_PER_ELEMENT + metadata.length);
-            const ageFile = Age.encrypt(ageData, recipientPublicKey);
+            const ageFile = await Age.encrypt(ageData, recipientPublicKey);
             if(BigInt(ageFile.length) > BigInt("0xFFFFFFFFFFFFFFFF")) {
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate");
             }
@@ -389,7 +389,7 @@ export default class Slatepack {
             data.writeUInt32BE(0, Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT);
             data.writeBigUInt64BE(BigInt(ageFile.length), Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT);
             ageFile.copy(data, Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + BigUint64Array.BYTES_PER_ELEMENT);
-            const dataChecksum = new shajs.sha256().update(new shajs.sha256().update(data).digest()).digest().subarray(0, Slatepack.DATA_CHECKSUM_LENGTH);
+            const dataChecksum = Common.subarray(new shajs.sha256().update(new shajs.sha256().update(data).digest()).digest(), 0, Slatepack.DATA_CHECKSUM_LENGTH);
             const decodedPayload = Buffer.alloc(Slatepack.DATA_CHECKSUM_LENGTH + data.length);
             dataChecksum.copy(decodedPayload, 0);
             data.copy(decodedPayload, Slatepack.DATA_CHECKSUM_LENGTH);
@@ -412,7 +412,7 @@ export default class Slatepack {
             data.writeUInt8(Slatepack.getSlatepackVersion(account.currency), 0);
             data.writeUInt16BE(serializedSlate.length, Uint8Array.BYTES_PER_ELEMENT);
             serializedSlate.copy(data, Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT);
-            const dataChecksum = new shajs.sha256().update(new shajs.sha256().update(data).digest()).digest().subarray(0, Slatepack.DATA_CHECKSUM_LENGTH);
+            const dataChecksum = Common.subarray(new shajs.sha256().update(new shajs.sha256().update(data).digest()).digest(), 0, Slatepack.DATA_CHECKSUM_LENGTH);
             const decodedPayload = Buffer.alloc(Slatepack.DATA_CHECKSUM_LENGTH + data.length);
             dataChecksum.copy(decodedPayload, 0);
             data.copy(decodedPayload, Slatepack.DATA_CHECKSUM_LENGTH);
@@ -433,7 +433,7 @@ export default class Slatepack {
             data.writeUInt32BE(0, Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT);
             data.writeBigUInt64BE(BigInt(serializedSlate.length), Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT);
             serializedSlate.copy(data, Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + Uint16Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + BigUint64Array.BYTES_PER_ELEMENT);
-            const dataChecksum = new shajs.sha256().update(new shajs.sha256().update(data).digest()).digest().subarray(0, Slatepack.DATA_CHECKSUM_LENGTH);
+            const dataChecksum = Common.subarray(new shajs.sha256().update(new shajs.sha256().update(data).digest()).digest(), 0, Slatepack.DATA_CHECKSUM_LENGTH);
             const decodedPayload = Buffer.alloc(Slatepack.DATA_CHECKSUM_LENGTH + data.length);
             dataChecksum.copy(decodedPayload, 0);
             data.copy(decodedPayload, Slatepack.DATA_CHECKSUM_LENGTH);
