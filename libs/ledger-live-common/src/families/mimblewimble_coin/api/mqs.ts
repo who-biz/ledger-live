@@ -1,6 +1,6 @@
 import Crypto from "./crypto";
 import bs58check from "bs58check";
-import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp-wasm";
+import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp";
 import type { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import { MimbleWimbleCoinInvalidParameters } from "../errors";
 import Common from "./common";

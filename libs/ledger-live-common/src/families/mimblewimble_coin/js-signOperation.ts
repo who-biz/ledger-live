@@ -8,7 +8,7 @@ import type Transport from "@ledgerhq/hw-transport";
 import BIPPath from "bip32-path";
 import BigNumber from "bignumber.js";
 import JSONBigNumber from "@ledgerhq/json-bignumber";
-import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp-wasm";
+import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp";
 import Slate from "./api/slate";
 import Consensus from "./api/consensus";
 import MimbleWimbleCoin from "./hw-app-mimblewimble-coin";

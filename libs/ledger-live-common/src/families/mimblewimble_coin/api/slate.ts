@@ -6,7 +6,7 @@ import SlateOutput from "./slateOutput";
 import SlateKernel from "./slateKernel";
 import SlateParticipant from "./slateParticipant";
 import Crypto from "./crypto";
-import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp-wasm";
+import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp";
 import Consensus from "./consensus";
 import Common from "./common";
 import { MimbleWimbleCoinInvalidParameters } from "../errors";
@@ -16,7 +16,7 @@ import Slatepack from "./slatepack";
 import BitReader from "./bitReader";
 import BitWriter from "./bitWriter";
 import SlateUtils from "./slateUtils";
-import Ed25519 from "@nicolasflamel/ed25519-wasm";
+import Ed25519 from "@nicolasflamel/ed25519";
 
 export default class Slate {
 

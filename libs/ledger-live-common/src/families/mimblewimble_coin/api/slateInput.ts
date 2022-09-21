@@ -1,4 +1,4 @@
-import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp-wasm";
+import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp";
 import blake2b from "blake2b";
 import Crypto from "./crypto";
 import Common from "./common";

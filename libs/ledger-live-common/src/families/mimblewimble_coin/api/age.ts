@@ -1,5 +1,5 @@
-import Ed25519 from "@nicolasflamel/ed25519-wasm";
-import X25519 from "@nicolasflamel/x25519-wasm";
+import Ed25519 from "@nicolasflamel/ed25519";
+import X25519 from "@nicolasflamel/x25519";
 import Crypto from "./crypto";
 import hkdf from "futoin-hkdf";
 import chacha from "chacha";

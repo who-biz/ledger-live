@@ -6,7 +6,7 @@ import type { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import Mqs from "./mqs";
 import Tor from "./tor";
 import Crypto from "./crypto";
-import Smaz from "@nicolasflamel/smaz-wasm";
+import Smaz from "@nicolasflamel/smaz";
 import { MimbleWimbleCoinInvalidParameters } from "../errors";
 
 export default class SlateUtils {

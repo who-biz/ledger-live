@@ -42,10 +42,10 @@ yarn upgrade-interactive -i --latest
 | @ledgerhq/json-bignumber                    | workaround for Ledger explorers who don't give String in some API | stable                                                               |
 | @ledgerhq/live-app-sdk                      | utils for live apps feature                                       | ???                                                                  |
 | @ledgerhq/logs                              | logs                                                              | weekly                                                               |
-| @nicolasflamel/ed25519-wasm                 | MimbleWimble Coin coin integration                                | monthly                                                              |
-| @nicolasflamel/secp256k1-zkp-wasm           | MimbleWimble Coin coin integration                                | monthly                                                              |
-| @nicolasflamel/smaz-wasm                    | MimbleWimble Coin coin integration                                | monthly                                                              |
-| @nicolasflamel/x25519-wasm                  | MimbleWimble Coin coin integration                                | monthly                                                              |
+| @nicolasflamel/ed25519                      | MimbleWimble Coin coin integration                                | monthly                                                              |
+| @nicolasflamel/secp256k1-zkp                | MimbleWimble Coin coin integration                                | monthly                                                              |
+| @nicolasflamel/smaz                         | MimbleWimble Coin coin integration                                | monthly                                                              |
+| @nicolasflamel/x25519                       | MimbleWimble Coin coin integration                                | monthly                                                              |
 | @polkadot/types                             | Polkadot coin integration                                         | monthly                                                              |
 | @polkadot/types-known                       | Polkadot coin integration                                         | monthly                                                              |
 | @polkadot/util                              | Polkadot coin integration                                         | monthly                                                              |

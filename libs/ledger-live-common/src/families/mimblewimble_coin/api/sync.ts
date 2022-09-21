@@ -6,7 +6,7 @@ import Identifier from "./identifier";
 import RecentHeight from "./recentHeight";
 import Consensus from "./consensus";
 import Node from "./node";
-import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp-wasm";
+import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp";
 import ProofBuilder from "./proofBuilder";
 import Common from "./common";
 

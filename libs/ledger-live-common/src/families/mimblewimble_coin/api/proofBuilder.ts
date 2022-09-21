@@ -1,5 +1,5 @@
 import blake2b from "blake2b";
-import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp-wasm";
+import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp";
 import Crypto from "./crypto";
 import Identifier from "./identifier";
 import { MimbleWimbleCoinInvalidParameters } from "../errors";

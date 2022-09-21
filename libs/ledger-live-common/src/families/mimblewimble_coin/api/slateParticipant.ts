@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp-wasm";
+import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp";
 import blake2b from "blake2b";
 import Common from "./common";
 import { MimbleWimbleCoinInvalidParameters } from "../errors";

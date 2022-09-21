@@ -7,7 +7,7 @@ import Crypto from "../api/crypto";
 import Identifier from "../api/identifier";
 import ProofBuilder from "../api/proofBuilder";
 import SlateKernel from "../api/slateKernel";
-import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp-wasm";
+import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp";
 import { MimbleWimbleCoinInvalidParameters } from "../errors";
 import Slatepack from "../api/slatepack";
 import Age from "../api/age";
