@@ -10,10 +10,12 @@ import { urls } from "~/config/urls";
 import { openURL } from "~/renderer/linking";
 import { track } from "~/renderer/analytics/segment";
 import LabelWithExternalIcon from "~/renderer/components/LabelWithExternalIcon";
+import Label from "~/renderer/components/Label";
 
 type Props = {
   isAdvanceMode: boolean,
   setAdvanceMode: *,
+  useLink: boolean = true,
 };
 
 const SelectorContainer = styled.div`
@@ -30,20 +32,24 @@ const Selector = styled(Tabbable)`
   padding: 4px 12px 4px 12px;
 `;
 
-const SendFeeMode = ({ isAdvanceMode, setAdvanceMode }: Props) => {
+const SendFeeMode = ({ isAdvanceMode, setAdvanceMode, useLink }: Props) => {
   const { t } = useTranslation();
   const setAdvanced = useCallback(() => setAdvanceMode(true), [setAdvanceMode]);
   const setStandard = useCallback(() => setAdvanceMode(false), [setAdvanceMode]);
 
   return (
     <Box horizontal alignItems="center" justifyContent="space-between">
-      <LabelWithExternalIcon
-        onClick={() => {
-          openURL(urls.feesMoreInfo);
-          track("Send Flow Fees Help Requested");
-        }}
-        label={t("send.steps.amount.fees")}
-      />
+      {useLink ? (
+        <LabelWithExternalIcon
+          onClick={() => {
+            openURL(urls.feesMoreInfo);
+            track("Send Flow Fees Help Requested");
+          }}
+          label={t("send.steps.amount.fees")}
+        />
+      ) : (
+        <Label>{t("send.steps.amount.fees")}</Label>
+      )}
       <SelectorContainer>
         <Selector active={!isAdvanceMode} onClick={setStandard}>
           <Text ff="Inter|SemiBold" fontSize={10}>

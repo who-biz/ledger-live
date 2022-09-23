@@ -23,6 +23,6 @@ export default async (
       ++numberOfInputs;
     }
   }
-  const fee = Slate.getRequiredFee(mainAccount.currency, numberOfInputs, 1, 1, Consensus.getDefaultBaseFee(mainAccount.currency));
+  const fee = Slate.getRequiredFee(mainAccount.currency, numberOfInputs, 1, 1, transaction ? transaction.baseFee : Consensus.getDefaultBaseFee(mainAccount.currency));
   return BigNumber.maximum(mainAccount.spendableBalance.minus(fee), 0);
 }

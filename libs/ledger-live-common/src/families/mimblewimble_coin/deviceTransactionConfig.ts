@@ -1,6 +1,6 @@
 import type { Transaction, TransactionStatus } from "./types";
 import type { DeviceTransactionField } from "../../transaction";
-import { MimbleWimbleCoinTransactionWontHavePaymentProof } from "./errors";
+import { MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient, MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress } from "./errors";
 
 export default (
   {
@@ -28,7 +28,7 @@ export default (
   fields.push({
     type: "text",
     label: "Recipient Payment Proof Address",
-    value: (status.warnings.recipient instanceof MimbleWimbleCoinTransactionWontHavePaymentProof) ? "N/A" : transaction.recipient.trim()
+    value: (status.warnings.recipient instanceof MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient || status.warnings.recipient instanceof MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress) ? "N/A" : transaction.recipient.trim()
   });
   return fields;
 }

@@ -4,7 +4,7 @@ import { AmountRequired, NotEnoughBalance, RecipientRequired, InvalidAddress } f
 import Slate from "./api/slate";
 import Consensus from "./api/consensus";
 import BigNumber from "bignumber.js";
-import { MimbleWimbleCoinTransactionWontHavePaymentProof, MimbleWimbleCoinTorRequired, MimbleWimbleCoinMaxFeeExceeded } from "./errors";
+import { MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient, MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress, MimbleWimbleCoinTorRequired, MimbleWimbleCoinMaxFeeExceeded, MimbleWimbleCoinInvalidBaseFee } from "./errors";
 import Tor from "./api/tor";
 import Slatepack from "./api/slatepack";
 
@@ -20,7 +20,7 @@ export default async (
       errors.recipient = new RecipientRequired();
     }
     else {
-      warnings.recipient = new MimbleWimbleCoinTransactionWontHavePaymentProof();
+      warnings.recipient = new MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient();
     }
   }
   else {
@@ -30,7 +30,7 @@ export default async (
         errors.recipient = new InvalidAddress();
       }
       else {
-        warnings.recipient = new MimbleWimbleCoinTransactionWontHavePaymentProof();
+        warnings.recipient = new MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress();
       }
     }
     catch(
@@ -71,7 +71,7 @@ export default async (
   let numberOfInputs: number = 0;
   let inputAmount: BigNumber = new BigNumber(0);
   for(let i: number = account.operations.length - 1; i >= 0; --i) {
-    if(!transaction.useAllAmount && (transaction.amount.isZero() || inputAmount.isEqualTo(transaction.amount.plus(Slate.getRequiredFee(account.currency, numberOfInputs, 1, 1, Consensus.getDefaultBaseFee(account.currency)))) || inputAmount.isGreaterThan(transaction.amount.plus(Slate.getRequiredFee(account.currency, numberOfInputs, 2, 1, Consensus.getDefaultBaseFee(account.currency)))))) {
+    if(!transaction.useAllAmount && (transaction.amount.isZero() || inputAmount.isEqualTo(transaction.amount.plus(Slate.getRequiredFee(account.currency, numberOfInputs, 1, 1, transaction.baseFee))) || inputAmount.isGreaterThan(transaction.amount.plus(Slate.getRequiredFee(account.currency, numberOfInputs, 2, 1, transaction.baseFee))))) {
       break;
     }
     if(account.operations[i].type !== "OUT" && !account.operations[i].extra.spent && account.operations[i].blockHeight !== null && (account.operations[i].type !== "COINBASE_REWARD" || new BigNumber(account.blockHeight).isGreaterThanOrEqualTo(new BigNumber(account.operations[i].blockHeight!).plus(Consensus.getCoinbaseMaturity(account.currency)).minus(1)))) {
@@ -79,9 +79,12 @@ export default async (
       inputAmount = inputAmount.plus(account.operations[i].value);
     }
   }
-  const estimatedFees = (transaction.useAllAmount || inputAmount.isLessThanOrEqualTo(transaction.amount.plus(Slate.getRequiredFee(account.currency, Math.max(numberOfInputs, 1), 1, 1, Consensus.getDefaultBaseFee(account.currency))))) ? Slate.getRequiredFee(account.currency, Math.max(numberOfInputs, 1), 1, 1, Consensus.getDefaultBaseFee(account.currency)) : Slate.getRequiredFee(account.currency, Math.max(numberOfInputs, 1), 2, 1, Consensus.getDefaultBaseFee(account.currency));
+  const estimatedFees = (transaction.useAllAmount || inputAmount.isLessThanOrEqualTo(transaction.amount.plus(Slate.getRequiredFee(account.currency, Math.max(numberOfInputs, 1), 1, 1, transaction.baseFee)))) ? Slate.getRequiredFee(account.currency, Math.max(numberOfInputs, 1), 1, 1, transaction.baseFee) : Slate.getRequiredFee(account.currency, Math.max(numberOfInputs, 1), 2, 1, transaction.baseFee);
   if(estimatedFees.isGreaterThan(Consensus.getMaximumFee(account.currency))) {
-    errors.fees = new MimbleWimbleCoinMaxFeeExceeded();
+    errors.amount = new MimbleWimbleCoinMaxFeeExceeded();
+  }
+  if(transaction.baseFee.isZero()) {
+    errors.baseFee = new MimbleWimbleCoinInvalidBaseFee();
   }
   const amount = transaction.useAllAmount ? BigNumber.maximum(inputAmount.minus(estimatedFees), 0) : transaction.amount;
   const totalSpent = amount.plus(estimatedFees);

@@ -2,6 +2,7 @@ import type { Account } from "@ledgerhq/types-live";
 import type { Transaction } from "./types";
 import BigNumber from "bignumber.js";
 import estimateMaxSpendable from "./js-estimateMaxSpendable";
+import Consensus from "./api/consensus";
 
 export const createTransaction = (
   account: Account
@@ -17,7 +18,9 @@ export const createTransaction = (
     offset: undefined,
     proof: undefined,
     encryptedSecretNonce: undefined,
-    transactionResponse: undefined
+    transactionResponse: undefined,
+    useDefaultBaseFee: true,
+    baseFee: Consensus.getDefaultBaseFee(account.currency)
   };
 };
 
@@ -35,13 +38,20 @@ export const prepareTransaction = async (
   account: Account,
   transaction: Transaction
 ): Promise<Transaction> => {
+  let result: Transaction = transaction;
   if(transaction.useAllAmount) {
-    return {
-      ...transaction,
+    result = {
+      ...result,
       amount: await estimateMaxSpendable({
         account
       })
     };
   }
-  return transaction;
+  if(transaction.useDefaultBaseFee) {
+    result = {
+      ...result,
+      baseFee: Consensus.getDefaultBaseFee(account.currency)
+    };
+  }
+  return result;
 };

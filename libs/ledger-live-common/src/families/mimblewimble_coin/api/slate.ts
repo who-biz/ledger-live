@@ -93,11 +93,11 @@ export default class Slate {
           id: this.id,
           lock_height: this.lockHeight.toFixed(),
           num_participants: this.numberOfParticipants,
-          participant_data: this.participants.map(async (
+          participant_data: await Promise.all(this.participants.map(async (
             participant: SlateParticipant
           ): Promise<{[key: string]: any} | undefined> => {
             return await participant.serialize(this);
-          }),
+          })),
           tx: {
             body: {
               inputs: this.inputs.map((
@@ -727,7 +727,8 @@ export default class Slate {
   }
 
   public async setFinalSignature(
-    finalSignature: Buffer
+    finalSignature: Buffer,
+    baseFee: BigNumber
   ): Promise<boolean> {
     if(this.kernels.length !== 1) {
       return false;
@@ -758,7 +759,7 @@ export default class Slate {
     if(!this.verifyNoCutThrough()) {
       return false;
     }
-    if(!this.verifyFees()) {
+    if(!this.verifyFees(baseFee)) {
       return false;
     }
     if(!this.kernels[0].isComplete()) {
@@ -803,7 +804,7 @@ export default class Slate {
       default:
         throw new MimbleWimbleCoinInvalidParameters("Invalid cryptocurrency");
     }
-    return bodyWeight.multipliedBy(baseFee);
+    return bodyWeight.multipliedBy(BigNumber.maximum(baseFee, 1));
   }
 
   public static async unserialize(
@@ -869,30 +870,30 @@ export default class Slate {
         if(!("inputs" in serializedSlate.tx.body) || !Array.isArray(serializedSlate.tx.body.inputs)) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate inputs");
         }
-        slate.inputs = serializedSlate.tx.body.inputs.map(async (
+        slate.inputs = await Promise.all(serializedSlate.tx.body.inputs.map(async (
           input: {[key: string]: any}
         ): Promise<SlateInput> => {
           return await SlateInput.unserialize(input, slate);
-        });
+        }));
         if(!slate.inputs.length) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate inputs");
         }
         if(!("outputs" in serializedSlate.tx.body) || !Array.isArray(serializedSlate.tx.body.outputs)) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate outputs");
         }
-        slate.outputs = serializedSlate.tx.body.outputs.map(async (
+        slate.outputs = await Promise.all(serializedSlate.tx.body.outputs.map(async (
           output: {[key: string]: any}
         ): Promise<SlateOutput> => {
           return await SlateOutput.unserialize(output, slate);
-        });
+        }));
         if(!("kernels" in serializedSlate.tx.body) || !Array.isArray(serializedSlate.tx.body.kernels)) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate kernels");
         }
-        slate.kernels = serializedSlate.tx.body.kernels.map(async (
+        slate.kernels = await Promise.all(serializedSlate.tx.body.kernels.map(async (
           kernel: {[key: string]: any}
         ): Promise<SlateKernel> => {
           return await SlateKernel.unserialize(kernel, slate);
-        });
+        }));
         if(!("offset" in serializedSlate.tx) || !Common.isHexString(serializedSlate.tx.offset) || !await Common.resolveIfPromise(Secp256k1Zkp.isValidSecretKey(Buffer.from(serializedSlate.tx.offset, "hex")))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate offset");
         }
@@ -900,11 +901,11 @@ export default class Slate {
         if(!("participant_data" in serializedSlate) || !Array.isArray(serializedSlate.participant_data) || slate.numberOfParticipants.isLessThan(serializedSlate.participant_data.length)) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate participants");
         }
-        slate.participants = serializedSlate.participant_data.map(async (
+        slate.participants = await Promise.all(serializedSlate.participant_data.map(async (
           participant: {[key: string]: any}
         ): Promise<SlateParticipant> => {
           return await SlateParticipant.unserialize(participant, slate);
-        });
+        }));
         if(slate.version.isGreaterThanOrEqualTo(3)) {
           if(!("ttl_cutoff_height" in serializedSlate) || (serializedSlate.ttl_cutoff_height !== null && (!Common.isNumberString(serializedSlate.ttl_cutoff_height) || !new BigNumber(serializedSlate.ttl_cutoff_height).isInteger() || new BigNumber(serializedSlate.ttl_cutoff_height).isLessThanOrEqualTo(slate.height) || new BigNumber(serializedSlate.ttl_cutoff_height).isLessThan(slate.lockHeight)))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate time to live cut off height");
@@ -1692,8 +1693,10 @@ export default class Slate {
     return true;
   }
 
-  private verifyFees(): boolean {
-    const transactionFee = Slate.getRequiredFee(this.cryptocurrency, this.inputs.length, this.outputs.length, this.kernels.length, Consensus.getDefaultBaseFee(this.cryptocurrency));
+  private verifyFees(
+    baseFee: BigNumber
+  ): boolean {
+    const transactionFee = Slate.getRequiredFee(this.cryptocurrency, this.inputs.length, this.outputs.length, this.kernels.length, baseFee);
     if(transactionFee.isGreaterThan(this.getOverage())) {
       return false;
     }

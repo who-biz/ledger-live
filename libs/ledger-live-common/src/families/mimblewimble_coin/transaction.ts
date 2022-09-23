@@ -34,7 +34,9 @@ export const fromTransactionRaw = (
     offset: (transaction.offset !== undefined) ? Buffer.from(transaction.offset, "hex") : undefined,
     proof: (transaction.proof !== undefined) ? Buffer.from(transaction.proof, "hex") : undefined,
     encryptedSecretNonce: (transaction.encryptedSecretNonce !== undefined) ? Buffer.from(transaction.encryptedSecretNonce, "hex") : undefined,
-    transactionResponse: transaction.transactionResponse
+    transactionResponse: transaction.transactionResponse,
+    useDefaultBaseFee: transaction.useDefaultBaseFee,
+    baseFee: new BigNumber(transaction.baseFee)
   };
 };
 
@@ -51,7 +53,9 @@ export const toTransactionRaw = (
     offset: (transaction.offset !== undefined) ? transaction.offset.toString("hex") : undefined,
     proof: (transaction.proof !== undefined) ? transaction.proof.toString("hex") : undefined,
     encryptedSecretNonce: (transaction.encryptedSecretNonce !== undefined) ? transaction.encryptedSecretNonce.toString("hex") : undefined,
-    transactionResponse: transaction.transactionResponse
+    transactionResponse: transaction.transactionResponse,
+    useDefaultBaseFee: transaction.useDefaultBaseFee,
+    baseFee: transaction.baseFee.toFixed()
   };
 };
 

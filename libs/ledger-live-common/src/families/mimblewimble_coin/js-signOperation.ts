@@ -133,7 +133,7 @@ export default (
         const inputs: Operation[] = [];
         let inputAmount: BigNumber = new BigNumber(0);
         for(let i: number = account.operations.length - 1; i >= 0; --i) {
-          if(!transaction.useAllAmount && (inputAmount.isEqualTo(transaction.amount.plus(Slate.getRequiredFee(account.currency, inputs.length, 1, 1, Consensus.getDefaultBaseFee(account.currency)))) || inputAmount.isGreaterThan(transaction.amount.plus(Slate.getRequiredFee(account.currency, inputs.length, 2, 1, Consensus.getDefaultBaseFee(account.currency)))))) {
+          if(!transaction.useAllAmount && (inputAmount.isEqualTo(transaction.amount.plus(Slate.getRequiredFee(account.currency, inputs.length, 1, 1, transaction.baseFee))) || inputAmount.isGreaterThan(transaction.amount.plus(Slate.getRequiredFee(account.currency, inputs.length, 2, 1, transaction.baseFee))))) {
             break;
           }
           if(account.operations[i].type !== "OUT" && !account.operations[i].extra.spent && account.operations[i].blockHeight !== null && (account.operations[i].type !== "COINBASE_REWARD" || new BigNumber(account.blockHeight).isGreaterThanOrEqualTo(new BigNumber(account.operations[i].blockHeight!).plus(Consensus.getCoinbaseMaturity(account.currency)).minus(1)))) {
@@ -141,7 +141,7 @@ export default (
             inputs.push(account.operations[i]);
           }
         }
-        const fee = (transaction.useAllAmount || inputAmount.isEqualTo(transaction.amount.plus(Slate.getRequiredFee(account.currency, inputs.length, 1, 1, Consensus.getDefaultBaseFee(account.currency))))) ? Slate.getRequiredFee(account.currency, inputs.length, 1, 1, Consensus.getDefaultBaseFee(account.currency)) : Slate.getRequiredFee(account.currency, inputs.length, 2, 1, Consensus.getDefaultBaseFee(account.currency));
+        const fee = (transaction.useAllAmount || inputAmount.isEqualTo(transaction.amount.plus(Slate.getRequiredFee(account.currency, inputs.length, 1, 1, transaction.baseFee)))) ? Slate.getRequiredFee(account.currency, inputs.length, 1, 1, transaction.baseFee) : Slate.getRequiredFee(account.currency, inputs.length, 2, 1, transaction.baseFee);
         const {
           tipHeight
         } = await Node.getTip(account.currency);
@@ -485,7 +485,7 @@ export default (
         if(!await Common.resolveIfPromise(Secp256k1Zkp.verifySingleSignerSignature(finalSignature, message, Secp256k1Zkp.NO_PUBLIC_NONCE, publicBlindExcessSum, publicBlindExcessSum, true))) {
           throw new MimbleWimbleCoinFinalizingSlateFailed("Invalid final signature");
         }
-        if(!await slateResponse.setFinalSignature(finalSignature)) {
+        if(!await slateResponse.setFinalSignature(finalSignature, transaction.baseFee)) {
           throw new MimbleWimbleCoinFinalizingSlateFailed("Failed setting slate response's final signature");
         }
         const timestamp = new Date();

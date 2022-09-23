@@ -36,7 +36,7 @@ export default async (
   const inputs: Operation[] = [];
   let inputAmount: BigNumber = new BigNumber(0);
   for(let i: number = account.operations.length - 1; i >= 0; --i) {
-    if(!transaction.useAllAmount && (inputAmount.isEqualTo(transaction.amount.plus(Slate.getRequiredFee(account.currency, inputs.length, 1, 1, Consensus.getDefaultBaseFee(account.currency)))) || inputAmount.isGreaterThan(transaction.amount.plus(Slate.getRequiredFee(account.currency, inputs.length, 2, 1, Consensus.getDefaultBaseFee(account.currency)))))) {
+    if(!transaction.useAllAmount && (inputAmount.isEqualTo(transaction.amount.plus(Slate.getRequiredFee(account.currency, inputs.length, 1, 1, transaction.baseFee))) || inputAmount.isGreaterThan(transaction.amount.plus(Slate.getRequiredFee(account.currency, inputs.length, 2, 1, transaction.baseFee))))) {
       break;
     }
     if(account.operations[i].type !== "OUT" && !account.operations[i].extra.spent && account.operations[i].blockHeight !== null && (account.operations[i].type !== "COINBASE_REWARD" || new BigNumber(account.blockHeight).isGreaterThanOrEqualTo(new BigNumber(account.operations[i].blockHeight!).plus(Consensus.getCoinbaseMaturity(account.currency)).minus(1)))) {
@@ -44,7 +44,7 @@ export default async (
       inputs.push(account.operations[i]);
     }
   }
-  const fee = (transaction.useAllAmount || inputAmount.isEqualTo(transaction.amount.plus(Slate.getRequiredFee(account.currency, inputs.length, 1, 1, Consensus.getDefaultBaseFee(account.currency))))) ? Slate.getRequiredFee(account.currency, inputs.length, 1, 1, Consensus.getDefaultBaseFee(account.currency)) : Slate.getRequiredFee(account.currency, inputs.length, 2, 1, Consensus.getDefaultBaseFee(account.currency));
+  const fee = (transaction.useAllAmount || inputAmount.isEqualTo(transaction.amount.plus(Slate.getRequiredFee(account.currency, inputs.length, 1, 1, transaction.baseFee)))) ? Slate.getRequiredFee(account.currency, inputs.length, 1, 1, transaction.baseFee) : Slate.getRequiredFee(account.currency, inputs.length, 2, 1, transaction.baseFee);
   const {
     tipHeight
   } = await Node.getTip(account.currency);
@@ -58,6 +58,9 @@ export default async (
   }
   if(fee.isZero() || fee.isGreaterThan(Consensus.getMaximumFee(account.currency))) {
     throw new MimbleWimbleCoinInvalidParameters("Invalid fee");
+  }
+  if(transaction.baseFee.isZero()) {
+    throw new MimbleWimbleCoinInvalidParameters("Invalid base fee");
   }
   const recipient = transaction.recipient.trim();
   let usePaymentProof: boolean;

@@ -4016,7 +4016,10 @@
       "transactionResponseReceived": "Enter the recipient's response",
       "maturityStatus": "Maturity",
       "matureStatus": "Mature",
-      "immatureStatus": "Immature"
+      "immatureStatus": "Immature",
+      "verifyRecipientPaymentProofAddress": "Verify that the recipient payment proof address displayed on your device exactly matches the address given by the recipient",
+      "noPaymentProof": "This transaction doesn't have a payment proof",
+      "baseFee": "Base fee"
     }
   },
   "errors": {
@@ -4727,8 +4730,12 @@
       "title": "Adding to the transaction failed",
       "description": "Please retry"
     },
-    "MimbleWimbleCoinTransactionWontHavePaymentProof": {
-      "title": "Transactions sent to this recipient wont have a payment proof",
+    "MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient": {
+      "title": "A transaction with no recipient address won't have a payment proof",
+      "description": ""
+    },
+    "MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress": {
+      "title": "A transaction sent to this recipient won't have a payment proof",
       "description": ""
     },
     "MimbleWimbleCoinTorRequired": {
@@ -4736,7 +4743,11 @@
       "description": ""
     },
     "MimbleWimbleCoinMaxFeeExceeded": {
-      "title": "Max fee exceeded",
+      "title": "Max fee exceeded. Please lower the amount",
+      "description": ""
+    },
+    "MimbleWimbleCoinInvalidBaseFee": {
+      "title": "Invalid base fee",
       "description": ""
     }
   },

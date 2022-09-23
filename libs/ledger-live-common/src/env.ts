@@ -83,13 +83,14 @@ const envDefinitions = {
   API_MIMBLEWIMBLE_COIN_NODE: {
     parser: stringParser,
     //def: "https://mwc713.mwc.mw",
-    //def: "http://localhost:3413",
-    def: "http://10.0.2.2:3413",
+    def: "http://localhost:3413",
+    //def: "http://10.0.2.2:3413",
     desc: "Node for MimbleWimble Coin",
   },
   API_MIMBLEWIMBLE_COIN_FLOONET_NODE: {
     parser: stringParser,
-    def: "https://mwc713.floonet.mwc.mw",
+    //def: "https://mwc713.floonet.mwc.mw",
+    def: "http://localhost:13413",
     desc: "Node for MimbleWimble Coin floonet",
   },
   API_GRIN_NODE: {

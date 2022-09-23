@@ -52,8 +52,12 @@ export const MimbleWimbleCoinAddingToSlateFailed = createCustomErrorClass(
   "MimbleWimbleCoinAddingToSlateFailed"
 );
 
-export const MimbleWimbleCoinTransactionWontHavePaymentProof = createCustomErrorClass(
-  "MimbleWimbleCoinTransactionWontHavePaymentProof"
+export const MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient = createCustomErrorClass(
+  "MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient"
+);
+
+export const MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress = createCustomErrorClass(
+  "MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress"
 );
 
 export const MimbleWimbleCoinTorRequired = createCustomErrorClass(
@@ -62,4 +66,8 @@ export const MimbleWimbleCoinTorRequired = createCustomErrorClass(
 
 export const MimbleWimbleCoinMaxFeeExceeded = createCustomErrorClass(
   "MimbleWimbleCoinMaxFeeExceeded"
+);
+
+export const MimbleWimbleCoinInvalidBaseFee = createCustomErrorClass(
+  "MimbleWimbleCoinInvalidBaseFee"
 );

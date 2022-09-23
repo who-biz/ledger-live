@@ -150,6 +150,23 @@ export default class Sync {
           }
         }
         const newNextIdentifier = (highestIdentifier && highestIdentifier.includesValue(nextIdentifier)) ? highestIdentifier.getNext() : nextIdentifier;
+        for(let i: number = operations.length - 1; i >= 0; --i) {
+          if(operations[i].type !== "OUT" && operations[i].blockHeight !== null && !operations[i].extra.spent && startHeight.isGreaterThan(operations[i].blockHeight!)) {
+            const {
+              height
+            } = await Node.getOutput(cryptocurrency, operations[i].extra.outputCommitment);
+            if(height && height.isEqualTo(operations[i].blockHeight!)) {
+              break;
+            }
+            else {
+              balanceChange = balanceChange.minus(operations[i].value);
+              if(operations[i].type !== "COINBASE_REWARD" || accountHeight.isGreaterThanOrEqualTo(new BigNumber(operations[i].blockHeight!).plus(Consensus.getCoinbaseMaturity(cryptocurrency)).minus(1))) {
+                spendableBalanceChange = spendableBalanceChange.minus(operations[i].value);
+              }
+              operations[i].extra.spent = true;
+            }
+          }
+        }
         const checkedOperations: {[key: string]: Operation} = {};
         for(let i: number = 0; i < newOperations.length; ++i) {
           if(newOperations[i].id in checkedOperations) {

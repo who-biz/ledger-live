@@ -29,6 +29,8 @@ export type Transaction = TransactionCommon & {
   proof: Buffer | undefined;
   encryptedSecretNonce: Buffer | undefined;
   transactionResponse: string | undefined;
+  useDefaultBaseFee: boolean;
+  baseFee: BigNumber;
 };
 
 export type TransactionRaw = TransactionCommonRaw & {
@@ -40,6 +42,8 @@ export type TransactionRaw = TransactionCommonRaw & {
   proof: string | undefined;
   encryptedSecretNonce: string | undefined;
   transactionResponse: string | undefined;
+  useDefaultBaseFee: boolean;
+  baseFee: string;
 };
 
 export type MimbleWimbleCoinAccount = Account & {
