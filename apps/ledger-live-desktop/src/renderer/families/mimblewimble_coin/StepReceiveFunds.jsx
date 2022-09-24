@@ -353,7 +353,6 @@ class StepReceiveFunds extends PureComponent<Props, State> {
               });
               break;
             case "signed":
-              console.log("signed");
               qrcode.toString(transactionResponse, {
                 errorCorrectionLevel: "Q"
               }, (
