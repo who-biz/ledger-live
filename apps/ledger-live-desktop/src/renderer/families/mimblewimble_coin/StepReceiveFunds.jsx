@@ -1,7 +1,7 @@
 // @flow
 import invariant from "invariant";
 import React, { PureComponent } from "react";
-import { getMainAccount, getAccountName } from "@ledgerhq/live-common/account/index";
+import { getAccountUnit, getMainAccount, getAccountName } from "@ledgerhq/live-common/account/index";
 import TrackPage from "~/renderer/analytics/TrackPage";
 import ErrorDisplay from "~/renderer/components/ErrorDisplay";
 import { Trans } from "react-i18next";
@@ -19,7 +19,7 @@ import LinkShowQRCode from "~/renderer/components/LinkShowQRCode";
 import SuccessDisplay from "~/renderer/components/SuccessDisplay";
 import { renderVerifyUnwrapped } from "~/renderer/components/DeviceAction/rendering";
 import type { StepProps } from "~/renderer/modals/Receive/Body";
-import type { Account, AccountLike, Address, OperationRaw } from "@ledgerhq/types-live";
+import type { Account, AccountLike, Address, OperationRaw, Operation } from "@ledgerhq/types-live";
 import Modal from "~/renderer/components/Modal";
 import ModalBody from "~/renderer/components/Modal/ModalBody";
 import QRCode from "~/renderer/components/QRCode";
@@ -41,6 +41,9 @@ import { setDrawer } from "~/renderer/drawers/Provider";
 import { localeSelector } from "~/renderer/reducers/settings";
 import { formatCurrencyUnit } from "@ledgerhq/live-common/currencies/index";
 import BigNumber from "bignumber.js";
+import WarnBox from "~/renderer/components/WarnBox";
+import TransactionConfirmField from "~/renderer/components/TransactionConfirm/TransactionConfirmField";
+import FormattedVal from "~/renderer/components/FormattedVal";
 
 const connectAppExec = command("connectApp");
 
@@ -55,6 +58,32 @@ const QRCodeWrapper = styled.div`
   border: 24px solid white;
   background: white;
   display: flex;
+`;
+
+const Container = styled(Box).attrs(() => ({
+  alignItems: "center",
+  fontSize: 4,
+  pb: 4
+}))``;
+
+const Info = styled(Box).attrs(() => ({
+  ff: "Inter|SemiBold",
+  color: "palette.text.shade100",
+  mb: 4,
+  px: 5
+}))`
+  text-align: center;
+`;
+
+const FieldText = styled(Text).attrs(() => ({
+  ml: 1,
+  ff: "Inter|Medium",
+  color: "palette.text.shade80",
+  fontSize: 3
+}))`
+  word-break: break-all;
+  text-align: right;
+  max-width: 50%;
 `;
 
 const Receive1ShareAddress = (
@@ -131,6 +160,70 @@ const Receive2Device = (
   );
 };
 
+const ApproveReceivingTransaction = (
+  {
+    account,
+    device,
+    amount,
+    fee,
+    senderPaymentProofAddress
+  }: {
+   account: Account,
+   device: any;
+   amount: string;
+   fee: string;
+   senderPaymentProofAddress: string | null;
+  }
+) => {
+  const unit = getAccountUnit(account);
+  const type = useTheme("colors.palette.type");
+  return (
+    <Container>
+      {(senderPaymentProofAddress === null) ? (
+        <WarnBox>
+          <Trans i18nKey="families.mimblewimble_coin.noPaymentProof" />
+        </WarnBox>
+      ) : null}
+      <Info mt={(senderPaymentProofAddress === null) ? 6 : 0}>
+        <Trans i18nKey="TransactionConfirm.title" />
+      </Info>
+      <Box style={{ width: "100%" }} px={30} mb={20}>
+        <TransactionConfirmField label={"Amount"}>
+          <FormattedVal
+            color={"palette.text.shade80"}
+            unit={unit}
+            val={amount}
+            fontSize={3}
+            inline
+            showCode
+            alwaysShowValue
+            disableRounding
+          />
+        </TransactionConfirmField>
+        <TransactionConfirmField label={"Fee"}>
+          <FormattedVal
+            color={"palette.text.shade80"}
+            unit={unit}
+            val={fee}
+            fontSize={3}
+            inline
+            showCode
+            alwaysShowValue
+            disableRounding
+          />
+        </TransactionConfirmField>
+        <TransactionConfirmField label={"Kernel Features"}>
+          <FieldText>{"Plain"}</FieldText>
+        </TransactionConfirmField>
+        <TransactionConfirmField label={"Sender Payment Proof Address"}>
+          <FieldText>{(senderPaymentProofAddress !== null) ? senderPaymentProofAddress.trim() : "N/A"}</FieldText>
+        </TransactionConfirmField>
+      </Box>
+      {renderVerifyUnwrapped({ modelId: device.modelId, type })}
+    </Container>
+  );
+};
+
 type State = {
   modalVisible: boolean,
   transactionData: string,
@@ -145,6 +238,10 @@ type State = {
   useTransactionResponseQrCode: boolean
   operationId: string | null;
   operationAmount: string | null;
+  operationFee: string | null;
+  operationSenderPaymentProofAddress: string | null;
+  signatureRequested: boolean;
+  signatureReceived: boolean;
 };
 
 type Props = {
@@ -178,7 +275,11 @@ class StepReceiveFunds extends PureComponent<Props, State> {
       disableContinue: true,
       useTransactionResponseQrCode: true,
       operationId: null,
-      operationAmount: null
+      operationAmount: null,
+      operationFee: null,
+      operationSenderPaymentProofAddress: null,
+      signatureRequested: false,
+      signatureReceived: false
     };
     this.processTransactionSubscription = null;
   }
@@ -224,38 +325,58 @@ class StepReceiveFunds extends PureComponent<Props, State> {
       }).subscribe({
         next: (
           {
+            type,
             transactionResponse,
             freshAddress,
             nextIdentifier,
             operation
           }: {
-            transactionResponse: string;
-            freshAddress: Address;
-            nextIdentifier: string;
-            operation: OperationRaw;
+            type: string;
+            transactionResponse?: string;
+            freshAddress?: Address;
+            nextIdentifier?: string;
+            operation?: OperationRaw;
           }
         ) => {
-          qrcode.toString(transactionResponse, {
-            errorCorrectionLevel: "Q"
-          }, (
-            error: Error | null
-          ) => {
-            if(this.processTransactionSubscription) {
+          switch(type) {
+            case "device-signature-requested":
               this.updateState({
-                transactionResponse,
-                useTransactionResponseQrCode: !error,
-                currentDevice: null,
-                operationId: operation.id,
-                operationAmount: operation.value
+                signatureRequested: true,
+                operationAmount: operation.value,
+                operationFee: operation.fee,
+                operationSenderPaymentProofAddress: operation.senders.length ? operation.senders[0] : null
               });
-              onChangeOnBack(undefined);
-              updateAccountWithUpdater(mainAccount.id, (
-                account: Account
+              break;
+            case "device-signature-granted":
+              this.updateState({
+                signatureReceived: true
+              });
+              break;
+            case "signed":
+              console.log("signed");
+              qrcode.toString(transactionResponse, {
+                errorCorrectionLevel: "Q"
+              }, (
+                error: Error | null
               ) => {
-                return addReceivedTransactionToAccount(account, freshAddress, nextIdentifier, operation);
+                if(this.processTransactionSubscription) {
+                  this.updateState({
+                    transactionResponse,
+                    useTransactionResponseQrCode: !error,
+                    currentDevice: null,
+                    operationId: operation.id,
+                    operationAmount: operation.value
+                  });
+                  onChangeOnBack(undefined);
+                  updateAccountWithUpdater(mainAccount.id, (
+                    account: Account
+                  ) => {
+                    return addReceivedTransactionToAccount(account, freshAddress, nextIdentifier, operation);
+                  });
+                }
               });
-            }
-          });
+              break;
+          }
         },
         error: (
           error: Error
@@ -448,7 +569,9 @@ class StepReceiveFunds extends PureComponent<Props, State> {
     }
     this.updateState({
       processingTransactionError: null,
-      currentDevice: null
+      currentDevice: null,
+      signatureRequested: false,
+      signatureReceived: false
     });
     onChangeAddressVerified(true, null);
   };
@@ -475,7 +598,11 @@ class StepReceiveFunds extends PureComponent<Props, State> {
       processingTransactionError,
       transactionResponse,
       useTransactionResponseQrCode,
-      operationAmount
+      operationAmount,
+      operationFee,
+      operationSenderPaymentProofAddress,
+      signatureRequested,
+      signatureReceived
     } = this.state;
 
     const mainAccount = account ? getMainAccount(account, parentAccount) : null;
@@ -533,6 +660,16 @@ class StepReceiveFunds extends PureComponent<Props, State> {
               withExportLogs={["DisconnectedDevice", "DisconnectedDeviceDuringOperation"].indexOf(processingTransactionError.name) === -1}
               onRetry={this.onRetry}
             />
+          ) : signatureReceived ? (
+            <StepProgress modelId={device.modelId} />
+          ) : signatureRequested ? (
+            <ApproveReceivingTransaction
+              account={mainAccount}
+              device={device}
+              amount={operationAmount}
+              fee={operationFee}
+              senderPaymentProofAddress={operationSenderPaymentProofAddress}
+            />
           ) : connectingToDevice ? (
             <DeviceAction
               action={action}
@@ -547,9 +684,7 @@ class StepReceiveFunds extends PureComponent<Props, State> {
                 }
               ) => {
                 return (
-                  <StepProgress modelId={device.modelId}>
-                    <Trans i18nKey="families.mimblewimble_coin.processingTransaction" />
-                  </StepProgress>
+                  <StepProgress modelId={device.modelId} />
                 );
               }}
               onResult={this.onDeviceConnected}

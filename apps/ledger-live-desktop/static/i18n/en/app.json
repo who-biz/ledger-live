@@ -4002,7 +4002,6 @@
       "recipientPaymentProofSignature": "Recipient Payment Proof Signature",
       "transactionToReceive": "Enter a transaction to receive",
       "openTransactionFile": "Open a transaction file",
-      "processingTransaction": "Processing transaction...",
       "fundsReceived": "Funds received",
       "receivedAmount": "You received <0>{{amount}}</0>",
       "transactionResponse": "Please give this response to the transaction's sender for them to finalize the transaction",
@@ -4011,7 +4010,6 @@
       "saveTransactionFile": "Save transaction to a file",
       "transactionSaved": "Transaction saved",
       "sendAsFile": "Send as file",
-      "preparingTransaction": "Preparing transaction...",
       "transactionRequest": "Please give this transaction to the recipient for them to receive the funds",
       "transactionResponseReceived": "Enter the recipient's response",
       "maturityStatus": "Maturity",
@@ -4740,6 +4738,10 @@
     },
     "MimbleWimbleCoinTorRequired": {
       "title": "Tor must be installed to send to this recipient",
+      "description": ""
+    },
+    "MimbleWimbleCoinCanOnlySendAsFile": {
+      "title": "A transaction can only be sent to this recipient as a file",
       "description": ""
     },
     "MimbleWimbleCoinMaxFeeExceeded": {

@@ -490,9 +490,7 @@ class StepConnectDevice extends PureComponent<Props, State> {
                 }
               ) => {
                 return (
-                  <StepProgress modelId={device.modelId}>
-                    <Trans i18nKey="families.mimblewimble_coin.preparingTransaction" />
-                  </StepProgress>
+                  <StepProgress modelId={device.modelId} />
                 );
               }}
               onResult={this.onDeviceConnected}

@@ -64,6 +64,10 @@ export const MimbleWimbleCoinTorRequired = createCustomErrorClass(
   "MimbleWimbleCoinTorRequired"
 );
 
+export const MimbleWimbleCoinCanOnlySendAsFile = createCustomErrorClass(
+  "MimbleWimbleCoinCanOnlySendAsFile"
+);
+
 export const MimbleWimbleCoinMaxFeeExceeded = createCustomErrorClass(
   "MimbleWimbleCoinMaxFeeExceeded"
 );

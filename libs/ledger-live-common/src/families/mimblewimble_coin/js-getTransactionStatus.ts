@@ -4,9 +4,10 @@ import { AmountRequired, NotEnoughBalance, RecipientRequired, InvalidAddress } f
 import Slate from "./api/slate";
 import Consensus from "./api/consensus";
 import BigNumber from "bignumber.js";
-import { MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient, MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress, MimbleWimbleCoinTorRequired, MimbleWimbleCoinMaxFeeExceeded, MimbleWimbleCoinInvalidBaseFee } from "./errors";
+import { MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient, MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress, MimbleWimbleCoinTorRequired, MimbleWimbleCoinCanOnlySendAsFile, MimbleWimbleCoinMaxFeeExceeded, MimbleWimbleCoinInvalidBaseFee } from "./errors";
 import Tor from "./api/tor";
 import Slatepack from "./api/slatepack";
+import Common from "./api/common";
 
 export default async (
   account: Account,
@@ -42,7 +43,12 @@ export default async (
           try {
             Tor.torAddressToPublicKey(recipient);
             if(!transaction.sendAsFile) {
-              warnings.recipient = new MimbleWimbleCoinTorRequired();
+              if(Common.isReactNative()) {
+                errors.recipient = new MimbleWimbleCoinCanOnlySendAsFile();
+              }
+              else {
+                warnings.recipient = new MimbleWimbleCoinTorRequired();
+              }
             }
           }
           catch(
@@ -56,7 +62,12 @@ export default async (
           try {
             Slatepack.slatepackAddressToPublicKey(recipient, account.currency);
             if(!transaction.sendAsFile) {
-              warnings.recipient = new MimbleWimbleCoinTorRequired();
+              if(Common.isReactNative()) {
+                errors.recipient = new MimbleWimbleCoinCanOnlySendAsFile();
+              }
+              else {
+                warnings.recipient = new MimbleWimbleCoinTorRequired();
+              }
             }
           }
           catch(
