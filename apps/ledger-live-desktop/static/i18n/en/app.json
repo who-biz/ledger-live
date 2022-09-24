@@ -4737,7 +4737,7 @@
       "description": ""
     },
     "MimbleWimbleCoinTorRequired": {
-      "title": "Tor must be installed to send to this recipient",
+      "title": "Tor must be installed to send a transaction to this recipient",
       "description": ""
     },
     "MimbleWimbleCoinCanOnlySendAsFile": {
