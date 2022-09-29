@@ -597,7 +597,7 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - secp256k1-zkp-react (0.0.10):
+  - secp256k1-zkp-react (0.0.11):
     - React-Core
   - Sentry (7.20.0):
     - Sentry/Core (= 7.20.0)
@@ -724,7 +724,7 @@ DEPENDENCIES:
   - "RNShare (from `../../../node_modules/.pnpm/react-native-share@6.5.0/node_modules/react-native-share`)"
   - "RNSVG (from `../../../node_modules/.pnpm/react-native-svg@12.3.0_zqxy7fpkavjkgz5xll7ed4r6rq/node_modules/react-native-svg`)"
   - "RNVectorIcons (from `../../../node_modules/.pnpm/react-native-vector-icons@8.1.0/node_modules/react-native-vector-icons`)"
-  - "secp256k1-zkp-react (from `../../../node_modules/.pnpm/@nicolasflamel+secp256k1-zkp-react@0.0.10_zqxy7fpkavjkgz5xll7ed4r6rq/node_modules/@nicolasflamel/secp256k1-zkp-react`)"
+  - "secp256k1-zkp-react (from `../../../node_modules/.pnpm/@nicolasflamel+secp256k1-zkp-react@0.0.11_zqxy7fpkavjkgz5xll7ed4r6rq/node_modules/@nicolasflamel/secp256k1-zkp-react`)"
   - "smaz-react (from `../../../node_modules/.pnpm/@nicolasflamel+smaz-react@0.0.11_zqxy7fpkavjkgz5xll7ed4r6rq/node_modules/@nicolasflamel/smaz-react`)"
   - "storyly-react-native (from `../../../node_modules/.pnpm/storyly-react-native@1.24.1_zqxy7fpkavjkgz5xll7ed4r6rq/node_modules/storyly-react-native`)"
   - "TcpSockets (from `../../../node_modules/.pnpm/react-native-tcp@4.0.0_react-native@0.68.2/node_modules/react-native-tcp`)"
@@ -923,7 +923,7 @@ EXTERNAL SOURCES:
   RNVectorIcons:
     :path: "../../../node_modules/.pnpm/react-native-vector-icons@8.1.0/node_modules/react-native-vector-icons"
   secp256k1-zkp-react:
-    :path: "../../../node_modules/.pnpm/@nicolasflamel+secp256k1-zkp-react@0.0.10_zqxy7fpkavjkgz5xll7ed4r6rq/node_modules/@nicolasflamel/secp256k1-zkp-react"
+    :path: "../../../node_modules/.pnpm/@nicolasflamel+secp256k1-zkp-react@0.0.11_zqxy7fpkavjkgz5xll7ed4r6rq/node_modules/@nicolasflamel/secp256k1-zkp-react"
   smaz-react:
     :path: "../../../node_modules/.pnpm/@nicolasflamel+smaz-react@0.0.11_zqxy7fpkavjkgz5xll7ed4r6rq/node_modules/@nicolasflamel/smaz-react"
   storyly-react-native:
@@ -1043,7 +1043,7 @@ SPEC CHECKSUMS:
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
-  secp256k1-zkp-react: 782d43987d5db7ee74f20dfc667a2660dfb9d942
+  secp256k1-zkp-react: 1d73431579650732f3c67f6e9cbb2b5503d507c1
   Sentry: 9e8ec837fa37e7b397f19f75542800461b138d0e
   smaz-react: df74c2ac9efe44662bf5c0b39acf1c466719e542
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
