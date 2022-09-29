@@ -549,7 +549,7 @@ importers:
       '@ledgerhq/types-cryptoassets': workspace:^
       '@ledgerhq/types-live': workspace:^
       '@nicolasflamel/ed25519-react': ^0.0.9
-      '@nicolasflamel/secp256k1-zkp-react': ^0.0.10
+      '@nicolasflamel/secp256k1-zkp-react': ^0.0.11
       '@nicolasflamel/smaz-react': ^0.0.11
       '@nicolasflamel/x25519-react': ^0.0.8
       '@polkadot/reactnative-identicon': 2.2.1
@@ -728,7 +728,7 @@ importers:
       '@ledgerhq/types-cryptoassets': link:../../libs/ledgerjs/packages/types-cryptoassets
       '@ledgerhq/types-live': link:../../libs/ledgerjs/packages/types-live
       '@nicolasflamel/ed25519-react': 0.0.9_zqxy7fpkavjkgz5xll7ed4r6rq
-      '@nicolasflamel/secp256k1-zkp-react': 0.0.10_zqxy7fpkavjkgz5xll7ed4r6rq
+      '@nicolasflamel/secp256k1-zkp-react': 0.0.11_zqxy7fpkavjkgz5xll7ed4r6rq
       '@nicolasflamel/smaz-react': 0.0.11_zqxy7fpkavjkgz5xll7ed4r6rq
       '@nicolasflamel/x25519-react': 0.0.8_zqxy7fpkavjkgz5xll7ed4r6rq
       '@polkadot/reactnative-identicon': 2.2.1_zqxy7fpkavjkgz5xll7ed4r6rq
@@ -936,7 +936,7 @@ importers:
       '@ledgerhq/types-devices': workspace:^
       '@ledgerhq/types-live': workspace:^
       '@nicolasflamel/ed25519': ^0.0.4
-      '@nicolasflamel/secp256k1-zkp': ^0.0.9
+      '@nicolasflamel/secp256k1-zkp': ^0.0.10
       '@nicolasflamel/smaz': ^0.0.4
       '@nicolasflamel/x25519': ^0.0.2
       '@polkadot/types': 8.12.2
@@ -1115,7 +1115,7 @@ importers:
       '@ledgerhq/live-app-sdk': 0.7.0
       '@ledgerhq/logs': link:../ledgerjs/packages/logs
       '@nicolasflamel/ed25519': 0.0.4_fvyp5h33mdlmlhalc4xfh32q7e
-      '@nicolasflamel/secp256k1-zkp': 0.0.9_fvyp5h33mdlmlhalc4xfh32q7e
+      '@nicolasflamel/secp256k1-zkp': 0.0.10_fvyp5h33mdlmlhalc4xfh32q7e
       '@nicolasflamel/smaz': 0.0.4_fvyp5h33mdlmlhalc4xfh32q7e
       '@nicolasflamel/x25519': 0.0.2_fvyp5h33mdlmlhalc4xfh32q7e
       '@polkadot/types': 8.12.2
@@ -12028,8 +12028,8 @@ packages:
     dev: false
     optional: true
 
-  /@nicolasflamel/secp256k1-zkp-react/0.0.10_fvyp5h33mdlmlhalc4xfh32q7e:
-    resolution: {integrity: sha512-+ycuwmYGcKWsvpRb2WTNaFmMxLsdGbT1ozJDXHW7F1ZrcEeSJReSVaMs/FWbMnj2kTaZ2TZFuHHUwxJ/eWUEFA==}
+  /@nicolasflamel/secp256k1-zkp-react/0.0.11_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-MuF7Bj6/qFDXywH3g5sfxX5hxe0JPo6XL5hZnSykp9khcibkN48OfR9JzyIeb5M88LmrLw4Ke21tSNXd1Bo2VA==}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -12039,8 +12039,8 @@ packages:
     dev: false
     optional: true
 
-  /@nicolasflamel/secp256k1-zkp-react/0.0.10_zqxy7fpkavjkgz5xll7ed4r6rq:
-    resolution: {integrity: sha512-+ycuwmYGcKWsvpRb2WTNaFmMxLsdGbT1ozJDXHW7F1ZrcEeSJReSVaMs/FWbMnj2kTaZ2TZFuHHUwxJ/eWUEFA==}
+  /@nicolasflamel/secp256k1-zkp-react/0.0.11_zqxy7fpkavjkgz5xll7ed4r6rq:
+    resolution: {integrity: sha512-MuF7Bj6/qFDXywH3g5sfxX5hxe0JPo6XL5hZnSykp9khcibkN48OfR9JzyIeb5M88LmrLw4Ke21tSNXd1Bo2VA==}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -12053,13 +12053,13 @@ packages:
     resolution: {integrity: sha512-fjd8vd341/gxBEBIPw/FpUKJqIAhBc2rSpQIZyekX1z82w49/r3OBYMJaKflZ0cT65T9QXQZzz0U8NiOIRKhIg==}
     dev: false
 
-  /@nicolasflamel/secp256k1-zkp/0.0.9_fvyp5h33mdlmlhalc4xfh32q7e:
-    resolution: {integrity: sha512-UTVK/1cb8V+b4alB+jt7wSlv2eSVCJg2UsdxctL+ji3HfuYHRUVl6kOl2P35TOYKpzn+Bq7sSOMHVK257jfkQw==}
+  /@nicolasflamel/secp256k1-zkp/0.0.10_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-SVZCPjStxQeFz53f7JagkKy8LWMQJ7CuqO5BP10TWZxJZF8qOsh83u+t0dRVjyQuxHLjmbrG1+M5TgsroYgJtA==}
     dependencies:
       '@nicolasflamel/secp256k1-zkp-wasm': 0.0.25
     optionalDependencies:
       '@nicolasflamel/secp256k1-zkp-native': 0.0.22
-      '@nicolasflamel/secp256k1-zkp-react': 0.0.10_fvyp5h33mdlmlhalc4xfh32q7e
+      '@nicolasflamel/secp256k1-zkp-react': 0.0.11_fvyp5h33mdlmlhalc4xfh32q7e
     transitivePeerDependencies:
       - react
       - react-native

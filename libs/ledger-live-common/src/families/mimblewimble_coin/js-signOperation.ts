@@ -156,6 +156,9 @@ export default (
         if(fee.isZero() || fee.isGreaterThan(Consensus.getMaximumFee(account.currency))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid fee");
         }
+        if(transaction.baseFee.isZero()) {
+          throw new MimbleWimbleCoinInvalidParameters("Invalid base fee");
+        }
         const transactionAlreadyPrepared = transaction.transactionResponse !== undefined;
         const recipient = transaction.recipient.trim();
         let usePaymentProof: boolean;
