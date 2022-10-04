@@ -33,8 +33,7 @@ const OperationDetailsExtra = (
           </OpDetailsTitle>
           <OpDetailsData color={isMature ? "positiveGreen" : "alertRed"} horizontal flow={1}>
             <Box>
-              <Trans i18nKey={isMature ? "families.mimblewimble_coin.matureStatus" : "families.mimblewimble_coin.immatureStatus"} />
-              {isMature ? "" : ` (${confirmationsString ? confirmationsString : "0"} / ${getRequiredCoinbaseRewardMaturityConfirmations(account).toFixed()})`}
+              <Trans i18nKey={isMature ? "families.mimblewimble_coin.matureStatus" : "families.mimblewimble_coin.immatureStatus"} values={{ numberOfConfirmations: confirmationsString ? confirmationsString : "0", requiredNumberOfConfirmations: getRequiredCoinbaseRewardMaturityConfirmations(account).toFixed() }} />
             </Box>
           </OpDetailsData>
         </OpDetailsSection>

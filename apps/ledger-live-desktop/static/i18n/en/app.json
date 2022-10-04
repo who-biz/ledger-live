@@ -4014,7 +4014,7 @@
       "transactionResponseReceived": "Enter the recipient's response",
       "maturityStatus": "Maturity",
       "matureStatus": "Mature",
-      "immatureStatus": "Immature",
+      "immatureStatus": "Immature ({{numberOfConfirmations}} / {{requiredNumberOfConfirmations}})",
       "verifyRecipientPaymentProofAddress": "Verify that the recipient payment proof address displayed on your device exactly matches the address given by the recipient",
       "noPaymentProof": "This transaction doesn't have a payment proof",
       "baseFee": "Base fee"

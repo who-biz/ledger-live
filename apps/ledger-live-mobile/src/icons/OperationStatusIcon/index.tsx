@@ -38,6 +38,7 @@ const iconsComponent = {
   SET_CONTROLLER: Icons.ArrowFromBottomMedium,
   NFT_IN: Icons.ArrowBottomMedium,
   NFT_OUT: Icons.ArrowTopMedium,
+  COINBASE_REWARD: Icons.StarMedium,
 };
 
 const OperationStatusIcon = ({
