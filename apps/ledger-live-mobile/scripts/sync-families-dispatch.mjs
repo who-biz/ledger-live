@@ -34,6 +34,7 @@ const targets = [
   "Confirmation",
   "ConnectDevice",
   "NoAssociatedAccounts",
+  "AddAccountsAccounts",
 ];
 
 async function genTarget(target) {

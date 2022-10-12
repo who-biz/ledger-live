@@ -19,7 +19,7 @@ import {
 import type { AddAccountSupportLink } from "@ledgerhq/live-common/account/addAccounts";
 import { createStructuredSelector } from "reselect";
 import uniq from "lodash/uniq";
-import { Trans } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import type { Account } from "@ledgerhq/types-live";
 import type {
   CryptoCurrency,
@@ -55,7 +55,50 @@ import { blacklistedTokenIdsSelector } from "../../reducers/settings";
 import BottomModal from "../../components/BottomModal";
 import { urls } from "../../config/urls";
 import noAssociatedAccountsByFamily from "../../generated/NoAssociatedAccounts";
-import addAccountsAccountsByFamily from "../../generated/AddAccountsAccounts";
+import getDeviceAnimation from "../components/DeviceAction/getDeviceAnimation";
+import { Flex, Log } from "@ledgerhq/native-ui";
+import Animation from "../components/Animation";
+import styled from "styled-components/native";
+
+const DeviceActionContainer = styled(Flex).attrs({
+  flexDirection: "row",
+})``;
+
+const Wrapper = styled(Flex).attrs({
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  minHeight: "160px",
+})``;
+
+const AnimationContainer = styled(Flex).attrs(p => ({
+  alignSelf: "stretch",
+  alignItems: "center",
+  justifyContent: "center",
+  height: p.withConnectDeviceHeight
+    ? "100px"
+    : p.withVerifyAddressHeight
+    ? "72px"
+    : undefined,
+}))``;
+
+const TitleContainer = styled(Flex).attrs({
+  py: 8,
+})``;
+
+const TitleText = ({
+  children,
+  disableUppercase,
+}: {
+  children: React.ReactNode;
+  disableUppercase?: boolean;
+}) => (
+  <TitleContainer>
+    <Log extraTextProps={disableUppercase ? { textTransform: "none" } : undefined}>
+      {children}
+    </Log>
+  </TitleContainer>
+);
 
 const SectionAccounts = ({ defaultSelected, ...rest }: any) => {
   useEffect(() => {
@@ -64,6 +107,31 @@ const SectionAccounts = ({ defaultSelected, ...rest }: any) => {
     } // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return <SelectableAccountsList useFullBalance {...rest} />;
+};
+
+const ApproveExportRootPublicKeyOnDevice = (
+  {
+    device,
+    accountIndex
+  }: {
+    device: Device;
+    accountIndex: number;
+  }
+) => {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+  return (
+    <Flex>
+      <DeviceActionContainer>
+        <Wrapper>
+          <AnimationContainer marginTop="16px" withVerifyAddressHeight={device.modelId !== "blue"}>
+            <Animation source={getDeviceAnimation({ device, key: "validate", theme })} />
+          </AnimationContainer>
+          <TitleText>{t("mimblewimble_coin.approveExportingRootPublicKey", { accountIndex: accountIndex.toFixed() })}</TitleText>
+        </Wrapper>
+      </DeviceActionContainer>
+    </Flex>
+  );
 };
 
 type RouteParams = {
@@ -107,18 +175,6 @@ function AddAccountsAccounts(
     existingAccounts,
     blacklistedTokenIds,
   } = props;
-  const {
-    currency,
-    device: { deviceId },
-    inline,
-    returnToSwap,
-  } = route.params || {};
-
-  // custom family UI for AddAccountsAccounts
-  const CustomAddAccountsAccounts = addAccountsAccountsByFamily[currency.family];
-  if (CustomAddAccountsAccounts)
-    return <CustomAddAccountsAccounts {...props} />;
-
   const { colors } = useTheme();
   const [scanning, setScanning] = useState(true);
   const [error, setError] = useState(null);
@@ -128,8 +184,17 @@ function AddAccountsAccounts(
   const [showAllCreatedAccounts, setShowAllCreatedAccounts] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
   const [cancelled, setCancelled] = useState(false);
+  const [rootPublicKeyRequested, setRootPublicKeyRequested] = useState(false);
+  const [accountIndex, setAccountIndex] = useState(0);
   const scanSubscription = useRef();
   const scrollView = useRef();
+  const {
+    currency,
+    device,
+    inline,
+    returnToSwap,
+  } = route.params || {};
+  const initialDevice = useRef(device);
   // Find accounts that are (scanned && !existing && !used)
   const newAccountSchemes = scannedAccounts
     .filter(
@@ -199,28 +264,55 @@ function AddAccountsAccounts(
       from(prepareCurrency(cryptoCurrency)).pipe(ignoreElements()),
       bridge.scanAccounts({
         currency: cryptoCurrency,
-        deviceId,
+        deviceId: device.deviceId,
         syncConfig,
       }),
     ).subscribe({
-      next: ({ account }) => {
-        setLatestScannedAccount(account);
+      next: ({ type, account, index }) => {
+        switch(type) {
+          case "discovered":
+            setLatestScannedAccount(account);
+            break;
+          case "device-root-public-key-requested":
+            setAccountIndex(index);
+            setRootPublicKeyRequested(true);
+            break;
+          case "device-root-public-key-granted":
+            setRootPublicKeyRequested(false);
+            break;
+        }
       },
-      complete: () => setScanning(false),
+      complete: () => {
+        setRootPublicKeyRequested(false);
+        setScanning(false);
+      },
       error: error => {
-        logger.critical(error);
-        setError(error);
+        setRootPublicKeyRequested(false);
+        setTimeout(() => {
+          logger.critical(error);
+          setError(error);
+        }, 0);
       },
     });
-  }, [blacklistedTokenIds, currency, deviceId]);
+  }, [blacklistedTokenIds, currency, device.deviceId]);
   const restartSubscription = useCallback(() => {
     setScanning(true);
     setScannedAccounts([]);
     setSelectedIds([]);
     setError(null);
     setCancelled(false);
-    startSubscription();
-  }, []);
+    if(device !== initialDevice.current) {
+      setTimeout(function() {
+        navigation.navigate(ScreenName.AddAccountsSelectDevice, {
+          ...(route?.params ?? {}),
+          currency,
+        });
+      }, 0);
+    }
+    else {
+      startSubscription();
+    }
+  }, [device, navigation]);
   const stopSubscription = useCallback((syncUI = true) => {
     if (scanSubscription.current) {
       scanSubscription.current.unsubscribe();
@@ -469,6 +561,9 @@ function AddAccountsAccounts(
           </>
         }
       />
+      <BottomModal isOpened={rootPublicKeyRequested} noCloseButton={true}>
+        <ApproveExportRootPublicKeyOnDevice device={device} accountIndex={accountIndex} />
+      </BottomModal>
     </SafeAreaView>
   );
 }
