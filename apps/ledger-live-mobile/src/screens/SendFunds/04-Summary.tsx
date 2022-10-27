@@ -45,7 +45,7 @@ type Props = {
   };
 };
 const WARN_FROM_UTXO_COUNT = 50;
-export type RouteParams = {
+type RouteParams = {
   accountId: string;
   transaction: Transaction;
   currentNavigation?: string;
@@ -164,7 +164,7 @@ function SendSummary({ navigation, route: initialRoute }: Props) {
       },
     });
   }, [navigation, account?.id, currency?.id]);
-  if (!account || !transaction || !transaction.recipient) return null; // FIXME why is recipient sometimes empty?
+  if (!account || !transaction) return null;
 
   return (
     <SafeAreaView
@@ -195,15 +195,19 @@ function SendSummary({ navigation, route: initialRoute }: Props) {
           </View>
         ) : null}
         <SummaryFromSection account={account} parentAccount={parentAccount} />
-        <VerticalConnector
-          style={[
-            styles.verticalConnector,
-            {
-              borderColor: colors.lightFog,
-            },
-          ]}
-        />
-        <SummaryToSection recipient={transaction.recipient} />
+        {transaction.recipient ? (
+          <>
+            <VerticalConnector
+              style={[
+                styles.verticalConnector,
+                {
+                  borderColor: colors.lightFog,
+                },
+              ]}
+            />
+            <SummaryToSection recipient={transaction.recipient} />
+          </>
+        ) : null}
         {status.warnings.recipient ? (
           <LText style={styles.warning} color="orange">
             <TranslatedError error={status.warnings.recipient} />

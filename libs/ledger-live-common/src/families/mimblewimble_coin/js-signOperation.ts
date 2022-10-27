@@ -1,4 +1,4 @@
-import { Account, DeviceId, Operation, SignOperationEvent } from "@ledgerhq/types-live";
+import { Account, Address, DeviceId, Operation, SignOperationEvent } from "@ledgerhq/types-live";
 import { Observable, Subscriber } from "rxjs";
 import { MimbleWimbleCoinAccount, Transaction } from "./types";
 import { encodeOperationId } from "../../operation";
@@ -20,13 +20,15 @@ import SlateInput from "./api/slateInput";
 import SlateOutput from "./api/slateOutput";
 import SlateKernel from "./api/slateKernel";
 import SlateParticipant from "./api/slateParticipant";
-import { MimbleWimbleCoinInvalidParameters, MimbleWimbleCoinUnsupportedResponseFromNode, MimbleWimbleCoinUnsupportedResponseFromRecipient, MimbleWimbleCoinCreatingSlateFailed, MimbleWimbleCoinFinalizingSlateFailed } from "./errors";
+import { MimbleWimbleCoinInvalidParameters, MimbleWimbleCoinUnsupportedResponseFromNode, MimbleWimbleCoinUnsupportedResponseFromRecipient, MimbleWimbleCoinCreatingSlateFailed, MimbleWimbleCoinFinalizingSlateFailed, MimbleWimbleCoinSerializedError } from "./errors";
 import Tor from "./api/tor";
 import Slatepack from "./api/slatepack";
 import Common from "./api/common";
+import { serializeError } from "@ledgerhq/errors";
 
 const buildOptimisticOperation = async (
   account: Account,
+  currentAddress: Address,
   transaction: Transaction,
   slate: Slate,
   timestamp: Date
@@ -46,7 +48,7 @@ const buildOptimisticOperation = async (
     type: "OUT",
     value: slate.amount,
     fee: slate.fee,
-    senders: [account.freshAddresses[0].address],
+    senders: [currentAddress.address],
     recipients: [transaction.recipient.trim()],
     blockHash: null,
     blockHeight: null,
@@ -129,6 +131,8 @@ export default (
     subscriber: Subscriber<SignOperationEvent>
   ) => {
     (async () => {
+      let freshAddress: Address| undefined;
+      let identifier: string | undefined;
       try {
         const inputs: Operation[] = [];
         let inputAmount: BigNumber = new BigNumber(0);
@@ -204,7 +208,8 @@ export default (
         else {
           supportedSlateVersions = await WalletApi.getSupportedSlateVersions(recipientAddress);
         }
-        const slate = new Slate(account.currency, transaction.amount, fee, transactionAlreadyPrepared ? transaction.height! : tipHeight.plus(1), new BigNumber(0), null, usePaymentProof ? account.freshAddresses[0].address : null, usePaymentProof ? recipient : null, supportedSlateVersions);
+        const currentAddress = transactionAlreadyPrepared ? transaction.address! : account.freshAddresses[0];
+        const slate = new Slate(account.currency, transaction.amount, fee, transactionAlreadyPrepared ? transaction.height! : tipHeight.plus(1), new BigNumber(0), null, usePaymentProof ? currentAddress.address : null, usePaymentProof ? recipient : null, supportedSlateVersions);
         if(transactionAlreadyPrepared) {
           slate.id = transaction.id!;
         }
@@ -244,28 +249,30 @@ export default (
         }
         let commitment: Buffer | undefined;
         const mimbleWimbleCoin = new MimbleWimbleCoin(transport, account.currency);
-        let currentIdentifier: Identifier = (account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextIdentifier;
+        let currentIdentifier: Identifier = transactionAlreadyPrepared ? transaction.identifier! : (account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextIdentifier;
         if(!change.isZero()) {
-          commitment = await mimbleWimbleCoin.getCommitment(account.freshAddresses[0].derivationPath, currentIdentifier.withHeight(account.currency, slate.height!), change, Crypto.SwitchType.REGULAR);
-          for(let uniqueCommitment: boolean = false; !uniqueCommitment;) {
-            uniqueCommitment = true;
-            for(const pendingOperation of account.pendingOperations) {
-              if(pendingOperation.type !== "OUT" && pendingOperation.extra.outputCommitment.equals(commitment)) {
-                uniqueCommitment = false;
-                currentIdentifier = currentIdentifier.getNext();
-                commitment = await mimbleWimbleCoin.getCommitment(account.freshAddresses[0].derivationPath, currentIdentifier.withHeight(account.currency, slate.height!), change, Crypto.SwitchType.REGULAR);
-                break;
+          commitment = await mimbleWimbleCoin.getCommitment(currentAddress.derivationPath, currentIdentifier.withHeight(account.currency, slate.height!), change, Crypto.SwitchType.REGULAR);
+          if(!transactionAlreadyPrepared) {
+            for(let uniqueCommitment: boolean = false; !uniqueCommitment;) {
+              uniqueCommitment = true;
+              for(const pendingOperation of account.pendingOperations) {
+                if(pendingOperation.type !== "OUT" && pendingOperation.extra.outputCommitment.equals(commitment)) {
+                  uniqueCommitment = false;
+                  currentIdentifier = currentIdentifier.getNext();
+                  commitment = await mimbleWimbleCoin.getCommitment(currentAddress.derivationPath, currentIdentifier.withHeight(account.currency, slate.height!), change, Crypto.SwitchType.REGULAR);
+                  break;
+                }
               }
-            }
-            if(!uniqueCommitment) {
-              continue;
-            }
-            for(const operation of account.operations) {
-              if(operation.type !== "OUT" && operation.extra.outputCommitment.equals(commitment)) {
-                uniqueCommitment = false;
-                currentIdentifier = currentIdentifier.getNext();
-                commitment = await mimbleWimbleCoin.getCommitment(account.freshAddresses[0].derivationPath, currentIdentifier.withHeight(account.currency, slate.height!), change, Crypto.SwitchType.REGULAR);
-                break;
+              if(!uniqueCommitment) {
+                continue;
+              }
+              for(const operation of account.operations) {
+                if(operation.type !== "OUT" && operation.extra.outputCommitment.equals(commitment)) {
+                  uniqueCommitment = false;
+                  currentIdentifier = currentIdentifier.getNext();
+                  commitment = await mimbleWimbleCoin.getCommitment(currentAddress.derivationPath, currentIdentifier.withHeight(account.currency, slate.height!), change, Crypto.SwitchType.REGULAR);
+                  break;
+                }
               }
             }
           }
@@ -274,7 +281,7 @@ export default (
             proof = transaction.proof!;
           }
           else {
-            proof = await mimbleWimbleCoin.getProof((account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.rootPublicKey, account.freshAddresses[0].derivationPath, currentIdentifier.withHeight(account.currency, slate.height!), change, Crypto.SwitchType.REGULAR, MimbleWimbleCoin.MessageType.SENDING_TRANSACTION);
+            proof = await mimbleWimbleCoin.getProof((account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.rootPublicKey, currentAddress.derivationPath, currentIdentifier.withHeight(account.currency, slate.height!), change, Crypto.SwitchType.REGULAR, MimbleWimbleCoin.MessageType.SENDING_TRANSACTION);
           }
           if(!slate.addOutputs([new SlateOutput(SlateOutput.Features.PLAIN, commitment, proof)])) {
             throw new MimbleWimbleCoinCreatingSlateFailed("Failed adding output to slate");
@@ -315,7 +322,16 @@ export default (
             }
           }
         }
-        await mimbleWimbleCoin.startTransaction(account.freshAddresses[0].derivationPath, change, inputAmount.minus(fee), fee, slate.recipientPaymentProofAddress);
+        identifier = currentIdentifier.serialize().toString("hex");
+        const bipPath = BIPPath.fromString(currentAddress.derivationPath).toPathArray();
+        ++bipPath[Crypto.BIP44_PATH_INDEX_INDEX];
+        const newDerivationPath = BIPPath.fromPathArray(bipPath).toString(true);
+        const newAddress = await mimbleWimbleCoin.getAddress(newDerivationPath);
+        freshAddress = {
+          address: newAddress,
+          derivationPath: newDerivationPath
+        };
+        await mimbleWimbleCoin.startTransaction(currentAddress.derivationPath, change, inputAmount.minus(fee), fee, slate.recipientPaymentProofAddress);
         if(!change.isZero()) {
           await mimbleWimbleCoin.includeOutputInTransaction(change, currentIdentifier.withHeight(account.currency, slate.height!), Crypto.SwitchType.REGULAR);
         }
@@ -397,7 +413,7 @@ export default (
             serializedSlateResponse = await WalletApi.getSerializedSlateResponse(recipientAddress, serializedSlate) as {[key: string]: any};
           }
         }
-        await mimbleWimbleCoin.startTransaction(account.freshAddresses[0].derivationPath, change, inputAmount.minus(fee), fee, slate.recipientPaymentProofAddress);
+        await mimbleWimbleCoin.startTransaction(currentAddress.derivationPath, change, inputAmount.minus(fee), fee, slate.recipientPaymentProofAddress);
         if(!change.isZero()) {
           await mimbleWimbleCoin.includeOutputInTransaction(change, currentIdentifier.withHeight(account.currency, slate.height!), Crypto.SwitchType.REGULAR);
         }
@@ -492,12 +508,8 @@ export default (
           throw new MimbleWimbleCoinFinalizingSlateFailed("Failed setting slate response's final signature");
         }
         const timestamp = new Date();
-        const operation = await buildOptimisticOperation(account, transaction, slateResponse, timestamp);
+        const operation = await buildOptimisticOperation(account, currentAddress, transaction, slateResponse, timestamp);
         const changeOperation = await buildChangeOperation(account, slateResponse, change, commitment, currentIdentifier.withHeight(account.currency, slateResponse.height!), Crypto.SwitchType.REGULAR, timestamp);
-        const bipPath = BIPPath.fromString(account.freshAddresses[0].derivationPath).toPathArray();
-        ++bipPath[Crypto.BIP44_PATH_INDEX_INDEX];
-        const newDerivationPath = BIPPath.fromPathArray(bipPath).toString(true);
-        const newAddress = await mimbleWimbleCoin.getAddress(newDerivationPath);
         subscriber.next({
           type: "signed",
           signedOperation: {
@@ -509,10 +521,7 @@ export default (
               ): string => {
                 return operation.id;
               }),
-              freshAddress: {
-                address: newAddress,
-                derivationPath: newDerivationPath
-              },
+              freshAddress,
               nextIdentifier: currentIdentifier.getNext().serialize().toString("hex"),
               broadcastData: JSONBigNumber.stringify(slateResponse.getTransaction())
             }),
@@ -524,7 +533,11 @@ export default (
       catch(
         error: any
       ) {
-        subscriber.error(error);
+        subscriber.error(new MimbleWimbleCoinSerializedError(JSON.stringify({
+          error: serializeError(error),
+          freshAddress,
+          identifier
+        })));
       }
     })();
   });

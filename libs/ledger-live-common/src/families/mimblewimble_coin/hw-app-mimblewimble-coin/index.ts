@@ -55,7 +55,8 @@ export default class MimbleWimbleCoin {
     INVALID_PARAMETERS: 0xD100,
     INVALID_STATE: 0xD101,
     DEVICE_LOCKED: 0xD102,
-    SUCCESS: 0x9000
+    SUCCESS: 0x9000,
+    OPERATING_SYSTEM_LOCKED: 0x5515
   };
   private static readonly NO_PARAMETER = 0;
   private static readonly STATUS_LENGTH = 2;
@@ -72,6 +73,7 @@ export default class MimbleWimbleCoin {
   private static readonly MAXIMUM_ENCRYPT_AND_DECRYPT_CHUNK_LENGTH = 64;
   private static readonly SLATE_DECRYPTED_CHUNK_DECRYPTION_ALGORITHM = "AES-256-CBC";
   private static readonly SLATE_DECRYPTED_CHUNK_DECRYPTION_INITIALIZATION_VECTOR = Buffer.alloc(16);
+  private static readonly RESEND_ON_LOCK_DELAY_MILLISECONDS = 300;
 
   public constructor(
     transport: Transport,
@@ -91,10 +93,14 @@ export default class MimbleWimbleCoin {
     }
     const buffer = Buffer.alloc(Uint32Array.BYTES_PER_ELEMENT);
     buffer.writeUInt32LE(bipPath[Crypto.BIP44_PATH_ACCOUNT_INDEX] & ~Crypto.HARDENED_PATH_MASK, 0);
-    const getRootPublicKeyResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.GET_ROOT_PUBLIC_KEY, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.USER_REJECTED, MimbleWimbleCoin.Status.SUCCESS]);
+    const getRootPublicKeyResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.GET_ROOT_PUBLIC_KEY, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.USER_REJECTED, MimbleWimbleCoin.Status.DEVICE_LOCKED, MimbleWimbleCoin.Status.SUCCESS, MimbleWimbleCoin.Status.OPERATING_SYSTEM_LOCKED]);
     const status = getRootPublicKeyResponse.readUInt16BE(getRootPublicKeyResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     if(status === MimbleWimbleCoin.Status.USER_REJECTED) {
       throw new UserRefusedOnDevice();
+    }
+    else if(status === MimbleWimbleCoin.Status.DEVICE_LOCKED || status === MimbleWimbleCoin.Status.OPERATING_SYSTEM_LOCKED) {
+      await new Promise(resolve => setTimeout(resolve, MimbleWimbleCoin.RESEND_ON_LOCK_DELAY_MILLISECONDS));
+      return await this.getRootPublicKey(path);
     }
     const rootPublicKey = Common.subarray(getRootPublicKeyResponse, 0, getRootPublicKeyResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     return rootPublicKey;
@@ -127,10 +133,14 @@ export default class MimbleWimbleCoin {
     const getAddressResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.GET_ADDRESS, addressType, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.SUCCESS]);
     const address = Common.subarray(getAddressResponse, 0, getAddressResponse.length - MimbleWimbleCoin.STATUS_LENGTH).toString();
     if(verify) {
-      const verifyAddressResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.VERIFY_ADDRESS, addressType, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.USER_REJECTED, MimbleWimbleCoin.Status.SUCCESS]);
+      const verifyAddressResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.VERIFY_ADDRESS, addressType, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.USER_REJECTED, MimbleWimbleCoin.Status.DEVICE_LOCKED, MimbleWimbleCoin.Status.SUCCESS, MimbleWimbleCoin.Status.OPERATING_SYSTEM_LOCKED]);
       const status = verifyAddressResponse.readUInt16BE(verifyAddressResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
       if(status === MimbleWimbleCoin.Status.USER_REJECTED) {
         throw new UserRefusedAddress();
+      }
+      else if(status === MimbleWimbleCoin.Status.DEVICE_LOCKED || status === MimbleWimbleCoin.Status.OPERATING_SYSTEM_LOCKED) {
+        await new Promise(resolve => setTimeout(resolve, MimbleWimbleCoin.RESEND_ON_LOCK_DELAY_MILLISECONDS));
+        return await this.getAddress(path, verify);
       }
     }
     return address;
@@ -386,10 +396,14 @@ export default class MimbleWimbleCoin {
     if(recipientPaymentProofSignature) {
       recipientPaymentProofSignature.copy(buffer, Crypto.SECP256K1_PUBLIC_KEY_LENGTH + Crypto.SECP256K1_PUBLIC_KEY_LENGTH + kernelInformation.length + (excess ? Crypto.COMMITMENT_LENGTH : 0));
     }
-    const finishTransactionResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.FINISH_TRANSACTION, addressType, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.USER_REJECTED, MimbleWimbleCoin.Status.SUCCESS]);
+    const finishTransactionResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.FINISH_TRANSACTION, addressType, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.USER_REJECTED, MimbleWimbleCoin.Status.DEVICE_LOCKED, MimbleWimbleCoin.Status.SUCCESS, MimbleWimbleCoin.Status.OPERATING_SYSTEM_LOCKED]);
     const status = finishTransactionResponse.readUInt16BE(finishTransactionResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     if(status === MimbleWimbleCoin.Status.USER_REJECTED) {
       throw new UserRefusedOnDevice();
+    }
+    else if(status === MimbleWimbleCoin.Status.DEVICE_LOCKED || status === MimbleWimbleCoin.Status.OPERATING_SYSTEM_LOCKED) {
+      await new Promise(resolve => setTimeout(resolve, MimbleWimbleCoin.RESEND_ON_LOCK_DELAY_MILLISECONDS));
+      return await this.getTransactionSignature(publicNonceSum, publicBlindExcessSum, kernelFeatures, lockHeight, relativeHeight, excess, recipientPaymentProofSignature);
     }
     const partialSignature = Common.subarray(finishTransactionResponse, 0, Crypto.SINGLE_SIGNER_SIGNATURE_LENGTH);
     let paymentProofSignature: Buffer | null;

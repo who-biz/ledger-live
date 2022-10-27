@@ -14,6 +14,6 @@ export default async (
   const {
     broadcastData
   } = JSON.parse(signedOperation.signature);
-  //await Node.broadcastTransaction(account.currency, JSONBigNumber.parse(broadcastData));
+  await Node.broadcastTransaction(account.currency, JSONBigNumber.parse(broadcastData));
   return signedOperation.operation;
 }

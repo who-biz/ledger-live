@@ -40,22 +40,13 @@ const OperationDetailsExtra = (
         </View>
       ) : null}
       {extra.outputCommitment ? (
-        <Section
-          title={t("mimblewimble_coin.outputCommitment")}
-          value={extra.outputCommitment.toString("hex")}
-        />
+        <Section title={t("mimblewimble_coin.outputCommitment")} value={extra.outputCommitment.toString("hex")} />
       ) : null}
       {extra.kernelExcess ? (
-        <Section
-          title={t("mimblewimble_coin.kernelExcess")}
-          value={extra.kernelExcess.toString("hex")}
-        />
+        <Section title={t("mimblewimble_coin.kernelExcess")} value={extra.kernelExcess.toString("hex")} />
       ) : null}
       {extra.recipientPaymentProofSignature ? (
-        <Section
-          title={t("mimblewimble_coin.recipientPaymentProofSignature")}
-          value={extra.recipientPaymentProofSignature.toString("hex")}
-        />
+        <Section title={t("mimblewimble_coin.recipientPaymentProofSignature")} value={extra.recipientPaymentProofSignature.toString("hex")} />
       ) : null}
     </>
   );

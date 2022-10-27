@@ -345,6 +345,8 @@ export const ScreenName = {
   CardanoEditMemo: "CardanoEditMemo",
   // hedera
   HederaEditMemo: "HederaEditMemo",
+  // mimblewimble_coin
+  MimbleWimbleCoinEditBaseFee: "MimbleWimbleCoinEditBaseFee",
 };
 export const NavigatorName = {
   // Stack

@@ -11,6 +11,7 @@ export default ({
   navigation,
   route,
   setTransaction,
+  status,
   ...props
 }: {
   transaction: any;
@@ -21,6 +22,7 @@ export default ({
     params: RouteParams;
   };
   setTransaction: (..._: Array<any>) => any;
+  status: any;
 }) => {
   const mainAccount = getMainAccount(account, parentAccount);
   const C = perFamily[mainAccount.currency.family];
@@ -34,6 +36,7 @@ export default ({
       parentAccount={parentAccount}
       navigation={navigation}
       route={route}
+      status={status}
     />
   ) : null;
 };

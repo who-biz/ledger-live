@@ -35,6 +35,7 @@ const targets = [
   "ConnectDevice",
   "NoAssociatedAccounts",
   "AddAccountsAccounts",
+  "SendRecipientFields",
 ];
 
 async function genTarget(target) {

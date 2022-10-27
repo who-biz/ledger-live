@@ -29,9 +29,13 @@ const inferTransactions = (
       offset: undefined,
       proof: undefined,
       encryptedSecretNonce: undefined,
+      address: undefined,
+      identifier: undefined,
+      freshAddress: undefined,
       transactionResponse: undefined,
       useDefaultBaseFee: true,
-      baseFee: Consensus.getDefaultBaseFee(mainAccount.currency)
+      baseFee: Consensus.getDefaultBaseFee(mainAccount.currency),
+      networkInfo: {}
     };
   });
 };

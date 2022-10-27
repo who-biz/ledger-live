@@ -30,6 +30,7 @@ import CancelButton from "../../components/CancelButton";
 import GenericErrorBottomModal from "../../components/GenericErrorBottomModal";
 import NavigationScrollView from "../../components/NavigationScrollView";
 import RecipientInput from "../../components/RecipientInput";
+import sendRecipientFieldsByFamily from "../generated/SendRecipientFields";
 
 const withoutHiddenError = error =>
   error instanceof RecipientRequired ? null : error;
@@ -43,13 +44,14 @@ type Props = {
     params: RouteParams;
   };
 };
-type RouteParams = {
+export type RouteParams = {
   accountId: string;
   parentId: string;
   transaction: Transaction;
   justScanned?: boolean;
 };
-export default function SendSelectRecipient({ navigation, route }: Props) {
+export default function SendSelectRecipient(props: Props) {
+  const { navigation, route } = props;
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { account, parentAccount } = useSelector(accountScreenSelector(route));
@@ -145,6 +147,7 @@ export default function SendSelectRecipient({ navigation, route }: Props) {
   if (!account || !transaction) return null;
   const error = withoutHiddenError(status.errors.recipient);
   const warning = status.warnings.recipient;
+  const CustomSendRecipientFields = sendRecipientFieldsByFamily[currency.family];
   return (
     <>
       <SafeAreaView
@@ -228,9 +231,19 @@ export default function SendSelectRecipient({ navigation, route }: Props) {
                 <TranslatedError error={error || warning} />
               </LText>
             )}
+            {CustomSendRecipientFields ? (
+              <CustomSendRecipientFields
+                setTransaction={setTransaction}
+                account={account}
+                parentAccount={parentAccount}
+                transaction={transaction}
+                navigation={navigation}
+                route={route}
+              />
+            ) : null}
           </NavigationScrollView>
           <View style={styles.container}>
-            {transaction.recipient && !(error || warning) ? (
+            {transaction.recipient && !error ? (
               <View style={styles.infoBox}>
                 <Alert type="primary">
                   {t("send.recipient.verifyAddress")}

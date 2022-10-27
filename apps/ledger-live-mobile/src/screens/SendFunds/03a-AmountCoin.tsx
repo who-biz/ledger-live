@@ -36,6 +36,7 @@ import InfoModal from "../../modals/Info";
 import type { ModalInfo } from "../../modals/Info";
 import InfoIcon from "../../icons/Info";
 import AmountInput from "./AmountInput";
+import sendAmountFieldsByFamily from "../generated/SendAmountFields";
 
 const forceInset = {
   bottom: "always",
@@ -134,6 +135,7 @@ export default function SendAmountCoin({ navigation, route }: Props) {
   const { amount } = status;
   const unit = getAccountUnit(account);
   const currency = getAccountCurrency(account);
+  const CustomSendAmountFields = sendAmountFieldsByFamily[currency.family];
   return (
     <>
       <TrackScreen
@@ -165,7 +167,17 @@ export default function SendAmountCoin({ navigation, route }: Props) {
                 }
                 warning={status.warnings.amount}
               />
-
+              {CustomSendAmountFields ? (
+                <CustomSendAmountFields
+                  setTransaction={setTransaction}
+                  status={status}
+                  account={account}
+                  parentAccount={parentAccount}
+                  transaction={transaction}
+                  navigation={navigation}
+                  route={route}
+                />
+              ) : null}
               <View style={styles.bottomWrapper}>
                 <View style={[styles.available]}>
                   <Touchable

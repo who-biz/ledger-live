@@ -49,9 +49,13 @@ export default {
         offset: undefined,
         proof: undefined,
         encryptedSecretNonce: undefined,
+        address: undefined,
+        identifier: undefined,
+        freshAddress: undefined,
         transactionResponse: undefined,
         useDefaultBaseFee: true,
-        baseFee: "500000"
+        baseFee: "500000",
+        networkInfo: {}
       }),
       expectedStatus: {
         errors: {
@@ -73,9 +77,13 @@ export default {
         offset: undefined,
         proof: undefined,
         encryptedSecretNonce: undefined,
+        address: undefined,
+        identifier: undefined,
+        freshAddress: undefined,
         transactionResponse: undefined,
         useDefaultBaseFee: true,
-        baseFee: "500000"
+        baseFee: "500000",
+        networkInfo: {}
       }),
       expectedStatus: {
         errors: {
@@ -97,9 +105,13 @@ export default {
         offset: undefined,
         proof: undefined,
         encryptedSecretNonce: undefined,
+        address: undefined,
+        identifier: undefined,
+        freshAddress: undefined,
         transactionResponse: undefined,
         useDefaultBaseFee: true,
-        baseFee: "500000"
+        baseFee: "500000",
+        networkInfo: {}
       }),
       expectedStatus: {
         errors: {
@@ -121,9 +133,13 @@ export default {
         offset: undefined,
         proof: undefined,
         encryptedSecretNonce: undefined,
+        address: undefined,
+        identifier: undefined,
+        freshAddress: undefined,
         transactionResponse: undefined,
         useDefaultBaseFee: true,
-        baseFee: "500000"
+        baseFee: "500000",
+        networkInfo: {}
       }),
       expectedStatus: {
         errors: {

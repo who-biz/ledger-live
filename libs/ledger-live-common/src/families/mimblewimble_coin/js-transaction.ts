@@ -18,9 +18,13 @@ export const createTransaction = (
     offset: undefined,
     proof: undefined,
     encryptedSecretNonce: undefined,
+    address: undefined,
+    identifier: undefined,
+    freshAddress: undefined,
     transactionResponse: undefined,
     useDefaultBaseFee: true,
-    baseFee: Consensus.getDefaultBaseFee(account.currency)
+    baseFee: Consensus.getDefaultBaseFee(account.currency),
+    networkInfo: {}
   };
 };
 
