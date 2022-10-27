@@ -4,7 +4,6 @@ import type { Account } from "@ledgerhq/types-live";
 import { getAccountUnit } from "../../account";
 import { formatCurrencyUnit } from "../../currencies";
 import BigNumber from "bignumber.js";
-import Identifier from "./api/identifier";
 
 const formatTransactionStatus = formatTransactionStatusCommon;
 
@@ -35,9 +34,6 @@ export const fromTransactionRaw = (
     offset: (transaction.offset !== undefined) ? Buffer.from(transaction.offset, "hex") : undefined,
     proof: (transaction.proof !== undefined) ? Buffer.from(transaction.proof, "hex") : undefined,
     encryptedSecretNonce: (transaction.encryptedSecretNonce !== undefined) ? Buffer.from(transaction.encryptedSecretNonce, "hex") : undefined,
-    address: transaction.address,
-    identifier: (transaction.identifier !== undefined) ? new Identifier(Buffer.from(transaction.identifier, "hex")) : undefined,
-    freshAddress: transaction.freshAddress,
     transactionResponse: transaction.transactionResponse,
     useDefaultBaseFee: transaction.useDefaultBaseFee,
     baseFee: new BigNumber(transaction.baseFee),
@@ -58,9 +54,6 @@ export const toTransactionRaw = (
     offset: (transaction.offset !== undefined) ? transaction.offset.toString("hex") : undefined,
     proof: (transaction.proof !== undefined) ? transaction.proof.toString("hex") : undefined,
     encryptedSecretNonce: (transaction.encryptedSecretNonce !== undefined) ? transaction.encryptedSecretNonce.toString("hex") : undefined,
-    address: transaction.address,
-    identifier: (transaction.identifier !== undefined) ? transaction.identifier.serialize().toString("hex") : undefined,
-    freshAddress: transaction.freshAddress,
     transactionResponse: transaction.transactionResponse,
     useDefaultBaseFee: transaction.useDefaultBaseFee,
     baseFee: transaction.baseFee.toFixed(),

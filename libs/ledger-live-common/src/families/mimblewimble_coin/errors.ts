@@ -75,7 +75,3 @@ export const MimbleWimbleCoinMaxFeeExceeded = createCustomErrorClass(
 export const MimbleWimbleCoinInvalidBaseFee = createCustomErrorClass(
   "MimbleWimbleCoinInvalidBaseFee"
 );
-
-export const MimbleWimbleCoinSerializedError = createCustomErrorClass(
-  "MimbleWimbleCoinSerializedError"
-);

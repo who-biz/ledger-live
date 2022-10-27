@@ -1,5 +1,4 @@
 import Transport from "@ledgerhq/hw-transport";
-import BIPPath from "bip32-path";
 import type { AccountRaw, Address, Operation } from "@ledgerhq/types-live";
 import { fromAccountRaw } from "../../account/serialization";
 import type { MimbleWimbleCoinAccount, TransactionRaw } from "./types";
@@ -30,10 +29,7 @@ export default async (
   id: string,
   offset: string,
   proof: string | undefined,
-  encryptedSecretNonce: string,
-  address: Address,
-  identifier: string,
-  freshAddress: Address
+  encryptedSecretNonce: string
 }> => {
   const account = fromAccountRaw(accountRaw);
   const transaction = fromTransactionRaw(transactionRaw);
@@ -202,22 +198,12 @@ export default async (
   slate.addParticipant(new SlateParticipant(SlateParticipant.SENDER_ID, publicBlindExcess, publicNonce));
   const encryptedSecretNonce = await mimbleWimbleCoin.getTransactionEncryptedSecretNonce();
   const serializedSlate = await slate.serialize(Slate.Purpose.SEND_INITIAL, true);
-  const bipPath = BIPPath.fromString(account.freshAddresses[0].derivationPath).toPathArray();
-  ++bipPath[Crypto.BIP44_PATH_INDEX_INDEX];
-  const newDerivationPath = BIPPath.fromPathArray(bipPath).toString(true);
-  const newAddress = await mimbleWimbleCoin.getAddress(newDerivationPath);
   return {
     transactionData: (serializedSlate instanceof Buffer) ? await Slatepack.encode(account, serializedSlate, mimbleWimbleCoin, slate.recipientPaymentProofAddress) : JSONBigNumber.stringify(serializedSlate),
     height: slate.height!.toFixed(),
     id: slate.id,
     offset: slate.offset.toString("hex"),
     proof: slate.outputs.length ? slate.outputs[0].proof.toString("hex") : undefined,
-    encryptedSecretNonce: encryptedSecretNonce.toString("hex"),
-    address: account.freshAddresses[0],
-    identifier: currentIdentifier.serialize().toString("hex"),
-    freshAddress: {
-      address: newAddress,
-      derivationPath: newDerivationPath
-    }
+    encryptedSecretNonce: encryptedSecretNonce.toString("hex")
   };
 }

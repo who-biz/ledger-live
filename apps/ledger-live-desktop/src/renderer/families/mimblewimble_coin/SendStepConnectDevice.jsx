@@ -32,10 +32,8 @@ import ModalBody from "~/renderer/components/Modal/ModalBody";
 import QRCode from "~/renderer/components/QRCode";
 import styled from "styled-components";
 import Button from "~/renderer/components/Button";
-import { validateTransactionResponse, addSentTransactionToAccount, identifierFromString, addPreparedTransactionToAccount, addUnbroadcastTransactionToAccount } from "@ledgerhq/live-common/families/mimblewimble_coin/react";
+import { validateTransactionResponse, addSentTransactionToAccount } from "@ledgerhq/live-common/families/mimblewimble_coin/react";
 import BigNumber from "bignumber.js";
-import { deserializeError } from "@ledgerhq/errors";
-import { MimbleWimbleCoinSerializedError } from "@ledgerhq/live-common/families/mimblewimble_coin/errors";
 
 const connectAppExec = command("connectApp");
 
@@ -111,9 +109,6 @@ class StepConnectDevice extends PureComponent<Props, State> {
       offset: undefined,
       proof: undefined,
       encryptedSecretNonce: undefined,
-      address: undefined,
-      identifier: undefined,
-      freshAddress: undefined,
       transactionResponse: undefined
     }));
   }
@@ -130,8 +125,7 @@ class StepConnectDevice extends PureComponent<Props, State> {
       onTransactionError,
       transitionTo,
       closeModal,
-      onChangeTransaction,
-      updateAccountWithUpdater
+      onChangeTransaction
     } = this.props;
     const {
       currentDevice
@@ -151,10 +145,7 @@ class StepConnectDevice extends PureComponent<Props, State> {
             id,
             offset,
             proof,
-            encryptedSecretNonce,
-            address,
-            identifier,
-            freshAddress
+            encryptedSecretNonce
           }: {
             transactionData: string;
             height: string;
@@ -162,9 +153,6 @@ class StepConnectDevice extends PureComponent<Props, State> {
             offset: string;
             proof: string | undefined;
             encryptedSecretNonce: string;
-            address: Address;
-            identifier: string;
-            freshAddress: Address;
           }
         ) => {
           qrcode.toString(transactionData, {
@@ -184,16 +172,8 @@ class StepConnectDevice extends PureComponent<Props, State> {
                 id,
                 offset: Buffer.from(offset, "hex"),
                 proof: (proof !== undefined) ? Buffer.from(proof, "hex") : undefined,
-                encryptedSecretNonce: Buffer.from(encryptedSecretNonce, "hex"),
-                address,
-                identifier: identifierFromString(identifier),
-                freshAddress
+                encryptedSecretNonce: Buffer.from(encryptedSecretNonce, "hex")
               }));
-              updateAccountWithUpdater(mainAccount.id, (
-                account: Account
-              ) => {
-                return addPreparedTransactionToAccount(account, freshAddress, identifier);
-              });
             }
           });
         },
@@ -353,10 +333,8 @@ class StepConnectDevice extends PureComponent<Props, State> {
       closeModal,
       onFailHandler,
       onTransactionError,
-      updateAccountWithUpdater,
-      transaction
+      updateAccountWithUpdater
     } = this.props;
-    const mainAccount = getMainAccount(account, parentAccount);
     if(signedOperation) {
       setSigned(true);
       this.broadcast(signedOperation).then((
@@ -370,6 +348,7 @@ class StepConnectDevice extends PureComponent<Props, State> {
           closeModal();
           onConfirmationHandler(operation);
         }
+        const mainAccount = getMainAccount(account, parentAccount);
         updateAccountWithUpdater(mainAccount.id, (
           account: Account
         ) => {
@@ -387,45 +366,16 @@ class StepConnectDevice extends PureComponent<Props, State> {
           closeModal();
           onFailHandler(error);
         }
-        updateAccountWithUpdater(mainAccount.id, (
-          account: Account
-        ) => {
-          return addUnbroadcastTransactionToAccount(account, signedOperation);
-        });
       });
     }
     else if(transactionSignError) {
-      if(transactionSignError instanceof MimbleWimbleCoinSerializedError) {
-        const {
-          error,
-          freshAddress,
-          identifier
-        } = JSON.parse(transactionSignError.message);
-        if(!onFailHandler) {
-          onTransactionError(deserializeError(error));
-          transitionTo("confirmation");
-        }
-        else {
-          closeModal();
-          onFailHandler(deserializeError(error));
-        }
-        if(transaction.transactionResponse === undefined && freshAddress) {
-          updateAccountWithUpdater(mainAccount.id, (
-            account: Account
-          ) => {
-            return addPreparedTransactionToAccount(account, freshAddress, identifier);
-          });
-        }
+      if(!onFailHandler) {
+        onTransactionError(transactionSignError);
+        transitionTo("confirmation");
       }
       else {
-        if(!onFailHandler) {
-          onTransactionError(transactionSignError);
-          transitionTo("confirmation");
-        }
-        else {
-          closeModal();
-          onFailHandler(transactionSignError);
-        }
+        closeModal();
+        onFailHandler(transactionSignError);
       }
     }
   };

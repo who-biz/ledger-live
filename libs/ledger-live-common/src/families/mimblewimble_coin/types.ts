@@ -1,4 +1,4 @@
-import { Account, AccountRaw, Address, TransactionCommon, TransactionCommonRaw, TransactionStatusCommon, TransactionStatusCommonRaw } from "@ledgerhq/types-live";
+import { Account, AccountRaw, TransactionCommon, TransactionCommonRaw, TransactionStatusCommon, TransactionStatusCommonRaw } from "@ledgerhq/types-live";
 import RecentHeight from "./api/recentHeight";
 import Identifier from "./api/identifier";
 import BigNumber from "bignumber.js";
@@ -28,9 +28,6 @@ export type Transaction = TransactionCommon & {
   offset: Buffer | undefined;
   proof: Buffer | undefined;
   encryptedSecretNonce: Buffer | undefined;
-  address: Address | undefined;
-  identifier: Identifier | undefined;
-  freshAddress: Address | undefined;
   transactionResponse: string | undefined;
   useDefaultBaseFee: boolean;
   baseFee: BigNumber;
@@ -45,9 +42,6 @@ export type TransactionRaw = TransactionCommonRaw & {
   offset: string | undefined;
   proof: string | undefined;
   encryptedSecretNonce: string | undefined;
-  address: Address | undefined;
-  identifier: string | undefined;
-  freshAddress: Address | undefined;
   transactionResponse: string | undefined;
   useDefaultBaseFee: boolean;
   baseFee: string;

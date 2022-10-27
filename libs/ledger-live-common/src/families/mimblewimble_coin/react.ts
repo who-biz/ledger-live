@@ -88,43 +88,6 @@ export const addReceivedTransactionToAccount = (
   } as Account, fromOperationRaw(operation, account.id));
 };
 
-export const addPreparedTransactionToAccount = (
-  account: Account,
-  freshAddress: Address,
-  identifier: string
-): Account => {
-  return {
-    ...account,
-    freshAddresses: [freshAddress],
-    freshAddress: freshAddress.address,
-    freshAddressPath: freshAddress.derivationPath,
-    mimbleWimbleCoinResources: {
-      ...(account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources,
-      nextIdentifier: new Identifier(Buffer.from(identifier, "hex")).getNext()
-    }
-  } as Account;
-}
-
-export const addUnbroadcastTransactionToAccount = (
-  account: Account,
-  signedOperation: SignedOperation
-): Account => {
-  const {
-    freshAddress,
-    nextIdentifier
-  } = JSON.parse(signedOperation.signature);
-  return {
-    ...account,
-    freshAddresses: [freshAddress],
-    freshAddress: freshAddress.address,
-    freshAddressPath: freshAddress.derivationPath,
-    mimbleWimbleCoinResources: {
-      ...(account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources,
-      nextIdentifier: new Identifier(Buffer.from(nextIdentifier, "hex"))
-    }
-  } as Account;
-}
-
 export const addSentTransactionToAccount = (
   account: Account,
   signedOperation: SignedOperation
@@ -183,10 +146,4 @@ export const getRequiredCoinbaseRewardMaturityConfirmations = (
   account: Account
 ): number => {
   return Consensus.getCoinbaseMaturity(account.currency);
-};
-
-export const identifierFromString = (
-  identifier: string
-): Identifier => {
-  return new Identifier(Buffer.from(identifier, "hex"));
 };
