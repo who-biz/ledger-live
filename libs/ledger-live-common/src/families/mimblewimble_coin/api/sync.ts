@@ -1,4 +1,4 @@
-import type { Operation } from "@ledgerhq/types-live";
+import type { Operation, ScanAccountEvent } from "@ledgerhq/types-live";
 import { encodeOperationId } from "../../../operation";
 import type { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import BigNumber from "bignumber.js";
@@ -9,6 +9,7 @@ import Node from "./node";
 import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp";
 import ProofBuilder from "./proofBuilder";
 import Common from "./common";
+import { Subscriber } from "rxjs";
 
 export default class Sync {
 
@@ -25,7 +26,8 @@ export default class Sync {
     recentHeights: RecentHeight[],
     accountHeight: BigNumber,
     nextIdentifier: Identifier,
-    accountId: string
+    accountId: string,
+    o?: Subscriber<ScanAccountEvent>
   ): Promise<{
     newOperations: Operation[],
     newRecentHeights: RecentHeight[],
@@ -62,6 +64,7 @@ export default class Sync {
           endIndex
         } = await Node.getPmmrIndices(cryptocurrency, startHeight, tipHeight);
         if(startIndex.isLessThanOrEqualTo(endIndex)) {
+          let lastSyncedPercent: number = 0;
           for(let currentIndex: BigNumber = startIndex;;) {
             const {
               highestIndex,
@@ -69,6 +72,16 @@ export default class Sync {
               outputs
             } = await Node.getOutputs(cryptocurrency, currentIndex, endIndex, Sync.getOutputsGroupSize());
             for(const output of outputs) {
+              if(o) {
+                const syncedPercent = Math.min(Math.floor(new BigNumber(output.height).dividedBy(tipHeight).multipliedBy(100).toNumber()), 100);
+                if(syncedPercent !== lastSyncedPercent) {
+                  o.next({
+                    type: "synced-percent",
+                    percent: syncedPercent
+                  });
+                  lastSyncedPercent = lastSyncedPercent;
+                }
+              }
               let rewindNonce: Buffer;
               const outputCommitment = Buffer.from(output.commitment, "hex");
               try {
@@ -423,6 +436,12 @@ export default class Sync {
             break;
           }
         }
+        if(o) {
+          o.next({
+            type: "synced-percent",
+            percent: 100
+          });
+        }
         return {
           newOperations,
           newRecentHeights,
@@ -432,6 +451,12 @@ export default class Sync {
           spendableBalanceChange
         };
       }
+    }
+    if(o) {
+      o.next({
+        type: "synced-percent",
+        percent: 100
+      });
     }
     return {
       newOperations: operations,

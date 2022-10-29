@@ -51,6 +51,12 @@ export function fromScanAccountEventRaw(
         type: raw.type,
       };
 
+    case "synced-percent":
+      return {
+        type: raw.type,
+        percent: raw.percent
+      };
+
     default:
       throw new Error("unsupported ScanAccountEvent " + (raw as ScanAccountEventRaw).type);
   }
@@ -74,6 +80,12 @@ export function toScanAccountEventRaw(
     case "device-root-public-key-granted":
       return {
         type: e.type,
+      };
+
+    case "synced-percent":
+      return {
+        type: e.type,
+        percent: e.percent
       };
 
     default:

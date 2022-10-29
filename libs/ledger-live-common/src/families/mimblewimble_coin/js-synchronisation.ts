@@ -70,7 +70,7 @@ const getAccountShape: GetAccountShape = async (
     newNextIdentifier,
     balanceChange,
     spendableBalanceChange
-  } = await Sync.sync(currency, rootPublicKey, initialAccount?.operations || [], initialAccount?.pendingOperations || [], recentHeights, new BigNumber(initialAccount?.blockHeight || 0), nextIdentifier, accountId);
+  } = await Sync.sync(currency, rootPublicKey, initialAccount?.operations || [], initialAccount?.pendingOperations || [], recentHeights, new BigNumber(initialAccount?.blockHeight || 0), nextIdentifier, accountId, o);
   const freshAddresses: Address[] = [{
     address: initialAccount?.freshAddresses[0].address || address,
     derivationPath: initialAccount?.freshAddresses[0].derivationPath || derivationPath

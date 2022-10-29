@@ -104,7 +104,8 @@ const ApproveExportRootPublicKeyOnDevice = (
 
 type State = {
   modelId: string | undefined,
-  accountIndex: number | undefined
+  accountIndex: number | undefined,
+  percentComplete: number
 };
 
 class StepImport extends PureComponent<StepProps, State> {
@@ -113,7 +114,9 @@ class StepImport extends PureComponent<StepProps, State> {
     props: StepProps
   ) {
     super(props);
-    this.state = {};
+    this.state = {
+      percentComplete: 0
+    };
   }
 
   componentDidMount() {
@@ -155,7 +158,10 @@ class StepImport extends PureComponent<StepProps, State> {
       setScannedAccounts,
       blacklistedTokenIds
     } = this.props;
-
+    
+    this.setState({
+      percentComplete: 0
+    });
     if(!currency || !device) {
       return;
     }
@@ -179,7 +185,7 @@ class StepImport extends PureComponent<StepProps, State> {
           syncConfig
         })
       ).pipe(
-        filter(e => e.type === "discovered" || e.type === "device-root-public-key-requested" || e.type === "device-root-public-key-granted")
+        filter(e => e.type === "discovered" || e.type === "device-root-public-key-requested" || e.type === "device-root-public-key-granted" || e.type === "synced-percent")
       ).subscribe({
         next: (
          event
@@ -205,6 +211,9 @@ class StepImport extends PureComponent<StepProps, State> {
                   checkedAccountsIds: onlyNewAccounts ? ((hasAlreadyBeenImported || checkedAccountsIds.length > 0) ? checkedAccountsIds : [account.id]) : ((!hasAlreadyBeenImported && !isNewAccount) ? uniq([...checkedAccountsIds, account.id]) : checkedAccountsIds)
                 });
               }
+              this.setState({
+                percentComplete: 0
+              });
               break;
             case "device-root-public-key-requested":
               this.setState({
@@ -216,6 +225,11 @@ class StepImport extends PureComponent<StepProps, State> {
               this.setState({
                 modelId: undefined,
                 accountIndex: undefined
+              });
+              break;
+            case "synced-percent":
+              this.setState({
+                percentComplete: event.percent
               });
               break;
           }
@@ -310,7 +324,8 @@ class StepImport extends PureComponent<StepProps, State> {
     } = this.props;
     const {
       modelId,
-      accountIndex
+      accountIndex,
+      percentComplete
     } = this.state;
 
     if(!currency) {
@@ -400,12 +415,14 @@ class StepImport extends PureComponent<StepProps, State> {
             );
           })}
           {scanStatus === "scanning" ? (
-            <LoadingRow>
-              <Spinner color="palette.text.shade60" size={16} />
-              <Box ml={2} ff="Inter|Regular" color="palette.text.shade60" fontSize={4}>
-                {t("common.sync.syncing")}
-              </Box>
-            </LoadingRow>
+            <>
+              <LoadingRow>
+                <Spinner color="palette.text.shade60" size={16} />
+                <Box ml={2} ff="Inter|Regular" color="palette.text.shade60" fontSize={4}>
+                  {t("families.mimblewimble_coin.syncing", { percentComplete: percentComplete.toFixed() })}
+                </Box>
+              </LoadingRow>
+            </>
           ) : null}
         </Box>
         {(modelId !== undefined) ? (

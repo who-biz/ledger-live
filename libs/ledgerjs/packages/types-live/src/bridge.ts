@@ -35,6 +35,10 @@ export type ScanAccountEvent =
     } // optional For mimblewimble_coin family
   | {
       type: "device-root-public-key-granted";
+    } // optional For mimblewimble_coin family
+  | {
+      type: "synced-percent";
+      percent: number;
     }; // optional For mimblewimble_coin family
 
 export type ScanAccountEventRaw =
@@ -48,6 +52,10 @@ export type ScanAccountEventRaw =
     }
   | {
       type: "device-root-public-key-granted";
+    }
+  | {
+      type: "synced-percent";
+      percent: number;
     };
 
 /**
