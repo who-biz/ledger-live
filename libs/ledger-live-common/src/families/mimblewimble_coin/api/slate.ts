@@ -1514,7 +1514,7 @@ export default class Slate {
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate amount");
             }
             slate.amount = ("amt" in serializedSlate) ? new BigNumber(serializedSlate.amt) : initialSendSlate!.amount;
-            if("fee" in serializedSlate && (!Common.isNumberString(serializedSlate.fee) || !new BigNumber(serializedSlate.fee).isInteger() || new BigNumber(serializedSlate.fee).isLessThan(1))) {
+            if("fee" in serializedSlate && ((!Common.isNumberString(serializedSlate.fee) && !(serializedSlate.fee instanceof BigNumber)) || !new BigNumber(serializedSlate.fee).isInteger() || new BigNumber(serializedSlate.fee).isLessThan(1))) {
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate fee");
             }
             slate.fee = ("fee" in serializedSlate) ? new BigNumber(serializedSlate.fee) : initialSendSlate!.fee;
