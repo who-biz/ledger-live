@@ -1208,10 +1208,10 @@ export default class Slate {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate purpose");
           }
           const offset = SlateUtils.uncompressOffset(bitReader);
-          if((purpose === Slate.Purpose.SEND_INITIAL && !offset.equals(Buffer.alloc(Crypto.SECP256K1_PRIVATE_KEY_LENGTH))) || (purpose === Slate.Purpose.SEND_RESPONSE && !await Common.resolveIfPromise(Secp256k1Zkp.isValidSecretKey(offset)))) {
+          if((purpose === Slate.Purpose.SEND_INITIAL && !offset.equals(Buffer.alloc(Crypto.SECP256K1_PRIVATE_KEY_LENGTH)) && !await Common.resolveIfPromise(Secp256k1Zkp.isValidSecretKey(offset))) || (purpose === Slate.Purpose.SEND_RESPONSE && !await Common.resolveIfPromise(Secp256k1Zkp.isValidSecretKey(offset)))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate offset");
           }
-          slate.offset = offset;
+          slate.offset = (purpose === Slate.Purpose.SEND_INITIAL) ? Buffer.alloc(Crypto.SECP256K1_PRIVATE_KEY_LENGTH) : offset;
           const optionalFields = SlateUtils.readUint8(bitReader);
           let numberOfParticipants: BigNumber;
           if(optionalFields & 0b00000001) {
@@ -1296,9 +1296,6 @@ export default class Slate {
             slate.outputs = [];
           }
           if(componentFields & 0b00000001) {
-            if(purpose === Slate.Purpose.SEND_INITIAL) {
-              throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate inputs and outputs");
-            }
             const inputs: SlateInput[] = [];
             const outputs: SlateOutput[] = [];
             const inputsAndOutputsLength = SlateUtils.readUint16(bitReader);
@@ -1310,9 +1307,11 @@ export default class Slate {
                 inputs.push(await SlateInput.unserialize(bitReader, slate));
               }
             }
-            slate.kernels = [];
-            slate.addInputs(inputs, outputs.length, false);
-            slate.addOutputs(outputs, false);
+            if(purpose === Slate.Purpose.SEND_RESPONSE) {
+              slate.kernels = [];
+              slate.addInputs(inputs, outputs.length, false);
+              slate.addOutputs(outputs, false);
+            }
           }
           if(componentFields & 0b00000010) {
             try {
