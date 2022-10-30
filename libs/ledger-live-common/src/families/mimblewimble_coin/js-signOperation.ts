@@ -63,6 +63,7 @@ const buildOptimisticOperation = async (
 const buildChangeOperation = async (
   account: Account,
   slate: Slate,
+  kernelOffset: Buffer,
   amount: BigNumber,
   commitment: Buffer | undefined,
   identifier: Identifier,
@@ -77,15 +78,6 @@ const buildChangeOperation = async (
     error: any
   ) {
     throw new MimbleWimbleCoinFinalizingSlateFailed("Failed getting finalized slate's kernel excess");
-  }
-  let kernelOffset: Buffer;
-  try {
-    kernelOffset = await slate.getOffsetExcess();
-  }
-  catch(
-    error: any
-  ) {
-    throw new MimbleWimbleCoinFinalizingSlateFailed("Failed getting finalized slate's kernel offset");
   }
   return amount.isZero() ? null : {
     id: encodeOperationId(account.id, commitment!.toString("hex"), "IN"),
@@ -280,14 +272,22 @@ export default (
             throw new MimbleWimbleCoinCreatingSlateFailed("Failed adding output to slate");
           }
         }
+        let kernelOffset: Buffer;
         if(transactionAlreadyPrepared) {
           slate.offset = transaction.offset!;
+          try {
+            kernelOffset = await slate.getOffsetExcess();
+          }
+          catch(
+            error: any
+          ) {
+            throw new MimbleWimbleCoinFinalizingSlateFailed("Failed getting slate's kernel offset");
+          }
         }
         else {
           await slate.createOffset();
           for(let uniqueKernelOffset: boolean = false; !uniqueKernelOffset;) {
             uniqueKernelOffset = true;
-            let kernelOffset: Buffer;
             try {
               kernelOffset = await slate.getOffsetExcess();
             }
@@ -425,7 +425,7 @@ export default (
           throw new MimbleWimbleCoinUnsupportedResponseFromRecipient("Invalid slate response outputs");
         }
         if(slate.isCompact()) {
-          if(!await slateResponse.combineOffsets(slate)) {
+          if(!await slateResponse.combineOffsets(slate.offset)) {
             throw new MimbleWimbleCoinFinalizingSlateFailed("Failed combining slate response's offset with the slate's offset");
           }
         }
@@ -493,7 +493,7 @@ export default (
         }
         const timestamp = new Date();
         const operation = await buildOptimisticOperation(account, transaction, slateResponse, timestamp);
-        const changeOperation = await buildChangeOperation(account, slateResponse, change, commitment, currentIdentifier.withHeight(account.currency, slateResponse.height!), Crypto.SwitchType.REGULAR, timestamp);
+        const changeOperation = await buildChangeOperation(account, slateResponse, kernelOffset!, change, commitment, currentIdentifier.withHeight(account.currency, slateResponse.height!), Crypto.SwitchType.REGULAR, timestamp);
         const bipPath = BIPPath.fromString(account.freshAddresses[0].derivationPath).toPathArray();
         ++bipPath[Crypto.BIP44_PATH_INDEX_INDEX];
         const newDerivationPath = BIPPath.fromPathArray(bipPath).toString(true);

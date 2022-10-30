@@ -502,9 +502,9 @@ export default class Slate {
   }
 
   public async combineOffsets(
-    slate: Slate
+    offset: Buffer
   ): Promise<boolean> {
-    const combinedOffset = await Common.resolveIfPromise(Secp256k1Zkp.blindSum([this.offset, slate.offset], []));
+    const combinedOffset = await Common.resolveIfPromise(Secp256k1Zkp.blindSum([this.offset, offset], []));
     if(combinedOffset === Secp256k1Zkp.OPERATION_FAILED) {
       return false;
     }
@@ -602,7 +602,12 @@ export default class Slate {
     }
     if(!this.isCompact()) {
       if(!this.offset.equals(slate.offset)) {
-       return false;
+        return false;
+      }
+    }
+    else {
+      if(this.offset.equals(slate.offset)) {
+        return false;
       }
     }
     if(this.headerVersion !== slate.headerVersion) {
@@ -1211,7 +1216,7 @@ export default class Slate {
           if((purpose === Slate.Purpose.SEND_INITIAL && !offset.equals(Buffer.alloc(Crypto.SECP256K1_PRIVATE_KEY_LENGTH)) && !await Common.resolveIfPromise(Secp256k1Zkp.isValidSecretKey(offset))) || (purpose === Slate.Purpose.SEND_RESPONSE && !await Common.resolveIfPromise(Secp256k1Zkp.isValidSecretKey(offset)))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate offset");
           }
-          slate.offset = (purpose === Slate.Purpose.SEND_INITIAL) ? Buffer.alloc(Crypto.SECP256K1_PRIVATE_KEY_LENGTH) : offset;
+          slate.offset = offset;
           const optionalFields = SlateUtils.readUint8(bitReader);
           let numberOfParticipants: BigNumber;
           if(optionalFields & 0b00000001) {

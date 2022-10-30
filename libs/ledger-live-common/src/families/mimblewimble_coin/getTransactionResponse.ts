@@ -24,6 +24,7 @@ import { Observable, Subscriber } from "rxjs";
 const buildOptimisticOperation = async (
   account: Account,
   slate: Slate,
+  kernelOffset: Buffer,
   commitment: Buffer,
   identifier: Identifier,
   switchType: number
@@ -36,15 +37,6 @@ const buildOptimisticOperation = async (
     error: any
   ) {
     throw new MimbleWimbleCoinAddingToSlateFailed("Failed getting slate's kernel excess");
-  }
-  let kernelOffset: Buffer;
-  try {
-    kernelOffset = await slate.getOffsetExcess();
-  }
-  catch(
-    error: any
-  ) {
-    throw new MimbleWimbleCoinAddingToSlateFailed("Failed getting slate's kernel offset");
   }
   return {
     id: encodeOperationId(account.id, commitment.toString("hex"), "IN"),
@@ -187,12 +179,13 @@ export default (
             throw new MimbleWimbleCoinUnsupportedSlate("Invalid slate ID");
           }
         }
+        const offset = slate.offset;
+        let kernelOffset: Buffer;
         for(let uniqueKernelOffset: boolean = false; !uniqueKernelOffset;) {
           uniqueKernelOffset = true;
           if(slate.isCompact()) {
             await slate.createOffset();
           }
-          let kernelOffset: Buffer;
           try {
             kernelOffset = await slate.getOffsetExcess();
           }
@@ -254,6 +247,11 @@ export default (
         const publicBlindExcess = await mimbleWimbleCoin.getTransactionPublicKey();
         const publicNonce = await mimbleWimbleCoin.getTransactionPublicNonce();
         slate.addParticipant(new SlateParticipant(SlateParticipant.SENDER_ID.plus(1), publicBlindExcess, publicNonce));
+        if(slate.isCompact()) {
+          if(!await slate.combineOffsets(offset)) {
+            throw new MimbleWimbleCoinAddingToSlateFailed("Failed combining offset with the slate's offset");
+          }
+        }
         let publicNonceSum: Buffer;
         try {
           publicNonceSum = await slate.getPublicNonceSum();
@@ -285,7 +283,7 @@ export default (
         }
         subscriber.next({
           type: "device-signature-requested",
-          operation: toOperationRaw(await buildOptimisticOperation(account, slate, commitment, (account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextIdentifier.withHeight(account.currency, tipHeight.plus(1)), Crypto.SwitchType.REGULAR))
+          operation: toOperationRaw(await buildOptimisticOperation(account, slate, kernelOffset!, commitment, (account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextIdentifier.withHeight(account.currency, tipHeight.plus(1)), Crypto.SwitchType.REGULAR))
         });
         const {
           partialSignature,
@@ -316,7 +314,7 @@ export default (
               derivationPath: newDerivationPath
           },
           nextIdentifier: (account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextIdentifier.getNext().serialize().toString("hex"),
-          operation: toOperationRaw(await buildOptimisticOperation(account, slate, commitment, (account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextIdentifier.withHeight(account.currency, tipHeight.plus(1)), Crypto.SwitchType.REGULAR))
+          operation: toOperationRaw(await buildOptimisticOperation(account, slate, kernelOffset!, commitment, (account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextIdentifier.withHeight(account.currency, tipHeight.plus(1)), Crypto.SwitchType.REGULAR))
         });
         subscriber.complete();
       }
