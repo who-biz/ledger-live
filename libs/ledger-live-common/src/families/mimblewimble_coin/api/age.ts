@@ -49,6 +49,7 @@ export default class Age {
       if(ephemeralEd25519PublicKey === Ed25519.OPERATION_FAILED) {
         continue;
       }
+      ephemeralEd25519SecretKey.fill(0);
       ephemeralX25519PublicKey = await Common.resolveIfPromise(X25519.publicKeyFromEd25519PublicKey(ephemeralEd25519PublicKey));
       if(ephemeralX25519PublicKey === X25519.OPERATION_FAILED) {
         continue;
@@ -57,6 +58,7 @@ export default class Age {
       if(sharedSecret === X25519.OPERATION_FAILED) {
         continue;
       }
+      ephemeralX25519SecretKey.fill(0);
       if(sharedSecret.equals(Buffer.alloc(Crypto.X25519_PRIVATE_KEY_LENGTH))) {
         continue;
       }
@@ -70,6 +72,7 @@ export default class Age {
       info: "age-encryption.org/v1/X25519",
       hash: "SHA-256"
     });
+    sharedSecret.fill(0);
     const cipher = chacha.createCipher(wrapKey, Buffer.alloc(Crypto.CHACHA20_POLY1305_NONCE_LENGTH));
     const fileKey = await Crypto.randomBytes(Age.FILE_KEY_LENGTH);
     const encryptedFileKeyStart = cipher.update(fileKey);
@@ -91,6 +94,7 @@ export default class Age {
       info: "payload",
       hash: "SHA-256"
     });
+    fileKey.fill(0);
     ageHeader += ` ${mac.toString("base64").replace(/=+$/u, "")}\n`;
     let agePayload: Buffer = nonce;
     for(let i: number = 0; i < Math.max(Math.ceil(data.length / Age.MAXIMUM_PAYLOAD_CHUNK_LENGTH), 1); ++i) {

@@ -186,6 +186,7 @@ function AddAccountsAccounts(
   const [cancelled, setCancelled] = useState(false);
   const [rootPublicKeyRequested, setRootPublicKeyRequested] = useState(false);
   const [accountIndex, setAccountIndex] = useState(0);
+  const [percentComplete, setPercentComplete] = useState(0);
   const scanSubscription = useRef();
   const scrollView = useRef();
   const {
@@ -249,6 +250,7 @@ function AddAccountsAccounts(
     }
   }, []);
   const startSubscription = useCallback(() => {
+    setPercentComplete(0);
     const cryptoCurrency = isTokenCurrency(currency)
       ? currency.parentCurrency
       : currency;
@@ -268,10 +270,11 @@ function AddAccountsAccounts(
         syncConfig,
       }),
     ).subscribe({
-      next: ({ type, account, index }) => {
+      next: ({ type, account, index, percent }) => {
         switch(type) {
           case "discovered":
             setLatestScannedAccount(account);
+            setPercentComplete(0);
             break;
           case "device-root-public-key-requested":
             setAccountIndex(index);
@@ -279,6 +282,9 @@ function AddAccountsAccounts(
             break;
           case "device-root-public-key-granted":
             setRootPublicKeyRequested(false);
+            break;
+          case "synced-percent":
+            setPercentComplete(percent);
             break;
         }
       },
@@ -532,7 +538,7 @@ function AddAccountsAccounts(
             <Trans i18nKey="addAccounts.synchronizingDesc" />
           </LText>
         ) : null}
-        {scanning ? <ScanLoading colors={colors} /> : null}
+        {scanning ? <ScanLoading colors={colors} percentComplete={percentComplete} /> : null}
       </NavigationScrollView>
       {!!scannedAccounts.length && (
         <Footer
@@ -712,9 +718,10 @@ class Footer extends PureComponent<{
 
 class ScanLoading extends PureComponent<{
   colors: any;
+  percentComplete: number;
 }> {
   render() {
-    const { colors } = this.props;
+    const { colors, percentComplete } = this.props;
     return (
       <View
         style={[
@@ -728,7 +735,7 @@ class ScanLoading extends PureComponent<{
           <LiveLogo color={colors.grey} size={16} />
         </Spinning>
         <LText semiBold style={styles.scanLoadingText} color="grey">
-          <Trans i18nKey="addAccounts.synchronizing" />
+          <Trans i18nKey="mimblewimble_coin.synchronizing" values={{ percentComplete: percentComplete.toFixed() }} />
         </LText>
       </View>
     );

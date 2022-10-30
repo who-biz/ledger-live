@@ -813,9 +813,13 @@ export default class Slate {
     purpose: number,
     initialSendSlate: Slate | null = null
   ): Promise<Slate> {
+    const detectedVersion = Slate.detectVersion(serializedSlate, cryptocurrency);
+    if(detectedVersion === null || Slate.getSupportedVersions(cryptocurrency).indexOf(detectedVersion) === -1) {
+      throw new MimbleWimbleCoinInvalidParameters("Invalid slate version");
+    }
     const slate = Object.create(Slate.prototype);
     slate.cryptocurrency = cryptocurrency;
-    switch(Slate.detectVersion(serializedSlate, cryptocurrency)) {
+    switch(detectedVersion) {
       case "2":
       case "3":
         slate.relativeHeight = null;
@@ -1943,6 +1947,21 @@ export default class Slate {
     }
   }
 
+  private static getSupportedVersions(
+    cryptocurrency: CryptoCurrency
+  ): string[] {
+    switch(cryptocurrency.id) {
+      case "mimblewimble_coin":
+      case "mimblewimble_coin_floonet":
+        return ["2", "3", "SP"];
+      case "grin":
+      case "grin_testnet":
+        return ["4"];
+      default:
+        throw new MimbleWimbleCoinInvalidParameters("Invalid cryptocurrency");
+    }
+  }
+
   private static detectVersion(
     serializedSlate: {[key: string]: any} | Buffer,
     cryptocurrency: CryptoCurrency
@@ -1962,7 +1981,7 @@ export default class Slate {
         if("network_type" in serializedSlate && serializedSlate.network_type !== Slate.getNetworkType(cryptocurrency)) {
           return null;
         }
-        if("version_info" in serializedSlate && Common.isPureObject(serializedSlate.version_info) && "version" in serializedSlate.version_info && serializedSlate.version_info.version instanceof BigNumber && serializedSlate.version_info.version.isInteger()) {
+        if("version_info" in serializedSlate && Common.isPureObject(serializedSlate.version_info) && "version" in serializedSlate.version_info && serializedSlate.version_info.version instanceof BigNumber && serializedSlate.version_info.version.isInteger() && serializedSlate.version_info.version.isPositive()) {
           return serializedSlate.version_info.version.toFixed();
         }
         break;

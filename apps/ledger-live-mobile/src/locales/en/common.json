@@ -4302,6 +4302,7 @@
     "verifyRecipientPaymentProofAddress": "Verify that the recipient payment proof address displayed on your device exactly matches the address given by the recipient",
     "noPaymentProof": "This transaction doesn't have a payment proof",
     "baseFee": "Base fee",
+    "synchronizing": "Synchronizing ({{percentComplete}}%)",
     "customizeBaseFee": "Customize base fee"
   },
   "delegation": {

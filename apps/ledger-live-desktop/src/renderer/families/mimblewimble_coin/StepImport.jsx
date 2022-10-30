@@ -415,14 +415,12 @@ class StepImport extends PureComponent<StepProps, State> {
             );
           })}
           {scanStatus === "scanning" ? (
-            <>
-              <LoadingRow>
-                <Spinner color="palette.text.shade60" size={16} />
-                <Box ml={2} ff="Inter|Regular" color="palette.text.shade60" fontSize={4}>
-                  {t("families.mimblewimble_coin.syncing", { percentComplete: percentComplete.toFixed() })}
-                </Box>
-              </LoadingRow>
-            </>
+            <LoadingRow>
+              <Spinner color="palette.text.shade60" size={16} />
+              <Box ml={2} ff="Inter|Regular" color="palette.text.shade60" fontSize={4}>
+                {t("families.mimblewimble_coin.syncing", { percentComplete: percentComplete.toFixed() })}
+              </Box>
+            </LoadingRow>
           ) : null}
         </Box>
         {(modelId !== undefined) ? (

@@ -73,13 +73,13 @@ export default class Sync {
             } = await Node.getOutputs(cryptocurrency, currentIndex, endIndex, Sync.getOutputsGroupSize());
             for(const output of outputs) {
               if(o) {
-                const syncedPercent = Math.min(Math.floor(new BigNumber(output.height).dividedBy(tipHeight).multipliedBy(100).toNumber()), 100);
+                const syncedPercent = tipHeight.isZero() ? 100 : Math.min(Math.floor(new BigNumber(output.height).dividedBy(tipHeight).multipliedBy(100).toNumber()), 100);
                 if(syncedPercent !== lastSyncedPercent) {
                   o.next({
                     type: "synced-percent",
                     percent: syncedPercent
                   });
-                  lastSyncedPercent = lastSyncedPercent;
+                  lastSyncedPercent = syncedPercent;
                 }
               }
               let rewindNonce: Buffer;
