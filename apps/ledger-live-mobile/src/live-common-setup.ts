@@ -76,6 +76,10 @@ setSupportedCurrencies([
   "moonbeam",
   "songbird",
   "flare",
+  "mimblewimble_coin",
+  "mimblewimble_coin_floonet",
+  "grin",
+  "grin_testnet",
 ]);
 
 if (Config.VERBOSE) {

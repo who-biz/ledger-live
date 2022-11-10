@@ -34,6 +34,7 @@ import {
   StackNavigatorProps,
 } from "../../components/RootNavigator/types/helpers";
 import { SendFundsNavigatorStackParamList } from "../../components/RootNavigator/types/SendFundsNavigator";
+import sendRecipientFieldsByFamily from "../generated/SendRecipientFields";
 
 const withoutHiddenError = (error: Error) =>
   error instanceof RecipientRequired ? null : error;
@@ -45,7 +46,8 @@ type Props = BaseComposite<
   >
 >;
 
-export default function SendSelectRecipient({ navigation, route }: Props) {
+export default function SendSelectRecipient(props: Props) {
+  const { navigation, route } = props;
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { account, parentAccount } = useSelector(accountScreenSelector(route));
@@ -150,6 +152,7 @@ export default function SendSelectRecipient({ navigation, route }: Props) {
   if (!account || !transaction) return null;
   const error = withoutHiddenError(status.errors.recipient);
   const warning = status.warnings.recipient;
+  const CustomSendRecipientFields = sendRecipientFieldsByFamily[currency.family];
   return (
     <>
       <SafeAreaView
@@ -232,9 +235,19 @@ export default function SendSelectRecipient({ navigation, route }: Props) {
                 <TranslatedError error={error || warning} />
               </LText>
             )}
+            {CustomSendRecipientFields ? (
+              <CustomSendRecipientFields
+                setTransaction={setTransaction}
+                account={account}
+                parentAccount={parentAccount}
+                transaction={transaction}
+                navigation={navigation}
+                route={route}
+              />
+            ) : null}
           </NavigationScrollView>
           <View style={styles.container}>
-            {transaction.recipient && !(error || warning) ? (
+            {transaction.recipient.trim() && !error ? (
               <View style={styles.infoBox}>
                 <Alert type="primary">
                   {t("send.recipient.verifyAddress")}

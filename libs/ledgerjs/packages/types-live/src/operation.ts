@@ -10,6 +10,7 @@ export type OperationType =
   | "NONE"
   | "CREATE"
   | "REVEAL"
+  | "COINBASE_REWARD"
   // COSMOS
   | "DELEGATE"
   | "UNDELEGATE"

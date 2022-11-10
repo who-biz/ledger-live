@@ -426,6 +426,10 @@ export enum ScreenName {
   CardanoEditMemo = "CardanoEditMemo",
   // hedera
   HederaEditMemo = "HederaEditMemo",
+  // mimblewimble_coin
+  MimbleWimbleCoinEditBaseFee = "MimbleWimbleCoinEditBaseFee",
+  MimbleWimbleCoinScanTransactionResponse = "MimbleWimbleCoinScanTransactionResponse",
+  MimbleWimbleCoinScanTransactionData = "MimbleWimbleCoinScanTransactionData",
 
   CustomImageStep0Welcome = "CustomImageStep0Welcome",
   CustomImageStep1Crop = "CustomImageStep1Crop",

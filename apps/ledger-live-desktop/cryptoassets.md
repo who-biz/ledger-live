@@ -23,10 +23,14 @@
 | Fantom | FTM | YES | fantom |
 | Filecoin | FIL | YES | filecoin |
 | Flare | FLR | YES | flare |
+| Grin | GRIN | YES | grin |
+| Grin Testnet | GRIN | YES | grin_testnet |
 | Hedera | HBAR | YES | hedera |
 | Horizen | ZEN | YES | zencash |
 | Komodo | KMD | YES | komodo |
 | Litecoin | LTC | YES | litecoin |
+| MimbleWimble Coin | MWC | YES | mimblewimble_coin |
+| MimbleWimble Coin Floonet | MWC | YES | mimblewimble_coin_floonet |
 | Moonbeam | GLMR | YES | moonbeam |
 | Osmosis | OSMO | YES | osmo |
 | Peercoin | PPC | YES | peercoin |

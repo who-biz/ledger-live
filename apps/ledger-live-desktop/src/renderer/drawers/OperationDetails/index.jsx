@@ -368,11 +368,11 @@ const OperationD: React$ComponentType<Props> = (props: Props) => {
           </OpDetailsData>
         </OpDetailsSection>
       ) : null}
-      {(isNegative || fee) && (
+      {(isNegative || (fee && fee.isPositive())) && (
         <OpDetailsSection>
           <OpDetailsTitle>{t("operationDetails.fees")}</OpDetailsTitle>
           <OpDetailsData>
-            {fee ? (
+            {(fee && fee.isPositive()) ? (
               <Box alignItems="flex-end">
                 <Box horizontal alignItems="center">
                   {urlFeesInfo ? (
@@ -572,17 +572,19 @@ const OperationD: React$ComponentType<Props> = (props: Props) => {
         </OpDetailsData>
       </OpDetailsSection>
       <B />
-      <OpDetailsSection>
-        <OpDetailsTitle>{t("operationDetails.identifier")}</OpDetailsTitle>
-        <OpDetailsData>
-          <HashContainer>
-            <SplitAddress value={hash} />
-          </HashContainer>
-          <GradientHover>
-            <CopyWithFeedback text={hash} />
-          </GradientHover>
-        </OpDetailsData>
-      </OpDetailsSection>
+      {hash ? (
+        <OpDetailsSection>
+          <OpDetailsTitle>{t("operationDetails.identifier")}</OpDetailsTitle>
+          <OpDetailsData>
+            <HashContainer>
+              <SplitAddress value={hash} />
+            </HashContainer>
+            <GradientHover>
+              <CopyWithFeedback text={hash} />
+            </GradientHover>
+          </OpDetailsData>
+        </OpDetailsSection>
+      ) : null}
       {uniqueSenders.length ? (
         <OpDetailsSection>
           <OpDetailsTitle>{t("operationDetails.from")}</OpDetailsTitle>
@@ -615,7 +617,9 @@ const OperationD: React$ComponentType<Props> = (props: Props) => {
         </OpDetailsSection>
       ) : null}
       <OpDetailsExtra operation={operation} extra={extra} type={type} account={account} />
-      <B />
+      {(hash || uniqueSenders.length || recipients.length) ? (
+        <B />
+      ) : null}
     </Box>
   );
 };

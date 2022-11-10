@@ -9,6 +9,7 @@ import ethereum from "../families/ethereum/hw-getAddress";
 import evm from "../families/evm/hw-getAddress";
 import filecoin from "../families/filecoin/hw-getAddress";
 import hedera from "../families/hedera/hw-getAddress";
+import mimblewimble_coin from "../families/mimblewimble_coin/hw-getAddress";
 import neo from "../families/neo/hw-getAddress";
 import osmosis from "../families/osmosis/hw-getAddress";
 import polkadot from "../families/polkadot/hw-getAddress";
@@ -30,6 +31,7 @@ export default {
   evm,
   filecoin,
   hedera,
+  mimblewimble_coin,
   neo,
   osmosis,
   polkadot,

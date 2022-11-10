@@ -52,6 +52,7 @@ import { TezosDelegationFlowParamList } from "../families/tezos/DelegationFlow/t
 import { TronVoteFlowParamList } from "../families/tron/VoteFlow/types";
 import { SignTransactionNavigatorParamList } from "../components/RootNavigator/types/SignTransactionNavigator";
 import { SignMessageNavigatorStackParamList } from "../components/RootNavigator/types/SignMessageNavigator";
+import byFamily from "../generated/SendFundsConnectDevice";
 
 const action = createAction(connectApp);
 type Props =
@@ -200,11 +201,21 @@ export const navigateToSelectDevice = (
       forceSelectDevice: true,
     },
   );
-export default function ConnectDevice({ route, navigation }: Props) {
+export default function ConnectDevice(props: Props) {
+  const { route, navigation } = props;
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { account, parentAccount } = useSelector(accountScreenSelector(route));
   invariant(account, "account is required");
+  
+  // custom family UI for SendFundsConnectDevice
+  if(route.name === ScreenName.SendConnectDevice) {
+    const CustomSendFundsConnectDevice = byFamily[account.currency.family];
+    if (CustomSendFundsConnectDevice) {
+      return <CustomSendFundsConnectDevice {...props} />;
+    }
+  }
+
   const { appName, onSuccess, onError, analyticsPropertyFlow } = route.params;
   const mainAccount = getMainAccount(account, parentAccount);
   const { transaction, status } = useBridgeTransaction(() => ({

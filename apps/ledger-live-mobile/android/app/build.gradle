@@ -163,7 +163,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 36176158
-        versionName "3.7.0"
+        versionName "3.10.0"
         resValue "string", "build_config_package", "com.ledger.live"
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -319,6 +319,8 @@ dependencies {
 
     compile project(':react-native-video')
     implementation "androidx.appcompat:appcompat:1.0.0"
+
+    compile project(':react-native-aes-crypto')
 
     // Adjust
     implementation 'com.google.android.gms:play-services-analytics:10.0.1'

@@ -170,6 +170,10 @@ export function clearAccount<T extends AccountLike>(account: T): T {
   if (copy.currency.family === "bitcoin") {
     (copy as BitcoinAccount).bitcoinResources = initialBitcoinResourcesValue;
   }
+  if (copy.currency.family === "mimblewimble_coin") {
+    copy.operations = account.operations;
+    copy.pendingOperations = account.pendingOperations;
+  }
   delete copy.nfts;
   return copy as T;
 }

@@ -51,6 +51,7 @@ import { blacklistedTokenIdsSelector } from "../../reducers/settings";
 import BottomModal from "../../components/BottomModal";
 import { urls } from "../../config/urls";
 import noAssociatedAccountsByFamily from "../../generated/NoAssociatedAccounts";
+import addAccountsAccountsByFamily from "../../generated/AddAccountsAccounts";
 import { State } from "../../reducers/types";
 import {
   BaseComposite,
@@ -101,13 +102,29 @@ const mapDispatchToProps = {
   replaceAccounts,
 };
 
-function AddAccountsAccounts({
-  navigation,
-  route,
-  replaceAccounts,
-  existingAccounts,
-  blacklistedTokenIds,
-}: Props) {
+function AddAccountsAccounts(
+  props: Props
+) {
+  const {
+    navigation,
+    route,
+    replaceAccounts,
+    existingAccounts,
+    blacklistedTokenIds,
+  } = props;
+  const {
+    currency,
+    device: { deviceId },
+    inline,
+    returnToSwap,
+  } = route.params || {};
+
+  // custom family UI for AddAccountsAccounts
+  const CustomAddAccountsAccounts = addAccountsAccountsByFamily[currency.family];
+  if (CustomAddAccountsAccounts) {
+    return <CustomAddAccountsAccounts {...props} />;
+  }
+
   const { colors } = useTheme();
   const [scanning, setScanning] = useState(true);
   const [error, setError] = useState(null);
@@ -119,12 +136,6 @@ function AddAccountsAccounts({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [cancelled, setCancelled] = useState(false);
   const scanSubscription = useRef<Subscription | null>(null);
-  const {
-    currency,
-    device: { deviceId },
-    inline,
-    returnToSwap,
-  } = route.params || {};
   // Find accounts that are (scanned && !existing && !used)
   const newAccountSchemes = scannedAccounts
     ?.filter(

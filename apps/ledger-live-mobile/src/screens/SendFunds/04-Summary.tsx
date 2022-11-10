@@ -187,7 +187,7 @@ function SendSummary({ navigation, route }: Props) {
     });
   }, [navigation, account?.id, currency?.id]);
   // FIXME: why is recipient sometimes empty?
-  if (!account || !transaction || !transaction.recipient || !currency)
+  if (!account || !transaction || !currency)
     return null;
   return (
     <SafeAreaView
@@ -217,15 +217,19 @@ function SendSummary({ navigation, route }: Props) {
           </View>
         ) : null}
         <SummaryFromSection account={account} parentAccount={parentAccount} />
-        <VerticalConnector
-          style={[
-            styles.verticalConnector,
-            {
-              borderColor: colors.lightFog,
-            },
-          ]}
-        />
-        <SummaryToSection recipient={transaction.recipient} />
+        {transaction.recipient.trim() ? (
+          <>
+            <VerticalConnector
+              style={[
+                styles.verticalConnector,
+                {
+                  borderColor: colors.lightFog,
+                },
+              ]}
+            />
+            <SummaryToSection recipient={transaction.recipient.trim()} />
+          </>
+        ) : null}
         {status.warnings.recipient ? (
           <LText style={styles.warning} color="orange">
             <TranslatedError error={status.warnings.recipient} />

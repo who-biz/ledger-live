@@ -1,7 +1,7 @@
 // @flow
 
 import "../live-common-setup-base";
-import { ipcMain } from "electron";
+import { ipcMain, dialog, BrowserWindow } from "electron";
 import contextMenu from "electron-context-menu";
 import { log } from "@ledgerhq/logs";
 import logger, { enableDebugLogger } from "../logger";
@@ -98,6 +98,37 @@ ipcMain.handle("load-lss-config", async (event): Promise<?string> => {
   }
 
   return undefined;
+});
+
+ipcMain.handle("open-file-dialog", async (event, title: string): Promise<?string> => {
+  try {
+    const result = await dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), {
+      title,
+      properties: ["openFile"],
+    });
+    if (result.filePaths.length) {
+      const contents = await fsReadFile(result.filePaths[0], "utf8");
+      return contents;
+    }
+  } catch(e) {
+  }
+
+  return undefined;
+});
+
+ipcMain.handle("save-file-dialog", async (event, title: string, contents: string): Promise<boolean> => {
+  try {
+    const result = await dialog.showSaveDialog(BrowserWindow.getFocusedWindow(), {
+      title,
+    });
+    if (result.filePath) {
+      await fsWriteFile(result.filePath, contents);
+      return true;
+    }
+  } catch(e) {
+  }
+
+  return false;
 });
 
 process.setMaxListeners(0);

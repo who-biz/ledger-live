@@ -92,6 +92,7 @@ export default function ReceiveConfirmation({ navigation, route }: Props) {
   useEffect(() => {
     if (!allowNavigation) {
       navigation.setOptions({
+        headerTitle: getAccountName(account),
         headerLeft: undefined,
         headerRight: () => null,
         gestureEnabled: false,
@@ -101,11 +102,12 @@ export default function ReceiveConfirmation({ navigation, route }: Props) {
 
     const { headerRight } = getStackNavigatorConfig(colors, true);
     navigation.setOptions({
+      headerTitle: getAccountName(account),
       headerLeft: undefined,
       headerRight,
       gestureEnabled: Platform.OS === "ios",
     });
-  }, [allowNavigation, colors, navigation]);
+  }, [allowNavigation, colors, navigation, account]);
   if (!account) return null;
   const { width } = getWindowDimensions();
   const unsafe = !route.params.device?.deviceId;

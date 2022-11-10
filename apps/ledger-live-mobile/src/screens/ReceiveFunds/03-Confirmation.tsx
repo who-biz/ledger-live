@@ -155,12 +155,6 @@ function ReceiveConfirmationInner({
   ]);
 
   useEffect(() => {
-    navigation.setOptions({
-      headerTitle: getAccountName(account as AccountLike),
-    });
-  }, [colors, navigation, account]);
-
-  useEffect(() => {
     setIsVerifiedToastDisplayed(verified);
     if (verified && currency) {
       track("Verification Success", { currency: currency.name });
@@ -198,6 +192,12 @@ function ReceiveConfirmationInner({
       );
     }
   }
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: getAccountName(account as AccountLike),
+    });
+  }, [colors, navigation, account]);
 
   return (
     <Flex flex={1} mb={9}>

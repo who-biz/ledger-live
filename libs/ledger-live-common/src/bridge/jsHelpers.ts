@@ -1,6 +1,6 @@
 import isEqual from "lodash/isEqual";
 import { BigNumber } from "bignumber.js";
-import { Observable, from } from "rxjs";
+import { Observable, from, Subscriber } from "rxjs";
 import { log } from "@ledgerhq/logs";
 import { WrongDeviceForAccount } from "@ledgerhq/errors";
 import Transport from "@ledgerhq/hw-transport";
@@ -77,6 +77,7 @@ export type GetAccountShapeArg0 = {
   derivationPath: string;
   derivationMode: DerivationMode;
   transport?: Transport;
+  o?: Subscriber<ScanAccountEvent>;
   rest?: any;
 };
 
@@ -337,6 +338,7 @@ export const makeScanAccounts =
               address,
               derivationPath: freshAddressPath,
               derivationMode,
+              o,
               rest,
             },
             syncConfig

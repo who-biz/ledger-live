@@ -171,7 +171,7 @@ export async function runWithAppSpec<T extends Transaction>(
           spec.scanAccountsRetries || defaultScanAccountsRetries
         ),
         filter((e) => e.type === "discovered"),
-        map((e) => e.account),
+        map((e: any) => e.account),
         reduce<Account, Account[]>((all, a) => all.concat(a), []),
         timeoutWith(
           getEnv("BOT_TIMEOUT_SCAN_ACCOUNTS"),

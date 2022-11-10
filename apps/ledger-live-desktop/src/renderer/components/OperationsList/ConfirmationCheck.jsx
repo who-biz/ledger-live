@@ -53,6 +53,7 @@ function inferColor(p) {
     case "FREEZE":
       return p.theme.colors.wallet;
     case "REWARD":
+    case "COINBASE_REWARD":
       return p.theme.colors.gold;
     default:
       return p.theme.colors.palette.text.shade60;
@@ -128,6 +129,7 @@ const iconsComponent = {
   REVOKE: VoteNay,
   ACTIVATE: Vote,
   REGISTER: IconPlus,
+  COINBASE_REWARD: ClaimRewards,
 };
 
 class ConfirmationCheck extends PureComponent<{

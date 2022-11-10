@@ -30,6 +30,7 @@ export default function Wrapper({
           return colors.live;
 
         case "REWARD":
+        case "COINBASE_REWARD":
           return colors.yellow;
 
         default:

@@ -38,7 +38,10 @@ import {
   toSolanaResourcesRaw,
   fromSolanaResourcesRaw,
 } from "../families/solana/serialization";
-
+import {
+  toMimbleWimbleCoinResourcesRaw,
+  fromMimbleWimbleCoinResourcesRaw,
+} from "../families/mimblewimble_coin/serialization";
 import {
   toCeloResourcesRaw,
   fromCeloResourcesRaw,
@@ -97,6 +100,7 @@ import {
 import { SolanaAccount, SolanaAccountRaw } from "../families/solana/types";
 import { TezosAccount, TezosAccountRaw } from "../families/tezos/types";
 import { CeloAccount, CeloAccountRaw } from "../families/celo/types";
+import { MimbleWimbleCoinAccount, MimbleWimbleCoinAccountRaw } from "../families/mimblewimble_coin/types";
 
 export { toCosmosResourcesRaw, fromCosmosResourcesRaw };
 export { toAlgorandResourcesRaw, fromAlgorandResourcesRaw };
@@ -108,6 +112,7 @@ export { toCryptoOrgResourcesRaw, fromCryptoOrgResourcesRaw };
 export { toCardanoResourceRaw, fromCardanoResourceRaw };
 export { toSolanaResourcesRaw, fromSolanaResourcesRaw };
 export { toCeloResourcesRaw, fromCeloResourcesRaw };
+export { toMimbleWimbleCoinResourcesRaw, fromMimbleWimbleCoinResourcesRaw };
 
 export function toBalanceHistoryRaw(b: BalanceHistory): BalanceHistoryRaw {
   return b.map(({ date, value }) => [date.toISOString(), value.toString()]);
@@ -869,6 +874,14 @@ export function fromAccountRaw(rawAccount: AccountRaw): Account {
           fromCeloResourcesRaw(celoResourcesRaw);
       break;
     }
+    case "mimblewimble_coin": {
+      const mimbleWimbleCoinResourcesRaw = (rawAccount as MimbleWimbleCoinAccountRaw)
+        .mimbleWimbleCoinResources;
+      if (mimbleWimbleCoinResourcesRaw)
+        (res as MimbleWimbleCoinAccount).mimbleWimbleCoinResources =
+          fromMimbleWimbleCoinResourcesRaw(mimbleWimbleCoinResourcesRaw);
+      break;
+    }
   }
 
   if (swapHistory) {
@@ -1054,6 +1067,15 @@ export function toAccountRaw(account: Account): AccountRaw {
         (res as CeloAccountRaw).celoResources = toCeloResourcesRaw(
           celoAccount.celoResources
         );
+      break;
+    }
+    case "mimblewimble_coin": {
+      const mimbleWimbleCoinAccount = account as MimbleWimbleCoinAccount;
+      if (mimbleWimbleCoinAccount.mimbleWimbleCoinResources) {
+        (res as MimbleWimbleCoinAccountRaw).mimbleWimbleCoinResources = toMimbleWimbleCoinResourcesRaw(
+          mimbleWimbleCoinAccount.mimbleWimbleCoinResources
+        );
+      }
       break;
     }
   }

@@ -17,6 +17,10 @@ export function shouldRetainPendingOperation(
     return false;
   }
 
+  if (account.currency.family === "mimblewimble_coin") {
+    return true;
+  }
+
   return delay < getEnv("OPERATION_OPTIMISTIC_RETENTION");
 }
 

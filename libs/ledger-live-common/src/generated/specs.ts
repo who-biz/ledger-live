@@ -9,6 +9,7 @@ import ethereum from "../families/ethereum/specs";
 import evm from "../families/evm/specs";
 import filecoin from "../families/filecoin/specs";
 import hedera from "../families/hedera/specs";
+import mimblewimble_coin from "../families/mimblewimble_coin/specs";
 import osmosis from "../families/osmosis/specs";
 import polkadot from "../families/polkadot/specs";
 import ripple from "../families/ripple/specs";
@@ -29,6 +30,7 @@ export default {
   evm,
   filecoin,
   hedera,
+  mimblewimble_coin,
   osmosis,
   polkadot,
   ripple,

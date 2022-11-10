@@ -27,6 +27,7 @@ import {
   fromCryptoOrgResourcesRaw,
   fromSolanaResourcesRaw,
   fromCeloResourcesRaw,
+  fromMimbleWimbleCoinResourcesRaw,
   fromNFTRaw,
   toTronResourcesRaw,
   toCosmosResourcesRaw,
@@ -38,6 +39,7 @@ import {
   toCryptoOrgResourcesRaw,
   toSolanaResourcesRaw,
   toCeloResourcesRaw,
+  toMimbleWimbleCoinResourcesRaw,
 } from "./account";
 import consoleWarnExpectToEqual from "./consoleWarnExpectToEqual";
 import { AlgorandAccount, AlgorandAccountRaw } from "./families/algorand/types";
@@ -54,6 +56,7 @@ import { SolanaAccount, SolanaAccountRaw } from "./families/solana/types";
 import { TezosAccount, TezosAccountRaw } from "./families/tezos/types";
 import { TronAccount, TronAccountRaw } from "./families/tron/types";
 import { CeloAccount, CeloAccountRaw } from "./families/celo/types";
+import { MimbleWimbleCoinAccount, MimbleWimbleCoinAccountRaw } from "./families/mimblewimble_coin/types";
 
 // aim to build operations with the minimal diff & call to coin implementation possible
 export async function minimalOperationsBuilder<CO>(
@@ -507,6 +510,25 @@ export function patchAccount(
       ) {
         (next as CeloAccount).celoResources = fromCeloResourcesRaw(
           celoUpdatedRaw.celoResources
+        );
+        changed = true;
+      }
+      break;
+    }
+    case "mimblewimble_coin": {
+      const mimbleWimbleCoinAcc = account as MimbleWimbleCoinAccount;
+      const mimbleWimbleCoinUpdatedRaw = updatedRaw as MimbleWimbleCoinAccountRaw;
+
+      if (
+        mimbleWimbleCoinUpdatedRaw.mimbleWimbleCoinResources &&
+        (!mimbleWimbleCoinAcc.mimbleWimbleCoinResources ||
+          !areSameResources(
+            toMimbleWimbleCoinResourcesRaw(mimbleWimbleCoinAcc.mimbleWimbleCoinResources),
+            mimbleWimbleCoinUpdatedRaw.mimbleWimbleCoinResources
+          ))
+      ) {
+        (next as MimbleWimbleCoinAccount).mimbleWimbleCoinResources = fromMimbleWimbleCoinResourcesRaw(
+          mimbleWimbleCoinUpdatedRaw.mimbleWimbleCoinResources
         );
         changed = true;
       }

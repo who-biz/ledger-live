@@ -31,6 +31,12 @@ patchedDependencies:
   react-native-tcp@4.0.0:
     hash: frdjcnsdohx4blxdmaawwvdihy
     path: patches/react-native-tcp@4.0.0.patch
+  socks-proxy-agent@7.0.0:
+    hash: msonch573hz3gkoue725df2pju
+    path: patches/socks-proxy-agent@7.0.0.patch
+  react-native-aes-crypto@2.1.1:
+    hash: lozwnsft4qikf7edvar55jcfiy
+    path: patches/react-native-aes-crypto@2.1.1.patch
 
 importers:
 
@@ -566,6 +572,10 @@ importers:
       '@ledgerhq/types-cryptoassets': workspace:^
       '@ledgerhq/types-devices': workspace:^
       '@ledgerhq/types-live': workspace:^
+      '@nicolasflamel/ed25519-react': ^0.0.9
+      '@nicolasflamel/secp256k1-zkp-react': ^0.0.11
+      '@nicolasflamel/smaz-react': ^0.0.11
+      '@nicolasflamel/x25519-react': ^0.0.8
       '@polkadot/reactnative-identicon': 2.2.1
       '@polkadot/x-randomvalues': 9.1.1
       '@react-native-async-storage/async-storage': ^1.15.17
@@ -668,12 +678,14 @@ importers:
       prando: ^6.0.1
       prettier: ^2.7.1
       prop-types: ^15.8.1
+      qrcode: ^1.4.4
       qrloop: ^1.4.1
       react: ^17.0.2
       react-i18next: 11.12.0
       react-is: ^17.0.2
       react-native: 0.68.5
       react-native-adjust: ^4.29.6
+      react-native-aes-crypto: 2.1.1
       react-native-android-location-services-dialog-box: ^2.8.2
       react-native-animatable: ^1.3.3
       react-native-biometrics: ^3.0.1
@@ -756,6 +768,10 @@ importers:
       '@ledgerhq/types-cryptoassets': link:../../libs/ledgerjs/packages/types-cryptoassets
       '@ledgerhq/types-devices': link:../../libs/ledgerjs/packages/types-devices
       '@ledgerhq/types-live': link:../../libs/ledgerjs/packages/types-live
+      '@nicolasflamel/ed25519-react': 0.0.9_ondxtwf5lqq5g76dzmsmwamaca
+      '@nicolasflamel/secp256k1-zkp-react': 0.0.11_ondxtwf5lqq5g76dzmsmwamaca
+      '@nicolasflamel/smaz-react': 0.0.11_ondxtwf5lqq5g76dzmsmwamaca
+      '@nicolasflamel/x25519-react': 0.0.8_ondxtwf5lqq5g76dzmsmwamaca
       '@polkadot/reactnative-identicon': 2.2.1_ondxtwf5lqq5g76dzmsmwamaca
       '@polkadot/x-randomvalues': 9.1.1
       '@react-native-async-storage/async-storage': 1.17.4_react-native@0.68.5
@@ -808,12 +824,14 @@ importers:
       node-libs-react-native: 1.2.1
       prando: 6.0.1
       prop-types: 15.8.1
+      qrcode: 1.5.0
       qrloop: 1.4.1
       react: 17.0.2
       react-i18next: 11.12.0_nepajqe5ybaqev3dsys5kejmni
       react-is: 17.0.2
       react-native: 0.68.5_qiqqwmyv63yhnuboofexv3s7x4
       react-native-adjust: 4.29.6
+      react-native-aes-crypto: 2.1.1_lozwnsft4qikf7edvar55jcfiy
       react-native-android-location-services-dialog-box: 2.8.2_react-native@0.68.5
       react-native-animatable: 1.3.3
       react-native-biometrics: 3.0.1_react-native@0.68.5
@@ -975,6 +993,10 @@ importers:
       '@ledgerhq/types-cryptoassets': workspace:^
       '@ledgerhq/types-devices': workspace:^
       '@ledgerhq/types-live': workspace:^
+      '@nicolasflamel/ed25519': ^0.0.4
+      '@nicolasflamel/secp256k1-zkp': ^0.0.10
+      '@nicolasflamel/smaz': ^0.0.4
+      '@nicolasflamel/x25519': ^0.0.2
       '@polkadot/types': 8.12.2
       '@polkadot/types-known': 8.12.2
       '@polkadot/util': 10.0.2
@@ -1030,8 +1052,10 @@ importers:
       buffer: ^6.0.3
       camelcase: ^6.2.1
       cashaddrjs: ^0.4.4
+      chacha: ^2.1.0
       coininfo: ^5.1.0
       cosmjs-types: 0.2.1
+      crc-32: ^1.2.2
       create-hmac: ^1.1.7
       cross-env: ^7.0.3
       crypto-js: ^4.1.1
@@ -1055,8 +1079,10 @@ importers:
       events: ^3.3.0
       expect: ^27.4.6
       fs: ^0.0.1-security
+      futoin-hkdf: ^1.5.1
       generic-pool: ^3.8.2
       glob: ^7.2.0
+      hi-base32: ^0.5.1
       invariant: ^2.2.2
       isomorphic-ws: ^4.0.1
       jest: ^28.1.1
@@ -1095,6 +1121,8 @@ importers:
       secp256k1: ^4.0.3
       semver: ^7.3.5
       sha.js: ^2.4.11
+      sha3: ^2.1.4
+      socks-proxy-agent: 7.0.0
       source-map-support: ^0.5.21
       stellar-sdk: ^10.1.1
       superstruct: 0.14.2
@@ -1152,6 +1180,10 @@ importers:
       '@ledgerhq/json-bignumber': 1.1.0
       '@ledgerhq/live-app-sdk': 0.8.1
       '@ledgerhq/logs': link:../ledgerjs/packages/logs
+      '@nicolasflamel/ed25519': 0.0.4_fvyp5h33mdlmlhalc4xfh32q7e
+      '@nicolasflamel/secp256k1-zkp': 0.0.10_fvyp5h33mdlmlhalc4xfh32q7e
+      '@nicolasflamel/smaz': 0.0.4_fvyp5h33mdlmlhalc4xfh32q7e
+      '@nicolasflamel/x25519': 0.0.2_fvyp5h33mdlmlhalc4xfh32q7e
       '@polkadot/types': 8.12.2
       '@polkadot/types-known': 8.12.2
       '@polkadot/util': 10.0.2
@@ -1193,8 +1225,10 @@ importers:
       bs58check: 2.1.2
       buffer: 6.0.3
       cashaddrjs: 0.4.4
+      chacha: 2.1.0
       coininfo: 5.2.1
       cosmjs-types: 0.2.1
+      crc-32: 1.2.2
       create-hmac: 1.1.7
       crypto-js: 4.1.1
       eip55: 2.1.0
@@ -1204,7 +1238,9 @@ importers:
       ethers: 5.7.0
       events: 3.3.0
       expect: 27.5.1
+      futoin-hkdf: 1.5.1
       generic-pool: 3.8.2
+      hi-base32: 0.5.1
       invariant: 2.2.4
       isomorphic-ws: 4.0.1_ws@7.5.7
       json-rpc-2.0: 0.2.19
@@ -1231,12 +1267,15 @@ importers:
       secp256k1: 4.0.3
       semver: 7.3.7
       sha.js: 2.4.11
+      sha3: 2.1.4
+      socks-proxy-agent: 7.0.0_msonch573hz3gkoue725df2pju
       source-map-support: 0.5.21
       stellar-sdk: 10.1.2
       superstruct: 0.14.2
       tiny-secp256k1: 1.1.6
       triple-beam: 1.3.0
       utility-types: 3.10.0
+      uuid: 8.3.2
       varuint-bitcoin: 1.1.2
       winston: 3.7.2
       xstate: 4.32.0
@@ -1291,7 +1330,6 @@ importers:
       ts-node: 10.7.0_tkjtzjn6uycmzwu4x5vlfpspl4
       typescript: 4.8.4
       typescript-eslint-parser: 22.0.0_3rubbgt5ekhqrcgx4uwls3neim
-      uuid: 8.3.2
       ws: 7.5.7
 
   libs/ledgerjs:
@@ -12622,6 +12660,186 @@ packages:
       call-me-maybe: 1.0.1
       glob-to-regexp: 0.3.0
 
+  /@nicolasflamel/ed25519-native/0.0.18:
+    resolution: {integrity: sha512-zKfVEDIui95AVXv/1iwKtIoUnxyvb+d0MOlaNfmuXezlVjjB+bUGVsbj+1iGLzPs/WUNMXv4S5VD3dKpNZ/dLg==}
+    requiresBuild: true
+    dependencies:
+      bindings: 1.5.0
+    dev: false
+    optional: true
+
+  /@nicolasflamel/ed25519-react/0.0.9_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-NoDVuoi2zGRwIEbBwvyqQz1vqulDeGIF6hpdux0JyyIIxzYXBgXh7CYwFvoZO+VjSKYigz8qBPEhUr0A0yxbDg==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+    dependencies:
+      react: 17.0.2
+      react-native: 0.65.1_react@17.0.2
+    dev: false
+    optional: true
+
+  /@nicolasflamel/ed25519-react/0.0.9_ondxtwf5lqq5g76dzmsmwamaca:
+    resolution: {integrity: sha512-NoDVuoi2zGRwIEbBwvyqQz1vqulDeGIF6hpdux0JyyIIxzYXBgXh7CYwFvoZO+VjSKYigz8qBPEhUr0A0yxbDg==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+    dependencies:
+      react: 17.0.2
+      react-native: 0.68.5_qiqqwmyv63yhnuboofexv3s7x4
+    dev: false
+
+  /@nicolasflamel/ed25519-wasm/0.0.22:
+    resolution: {integrity: sha512-iiOCCUnYSrVa2t+9i8Vumi0zZtmPqQvIvCrYEMcAE9J3vshCSn2XSpf2qW4qAGYBx+F3EhkgKWWGtapqJwkMTw==}
+    dev: false
+
+  /@nicolasflamel/ed25519/0.0.4_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-R0mZwEl6XqDudd2/m99OhbcvWywCoC7ax3wemK4w+fhYUC598EE/YHAFwxNB39+2666zMecAPMOu7iTvMFz76A==}
+    dependencies:
+      '@nicolasflamel/ed25519-wasm': 0.0.22
+    optionalDependencies:
+      '@nicolasflamel/ed25519-native': 0.0.18
+      '@nicolasflamel/ed25519-react': 0.0.9_fvyp5h33mdlmlhalc4xfh32q7e
+    transitivePeerDependencies:
+      - react
+      - react-native
+    dev: false
+
+  /@nicolasflamel/secp256k1-zkp-native/0.0.22:
+    resolution: {integrity: sha512-QKDIGF2FlQ0SzkmmVvcv0bvnEMH2cR4dYG0hs8dizPZe9cBGey9PW5OGtwQeSUu6asgPV9QSuDW8oYIWXYeHmw==}
+    requiresBuild: true
+    dependencies:
+      bindings: 1.5.0
+    dev: false
+    optional: true
+
+  /@nicolasflamel/secp256k1-zkp-react/0.0.11_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-MuF7Bj6/qFDXywH3g5sfxX5hxe0JPo6XL5hZnSykp9khcibkN48OfR9JzyIeb5M88LmrLw4Ke21tSNXd1Bo2VA==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+    dependencies:
+      react: 17.0.2
+      react-native: 0.65.1_react@17.0.2
+    dev: false
+    optional: true
+
+  /@nicolasflamel/secp256k1-zkp-react/0.0.11_ondxtwf5lqq5g76dzmsmwamaca:
+    resolution: {integrity: sha512-MuF7Bj6/qFDXywH3g5sfxX5hxe0JPo6XL5hZnSykp9khcibkN48OfR9JzyIeb5M88LmrLw4Ke21tSNXd1Bo2VA==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+    dependencies:
+      react: 17.0.2
+      react-native: 0.68.5_qiqqwmyv63yhnuboofexv3s7x4
+    dev: false
+
+  /@nicolasflamel/secp256k1-zkp-wasm/0.0.25:
+    resolution: {integrity: sha512-fjd8vd341/gxBEBIPw/FpUKJqIAhBc2rSpQIZyekX1z82w49/r3OBYMJaKflZ0cT65T9QXQZzz0U8NiOIRKhIg==}
+    dev: false
+
+  /@nicolasflamel/secp256k1-zkp/0.0.10_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-SVZCPjStxQeFz53f7JagkKy8LWMQJ7CuqO5BP10TWZxJZF8qOsh83u+t0dRVjyQuxHLjmbrG1+M5TgsroYgJtA==}
+    dependencies:
+      '@nicolasflamel/secp256k1-zkp-wasm': 0.0.25
+    optionalDependencies:
+      '@nicolasflamel/secp256k1-zkp-native': 0.0.22
+      '@nicolasflamel/secp256k1-zkp-react': 0.0.11_fvyp5h33mdlmlhalc4xfh32q7e
+    transitivePeerDependencies:
+      - react
+      - react-native
+    dev: false
+
+  /@nicolasflamel/smaz-native/0.0.25:
+    resolution: {integrity: sha512-ssczdD//w0/wDzbvO4BiDC19hhfaSv3JG6QXgfe5QVJ/XLWjixI+me/4b84NWGPXQnX9DLxx52seh70eo0d8Yg==}
+    requiresBuild: true
+    dependencies:
+      bindings: 1.5.0
+    dev: false
+    optional: true
+
+  /@nicolasflamel/smaz-react/0.0.11_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-bsCliplaYcg+yrYPm6mdWUtBjvDOxMktd8Re4/mD1c9mEQcksQNjdC/WyTArwywZzpyPuiYkyD111tpmGiZU2g==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+    dependencies:
+      react: 17.0.2
+      react-native: 0.65.1_react@17.0.2
+    dev: false
+    optional: true
+
+  /@nicolasflamel/smaz-react/0.0.11_ondxtwf5lqq5g76dzmsmwamaca:
+    resolution: {integrity: sha512-bsCliplaYcg+yrYPm6mdWUtBjvDOxMktd8Re4/mD1c9mEQcksQNjdC/WyTArwywZzpyPuiYkyD111tpmGiZU2g==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+    dependencies:
+      react: 17.0.2
+      react-native: 0.68.5_qiqqwmyv63yhnuboofexv3s7x4
+    dev: false
+
+  /@nicolasflamel/smaz-wasm/0.0.30:
+    resolution: {integrity: sha512-4W4L7Cq7zZ1EZ+8odS1MZToSBnVbl7mcuO0Kdgne5+OD21inipkZ82+6d65ZN7qcTYNu+4mo7V6QfhYJhDUJag==}
+    dev: false
+
+  /@nicolasflamel/smaz/0.0.4_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-maOhLJj+e7tGIqJ1IzKi/ez2L5jkcSX6ZzDN2dnzatJk52ah1vAudzyx4fH24UseHv9tW+HYDRU/J39jOVnJNg==}
+    dependencies:
+      '@nicolasflamel/smaz-wasm': 0.0.30
+    optionalDependencies:
+      '@nicolasflamel/smaz-native': 0.0.25
+      '@nicolasflamel/smaz-react': 0.0.11_fvyp5h33mdlmlhalc4xfh32q7e
+    transitivePeerDependencies:
+      - react
+      - react-native
+    dev: false
+
+  /@nicolasflamel/x25519-native/0.0.18:
+    resolution: {integrity: sha512-p23IU28hP80XndcjY6Mj4Nx7tzBU1AJwqjBTHWFs1jUkMU1GiFj2VjroUKQyRnKIxCwLXp7a00np08bnkE10ig==}
+    requiresBuild: true
+    dependencies:
+      bindings: 1.5.0
+    dev: false
+    optional: true
+
+  /@nicolasflamel/x25519-react/0.0.8_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-Y+ZRdrU9WXM+wSpGe6clptekDjqJt6Kw0AgWr3nIaM8OU/eBuP4G4YiMYPU7oIcSmLlEeH8CkNO1EZdnYMj3bA==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+    dependencies:
+      react: 17.0.2
+      react-native: 0.65.1_react@17.0.2
+    dev: false
+    optional: true
+
+  /@nicolasflamel/x25519-react/0.0.8_ondxtwf5lqq5g76dzmsmwamaca:
+    resolution: {integrity: sha512-Y+ZRdrU9WXM+wSpGe6clptekDjqJt6Kw0AgWr3nIaM8OU/eBuP4G4YiMYPU7oIcSmLlEeH8CkNO1EZdnYMj3bA==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+    dependencies:
+      react: 17.0.2
+      react-native: 0.68.5_qiqqwmyv63yhnuboofexv3s7x4
+    dev: false
+
+  /@nicolasflamel/x25519-wasm/0.0.22:
+    resolution: {integrity: sha512-2z2zHjMMs0I8GPliK3XiQoM7z9aeVqXi5xURtjousS1qH+WDJchr+johAq+p8eMyQmJSexYUgNWdu/h9pTnDiA==}
+    dev: false
+
+  /@nicolasflamel/x25519/0.0.2_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-RlY+RwbUy3KumLpkWowFpSOSPyH0S6a9uXXR5RdaGM71OxUKjKOo3999lHHMrSgSiGN7NjNN4QxmGDyEi189Qg==}
+    dependencies:
+      '@nicolasflamel/x25519-wasm': 0.0.22
+    optionalDependencies:
+      '@nicolasflamel/x25519-native': 0.0.18
+      '@nicolasflamel/x25519-react': 0.0.8_fvyp5h33mdlmlhalc4xfh32q7e
+    transitivePeerDependencies:
+      - react
+      - react-native
+    dev: false
+
   /@noble/hashes/1.0.0:
     resolution: {integrity: sha512-DZVbtY62kc3kkBtMHqwCOfXrT/hnoORy5BJ4+HU1IR59X0KWAOqsfzQPcUl/lQLlG7qXbe/fZ3r/emxtAl+sqg==}
     dev: false
@@ -19641,6 +19859,7 @@ packages:
 
   /@types/verror/1.10.6:
     resolution: {integrity: sha512-NNm+gdePAX1VGvPcGZCDKQZKYSiAWigKhKaz5KF94hG6f2s8de9Ow5+7AbXoeKxL8gavZfk4UquSAygOF2duEQ==}
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -24620,6 +24839,25 @@ packages:
   /ccount/1.1.0:
     resolution: {integrity: sha512-vlNK021QdI7PNeiUh/lKkC/mNHHfV0m/Ad5JoI0TYtlBnJAslM/JIkm/tGC88bkLIwO6OQ5uV6ztS6kVAtCDlg==}
     dev: true
+
+  /chacha-native/2.0.3:
+    resolution: {integrity: sha512-93h+osfjhR2sMHAaapTLlL/COoBPEZ6upicPBQ4GfUyadoMb8t9/M0PKK8kC+F+DEA/Oy3Kg9w3HzY3J1foP3g==}
+    requiresBuild: true
+    dependencies:
+      bindings: 1.5.0
+      inherits: 2.0.4
+      nan: 2.15.0
+    dev: false
+    optional: true
+
+  /chacha/2.1.0:
+    resolution: {integrity: sha512-FhVtqaZOiHlOKUkAWfDlJ+oe/O8iPQbCC0pFXJqphr4YQBCZPXa8Mv3j35+W4eWFWCoTUcW2u5IWDDkknygvVA==}
+    dependencies:
+      inherits: 2.0.4
+      readable-stream: 1.0.34
+    optionalDependencies:
+      chacha-native: 2.0.3
+    dev: false
 
   /chai/4.3.6:
     resolution: {integrity: sha512-bbcp3YfHCUzMOvKqsztczerVgBKSsEijCySNlHHbX3VG1nskvqjz5Rfso1gGwD6w6oOV3eI60pKuMOV5MV7p3Q==}
@@ -33377,6 +33615,11 @@ packages:
   /fuse.js/6.6.2:
     resolution: {integrity: sha512-cJaJkxCCxC8qIIcPBF9yGxY0W/tVZS3uEISDxhYIdtk8OL93pe+6Zj7LjCqVV4dzbqcriOZ+kQ/NE4RXZHsIGA==}
     engines: {node: '>=10'}
+    dev: false
+
+  /futoin-hkdf/1.5.1:
+    resolution: {integrity: sha512-g5d0Qp7ks55hYmYmfqn4Nz18XH49lcCR+vvIvHT92xXnsJaGZmY1EtWQWilJ6BQp57heCIXM/rRo+AFep8hGgg==}
+    engines: {node: '>=8'}
     dev: false
 
   /fwd-stream/1.0.4:
@@ -46857,6 +47100,11 @@ packages:
     resolution: {integrity: sha512-6XShRFrqx/kif0iPutaS4gj6LhZtzPIpH3MAxxKOoqwWWX0UPVQ9boQC4j2BtFjmerVQG1p2LGwsdylsGOiJ2g==}
     dev: false
 
+  /react-native-aes-crypto/2.1.1_lozwnsft4qikf7edvar55jcfiy:
+    resolution: {integrity: sha512-huAt7k43myFiY0bPnvoaCP0oBjTMw4VsL2mjkmCPzzDA56Sm3ps5xXIejPo5Z9qfnei9iijHzATV8eRNMEPtbQ==}
+    dev: false
+    patched: true
+
   /react-native-android-location-services-dialog-box/2.8.2_react-native@0.68.5:
     resolution: {integrity: sha512-zBTi0xJQoF6GdImRhXOCXezYuALlPgbctqG3eOrZu63hdrlvTBhqATkb6DB5JM9kpcMbX1skMIOI3m71zKGsPA==}
     peerDependencies:
@@ -50045,7 +50293,6 @@ packages:
   /smart-buffer/4.2.0:
     resolution: {integrity: sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==}
     engines: {node: '>= 6.0.0', npm: '>= 3.0.0'}
-    dev: true
 
   /smartwrap/2.0.2:
     resolution: {integrity: sha512-vCsKNQxb7PnCNd2wY1WClWifAc2lwqsG8OaswpJkVJsvMGcnEntdTCDajZCkk93Ay1U3t/9puJmb525Rg5MZBA==}
@@ -50167,13 +50414,24 @@ packages:
       - supports-color
     dev: true
 
+  /socks-proxy-agent/7.0.0_msonch573hz3gkoue725df2pju:
+    resolution: {integrity: sha512-Fgl0YPZ902wEsAyiQ+idGd1A7rSFx/ayC1CQVMw5P+EQx2V0SgpGtf6OKFhVjPflPUl9YMmEOnmfjCdMUsygww==}
+    engines: {node: '>= 10'}
+    dependencies:
+      agent-base: 6.0.2
+      debug: 4.3.4
+      socks: 2.6.2
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+    patched: true
+
   /socks/2.6.2:
     resolution: {integrity: sha512-zDZhHhZRY9PxRruRMR7kMhnf3I8hDs4S3f9RecfnGxvcBHQcKcIH/oUcEWffsfl1XxdYlA7nnlGbbTvPz9D8gA==}
     engines: {node: '>= 10.13.0', npm: '>= 3.0.0'}
     dependencies:
       ip: 1.1.8
       smart-buffer: 4.2.0
-    dev: true
 
   /sodium-native/3.3.0:
     resolution: {integrity: sha512-rg6lCDM/qa3p07YGqaVD+ciAbUqm6SoO4xmlcfkbU5r1zIGrguXztLiEtaLYTV5U6k8KSIUFmnU3yQUSKmf6DA==}

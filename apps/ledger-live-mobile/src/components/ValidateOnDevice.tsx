@@ -237,7 +237,7 @@ export default function ValidateOnDevice({
         </InnerContainer>
       </ScrollContainer>
       {Footer ? (
-        <Footer transaction={transaction} recipientWording={recipientWording} />
+        <Footer transaction={transaction} recipientWording={recipientWording} status={status} />
       ) : (
         <FooterContainer>
           <Alert type="help">{recipientWording}</Alert>
