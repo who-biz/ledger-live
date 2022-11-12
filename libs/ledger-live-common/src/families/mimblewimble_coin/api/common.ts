@@ -1,4 +1,5 @@
 import os from "os";
+import BigNumber from "bignumber.js";
 
 export default class Common {
 
@@ -91,13 +92,19 @@ export default class Common {
     end?: number
   ): Buffer {
     const result = buffer.subarray(start, end);
-    return (result instanceof Buffer) ? result : Buffer.from(result);
+    return (result instanceof Buffer || (!Common.isPureObject(result) && Buffer.isBuffer(result))) ? result : Buffer.from(result);
   }
 
   public static async resolveIfPromise(
     value: any
   ): Promise<any> {
     const result: any = (value instanceof Promise) ? await value : value;
-    return (result instanceof Uint8Array && !(result instanceof Buffer)) ? Buffer.from(result) : result;
+    return (result instanceof Uint8Array && !(result instanceof Buffer) && (Common.isPureObject(result) || !Buffer.isBuffer(result))) ? Buffer.from(result) : result;
+  }
+
+  public static isBigNumber(
+    value: any
+  ): boolean {
+    return value instanceof BigNumber || (!Common.isPureObject(value) && BigNumber.isBigNumber(value));
   }
 }

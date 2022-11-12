@@ -34,7 +34,7 @@ export default class SlateOutput {
     slate: Slate,
     bitWriter: BitWriter | null = null
   ): {[key: string]: any} | undefined {
-    switch((slate.version instanceof BigNumber) ? (slate.version as BigNumber).toFixed() : slate.version) {
+    switch(Common.isBigNumber(slate.version) ? (slate.version as BigNumber).toFixed() : slate.version) {
       case "2":
       case "3":
         return {
@@ -114,7 +114,7 @@ export default class SlateOutput {
     slate: Slate
   ): Promise<SlateOutput> {
     const slateOutput = Object.create(SlateOutput.prototype);
-    switch((slate.version instanceof BigNumber) ? (slate.version as BigNumber).toFixed() : slate.version) {
+    switch(Common.isBigNumber(slate.version) ? (slate.version as BigNumber).toFixed() : slate.version) {
       case "2":
       case "3":
         if(!Common.isPureObject(serializedSlateOutput)) {
@@ -170,7 +170,7 @@ export default class SlateOutput {
           slateOutput.proof = bitReader.getBytes(proofLength.toNumber());
         }
         else {
-          if("f" in serializedSlateOutput && (!(serializedSlateOutput.f instanceof BigNumber) || !serializedSlateOutput.f.isEqualTo(SlateOutput.Features.PLAIN))) {
+          if("f" in serializedSlateOutput && (!Common.isBigNumber(serializedSlateOutput.f) || !serializedSlateOutput.f.isEqualTo(SlateOutput.Features.PLAIN))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate output features");
           }
           slateOutput.features = ("f" in serializedSlateOutput) ? serializedSlateOutput.f.toNumber() : SlateOutput.Features.PLAIN;

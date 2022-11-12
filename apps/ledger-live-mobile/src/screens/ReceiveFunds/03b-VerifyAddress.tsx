@@ -135,7 +135,7 @@ export default function ReceiveVerifyAddress({ navigation, route }: Props) {
     if (device) {
       verifyOnDevice(device);
     }
-  }, [device, verifyOnDevice]);
+  }, []);
 
   if (!account || !currency || !mainAccount || !device) return null;
 

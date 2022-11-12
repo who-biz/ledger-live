@@ -40,7 +40,7 @@ export default class SlateParticipant {
     slate: Slate,
     bitWriter: BitWriter | null = null
   ): Promise<{[key: string]: any} | undefined> {
-    switch((slate.version instanceof BigNumber) ? (slate.version as BigNumber).toFixed() : slate.version) {
+    switch(Common.isBigNumber(slate.version) ? (slate.version as BigNumber).toFixed() : slate.version) {
       case "2":
       case "3":
         return {
@@ -139,7 +139,7 @@ export default class SlateParticipant {
     slate: Slate
   ): Promise<SlateParticipant> {
     const slateParticipant = Object.create(SlateParticipant.prototype);
-    switch((slate.version instanceof BigNumber) ? (slate.version as BigNumber).toFixed() : slate.version) {
+    switch(Common.isBigNumber(slate.version) ? (slate.version as BigNumber).toFixed() : slate.version) {
       case "2":
       case "3":
         if(!Common.isPureObject(serializedSlateParticipant)) {

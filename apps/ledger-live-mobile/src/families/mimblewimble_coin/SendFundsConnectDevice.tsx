@@ -2,10 +2,9 @@ import invariant from "invariant";
 import React, { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { Platform, StyleSheet, View, Share } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
-import SafeAreaView from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Trans, useTranslation } from "react-i18next";
 import { getMainAccount, formatOperation, addPendingOperation } from "@ledgerhq/live-common/account/index";
-import type { Transaction, TransactionStatus } from "@ledgerhq/live-common/families/mimblewimble_coin/types";
 import { createAction as createTransactionAction } from "@ledgerhq/live-common/hw/actions/transaction";
 import { createAction as createOpenAction } from "@ledgerhq/live-common/hw/actions/app";
 import connectApp from "@ledgerhq/live-common/hw/connectApp";
@@ -47,6 +46,8 @@ import { UserRefusedOnDevice } from "@ledgerhq/errors";
 import { TransactionRefusedOnDevice } from "@ledgerhq/live-common/errors";
 import logger from "../../logger";
 import { ScreenName } from "../../const";
+import { StackNavigationProp } from "@react-navigation/stack";
+import type { SendFundsNavigatorStackParamList } from "../../components/RootNavigator/types/SendFundsNavigator";
 
 const transactionAction = createTransactionAction(connectApp);
 
@@ -86,7 +87,7 @@ function useSignedTxHandler(
       }
       const operation = await broadcast(signedOperation);
       log("transaction-summary", `✔️ broadcasted! optimistic operation: ${formatOperation(mainAccount)(operation)}`);
-      navigation.replace(route.name.replace("ConnectDevice", "ValidationSuccess"), { ...route.params, result: operation });
+      (navigation as StackNavigationProp<{ [key: string]: object }>).replace(route.name.replace("ConnectDevice", "ValidationSuccess"), { ...route.params, result: operation });
       dispatch(updateAccountWithUpdater(mainAccount.id, (
         account: Account
       ) => {
@@ -97,9 +98,9 @@ function useSignedTxHandler(
       error: any
     ) {
       if(!(error instanceof UserRefusedOnDevice || error instanceof TransactionRefusedOnDevice)) {
-        logger.critical(error);
+        logger.critical(error as Error);
       }
-      navigation.replace(route.name.replace("ConnectDevice", "ValidationError"), { ...route.params, error });
+      (navigation as StackNavigationProp<{ [key: string]: object }>).replace(route.name.replace("ConnectDevice", "ValidationError"), { ...route.params, error });
     }
   }, [navigation, route, broadcast, mainAccount, dispatch]);
 }
@@ -137,25 +138,10 @@ const styles = StyleSheet.create({
   }
 });
 
-type Props = {
-  navigation: any;
-  route: {
-    params: RouteParams;
-    name: string;
-  };
-};
-
-type RouteParams = {
-  device: Device;
-  accountId: string;
-  transaction: Transaction;
-  status: TransactionStatus;
-  appName?: string;
-  selectDeviceLink?: boolean;
-  onSuccess?: (payload: any) => void;
-  onError?: (error: any) => void;
-  analyticsPropertyFlow?: string;
-};
+type Props = StackNavigatorProps<
+  SendFundsNavigatorStackParamList,
+  ScreenName.SendConnectDevice
+>;
 
 export default function ConnectDevice(
   {

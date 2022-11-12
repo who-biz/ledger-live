@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
 import JsonRpc from "./jsonRpc";
 import { MimbleWimbleCoinNoResponseFromRecipient, MimbleWimbleCoinUnsupportedResponseFromRecipient } from "../errors";
+import Common from "./common";
 
 export default class WalletApi {
 
@@ -16,7 +17,7 @@ export default class WalletApi {
       foreign_api_version,
       supported_slate_versions
     } = await JsonRpc.sendRequest(url, WalletApi.getNoResponseError(), WalletApi.getInvalidResponseError(), false, "check_version");
-    if(!(foreign_api_version instanceof BigNumber) || !foreign_api_version.isEqualTo(WalletApi.FOREIGN_API_VERSION)) {
+    if(!Common.isBigNumber(foreign_api_version) || !foreign_api_version.isEqualTo(WalletApi.FOREIGN_API_VERSION)) {
       throw new MimbleWimbleCoinUnsupportedResponseFromRecipient("Unsupported foreign API version from recipient");
     }
     if(!Array.isArray(supported_slate_versions)) {

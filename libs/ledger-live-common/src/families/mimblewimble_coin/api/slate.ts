@@ -84,7 +84,7 @@ export default class Slate {
     purpose: number,
     preferBinary: boolean
   ): Promise<{[key: string]: any} | Buffer> {
-    switch((this.version instanceof BigNumber) ? this.version.toFixed() : this.version) {
+    switch(Common.isBigNumber(this.version) ? (this.version as BigNumber).toFixed() : this.version) {
       case "2":
       case "3":
         let serializedSlate: {[key: string]: any} = {
@@ -614,12 +614,12 @@ export default class Slate {
     if(this.headerVersion !== slate.headerVersion) {
       return false;
     }
-    if((this.originalVersion instanceof BigNumber && (!(slate.originalVersion instanceof BigNumber) || !this.originalVersion.isEqualTo(slate.originalVersion))) || (typeof this.originalVersion === "string" && (typeof slate.originalVersion !== "string" || this.originalVersion !== slate.originalVersion))) {
-      if(!(this.originalVersion instanceof BigNumber) || !(slate.originalVersion instanceof BigNumber) || !this.originalVersion.isEqualTo(2) || !slate.originalVersion.isEqualTo(3)) {
+    if((Common.isBigNumber(this.originalVersion) && (!Common.isBigNumber(slate.originalVersion) || !(this.originalVersion as BigNumber).isEqualTo(slate.originalVersion))) || (typeof this.originalVersion === "string" && (typeof slate.originalVersion !== "string" || this.originalVersion !== slate.originalVersion))) {
+      if(!Common.isBigNumber(this.originalVersion) || !Common.isBigNumber(slate.originalVersion) || !(this.originalVersion as BigNumber).isEqualTo(2) || !(slate.originalVersion as BigNumber).isEqualTo(3)) {
         return false;
       }
     }
-    if((this.version instanceof BigNumber && (!(slate.version instanceof BigNumber) || this.version.isLessThan(slate.version))) || (typeof this.version === "string" && (typeof slate.version !== "string" || this.version !== slate.version))) {
+    if((Common.isBigNumber(this.version) && (!Common.isBigNumber(slate.version) || (this.version as BigNumber).isLessThan(slate.version))) || (typeof this.version === "string" && (typeof slate.version !== "string" || this.version !== slate.version))) {
       return false;
     }
     if(this.recipientPaymentProofAddress !== slate.recipientPaymentProofAddress) {
@@ -835,11 +835,11 @@ export default class Slate {
         if(!("version_info" in serializedSlate) || !Common.isPureObject(serializedSlate.version_info)) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate version info");
         }
-        if(!("version" in serializedSlate.version_info) || !(serializedSlate.version_info.version instanceof BigNumber) || !serializedSlate.version_info.version.isInteger() || serializedSlate.version_info.version.isLessThan(1)) {
+        if(!("version" in serializedSlate.version_info) || !Common.isBigNumber(serializedSlate.version_info.version) || !serializedSlate.version_info.version.isInteger() || serializedSlate.version_info.version.isLessThan(1)) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate version");
         }
         slate.version = serializedSlate.version_info.version;
-        if(!("num_participants" in serializedSlate) || !(serializedSlate.num_participants instanceof BigNumber) || !serializedSlate.num_participants.isInteger() || serializedSlate.num_participants.isLessThan(2)) {
+        if(!("num_participants" in serializedSlate) || !Common.isBigNumber(serializedSlate.num_participants) || !serializedSlate.num_participants.isInteger() || serializedSlate.num_participants.isLessThan(2)) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate number of participants");
         }
         slate.numberOfParticipants = serializedSlate.num_participants;
@@ -859,11 +859,11 @@ export default class Slate {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate lock height");
         }
         slate.lockHeight = new BigNumber(serializedSlate.lock_height);
-        if(!("orig_version" in serializedSlate.version_info) || !(serializedSlate.version_info.orig_version instanceof BigNumber) || !serializedSlate.version_info.orig_version.isInteger() || serializedSlate.version_info.orig_version.isLessThan(1)) {
+        if(!("orig_version" in serializedSlate.version_info) || !Common.isBigNumber(serializedSlate.version_info.orig_version) || !serializedSlate.version_info.orig_version.isInteger() || serializedSlate.version_info.orig_version.isLessThan(1)) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate original version");
         }
         slate.originalVersion = serializedSlate.version_info.orig_version;
-        if(!("block_header_version" in serializedSlate.version_info) || !(serializedSlate.version_info.block_header_version instanceof BigNumber) || !serializedSlate.version_info.block_header_version.isEqualTo(Consensus.getHeaderVersion(slate.cryptocurrency, slate.height))) {
+        if(!("block_header_version" in serializedSlate.version_info) || !Common.isBigNumber(serializedSlate.version_info.block_header_version) || !serializedSlate.version_info.block_header_version.isEqualTo(Consensus.getHeaderVersion(slate.cryptocurrency, slate.height))) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate header version");
         }
         slate.headerVersion = serializedSlate.version_info.block_header_version.toNumber();
@@ -1373,7 +1373,7 @@ export default class Slate {
           if(!("sta" in serializedSlate) || serializedSlate.sta !== Slate.getPurposeAsText(purpose)) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate purpose");
           }
-          if("num_parts" in serializedSlate && (!(serializedSlate.num_parts instanceof BigNumber) || !serializedSlate.num_parts.isInteger() || serializedSlate.num_parts.isLessThan(2))) {
+          if("num_parts" in serializedSlate && (!Common.isBigNumber(serializedSlate.num_parts) || !serializedSlate.num_parts.isInteger() || serializedSlate.num_parts.isLessThan(2))) {
             throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate number of participants");
           }
           slate.numberOfParticipants = ("num_parts" in serializedSlate) ? serializedSlate.num_parts : new BigNumber(2);
@@ -1386,7 +1386,7 @@ export default class Slate {
           }
           slate.headerVersion = parseInt(serializedSlate.ver.split(":")[1]);
           if("feat" in serializedSlate) {
-            if(!(serializedSlate.feat instanceof BigNumber) || serializedSlate.feat.isGreaterThan(Number.MAX_SAFE_INTEGER)) {
+            if(!Common.isBigNumber(serializedSlate.feat) || serializedSlate.feat.isGreaterThan(Number.MAX_SAFE_INTEGER)) {
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate features");
             }
             switch(serializedSlate.feat.toNumber()) {
@@ -1520,7 +1520,7 @@ export default class Slate {
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate amount");
             }
             slate.amount = ("amt" in serializedSlate) ? new BigNumber(serializedSlate.amt) : initialSendSlate!.amount;
-            if("fee" in serializedSlate && ((!Common.isNumberString(serializedSlate.fee) && !(serializedSlate.fee instanceof BigNumber)) || !new BigNumber(serializedSlate.fee).isInteger() || new BigNumber(serializedSlate.fee).isLessThan(1))) {
+            if("fee" in serializedSlate && ((!Common.isNumberString(serializedSlate.fee) && !Common.isBigNumber(serializedSlate.fee)) || !new BigNumber(serializedSlate.fee).isInteger() || new BigNumber(serializedSlate.fee).isLessThan(1))) {
               throw new MimbleWimbleCoinInvalidParameters("Invalid serialized slate fee");
             }
             slate.fee = ("fee" in serializedSlate) ? new BigNumber(serializedSlate.fee) : initialSendSlate!.fee;
@@ -1986,7 +1986,7 @@ export default class Slate {
         if("network_type" in serializedSlate && serializedSlate.network_type !== Slate.getNetworkType(cryptocurrency)) {
           return null;
         }
-        if("version_info" in serializedSlate && Common.isPureObject(serializedSlate.version_info) && "version" in serializedSlate.version_info && serializedSlate.version_info.version instanceof BigNumber && serializedSlate.version_info.version.isInteger() && serializedSlate.version_info.version.isPositive()) {
+        if("version_info" in serializedSlate && Common.isPureObject(serializedSlate.version_info) && "version" in serializedSlate.version_info && Common.isBigNumber(serializedSlate.version_info.version) && serializedSlate.version_info.version.isInteger() && serializedSlate.version_info.version.isPositive()) {
           return serializedSlate.version_info.version.toFixed();
         }
         break;

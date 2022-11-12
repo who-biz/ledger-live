@@ -3,7 +3,7 @@ import React, { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import i18next from "i18next";
 import { StyleSheet, View, ScrollView } from "react-native";
-import SafeAreaView from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@react-navigation/native";
 import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
 import { useSelector } from "react-redux";

@@ -11,7 +11,7 @@ import { Flex, Log } from "@ledgerhq/native-ui";
 import Alert from "../../components/Alert";
 import { DataRowUnitValue, TextValueField } from "../../components/ValidateOnDeviceDataRow";
 import Animation from "../../components/Animation";
-import getDeviceAnimation from "../../helpers/getDeviceAnimation";
+import { getDeviceAnimation } from "../../helpers/getDeviceAnimation";
 
 function AmountField(
   {

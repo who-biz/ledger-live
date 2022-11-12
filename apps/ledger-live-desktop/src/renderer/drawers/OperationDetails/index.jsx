@@ -616,10 +616,10 @@ const OperationD: React$ComponentType<Props> = (props: Props) => {
           </Box>
         </OpDetailsSection>
       ) : null}
-      <OpDetailsExtra operation={operation} extra={extra} type={type} account={account} />
       {(hash || uniqueSenders.length || recipients.length) ? (
         <B />
       ) : null}
+      <OpDetailsExtra operation={operation} extra={extra} type={type} account={account} />
     </Box>
   );
 };

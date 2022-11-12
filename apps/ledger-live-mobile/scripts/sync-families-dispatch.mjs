@@ -42,6 +42,7 @@ const targets = [
   "AddAccountsAccounts",
   "SendRecipientFields",
   "SendFundsConnectDevice",
+  "ReceiveFundsAddAccount",
 ];
 
 async function genTarget(target) {

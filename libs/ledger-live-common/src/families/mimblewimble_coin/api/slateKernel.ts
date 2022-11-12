@@ -45,7 +45,7 @@ export default class SlateKernel {
     slate: Slate,
     bitWriter: BitWriter | null = null
   ): {[key: string]: any} | undefined {
-    switch((slate.version instanceof BigNumber) ? (slate.version as BigNumber).toFixed() : slate.version) {
+    switch(Common.isBigNumber(slate.version) ? (slate.version as BigNumber).toFixed() : slate.version) {
       case "2":
       case "3":
         switch(this.features) {
@@ -288,7 +288,7 @@ export default class SlateKernel {
     slate: Slate
   ): Promise<SlateKernel> {
     const slateKernel = Object.create(SlateKernel.prototype);
-    switch((slate.version instanceof BigNumber) ? (slate.version as BigNumber).toFixed() : slate.version) {
+    switch(Common.isBigNumber(slate.version) ? (slate.version as BigNumber).toFixed() : slate.version) {
       case "2":
       case "3":
         if(!Common.isPureObject(serializedSlateKernel)) {

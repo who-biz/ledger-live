@@ -200,7 +200,7 @@ export default (
           slate.id = transaction.id!;
         }
         else {
-          if(supportedSlateVersions!.indexOf((slate.version instanceof BigNumber) ? `V${(slate.version as BigNumber).toFixed()}` : slate.version) === -1) {
+          if(supportedSlateVersions!.indexOf(Common.isBigNumber(slate.version) ? `V${(slate.version as BigNumber).toFixed()}` : slate.version as string) === -1) {
             throw new MimbleWimbleCoinUnsupportedResponseFromRecipient("No supported recipient slate versions");
           }
           for(let uniqueId: boolean = false; !uniqueId;) {

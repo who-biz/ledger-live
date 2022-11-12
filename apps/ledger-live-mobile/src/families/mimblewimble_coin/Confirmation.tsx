@@ -4,6 +4,11 @@ import { useDispatch, useSelector } from "react-redux";
 import QRCode from "react-native-qrcode-svg";
 import { useTranslation, Trans } from "react-i18next";
 import type { Account, TokenAccount, AccountLike, OperationRaw } from "@ledgerhq/types-live";
+import type {
+  CryptoCurrency,
+  CryptoOrTokenCurrency,
+  TokenCurrency,
+} from "@ledgerhq/types-cryptoassets";
 import {
   makeEmptyTokenAccount,
   getMainAccount,
@@ -24,7 +29,6 @@ import AdditionalInfoModal from "../../screens/ReceiveFunds/AdditionalInfoModal"
 import { replaceAccounts } from "../../actions/accounts";
 import { ScreenName } from "../../const";
 import { track, TrackScreen } from "../../analytics";
-import { usePreviousRouteName } from "../../helpers/routeHooks";
 import PreventNativeBack from "../../components/PreventNativeBack";
 import { SyncSkipUnderPriority } from "@ledgerhq/live-common/bridge/react/index";
 import Button from "../../components/Button";
@@ -53,6 +57,11 @@ import SkipLock from "../../components/behaviour/SkipLock";
 import HeaderRightClose from "../../components/HeaderRightClose";
 import ValidateReceiveOnDevice from "./ValidateReceiveOnDevice";
 import ValidateReceiveSuccess from "./ValidateReceiveSuccess";
+import {
+  BaseComposite,
+  StackNavigatorProps,
+} from "../../components/RootNavigator/types/helpers";
+import { ReceiveFundsStackParamList } from "../../components/RootNavigator/types/ReceiveFundsNavigator";
 
 const openAction = createAction(connectApp);
 
@@ -90,37 +99,29 @@ const styles = StyleSheet.create({
   }
 });
 
+type ScreenProps = BaseComposite<
+  StackNavigatorProps<
+    ReceiveFundsStackParamList,
+    ScreenName.ReceiveConfirmation | ScreenName.ReceiveVerificationConfirmation
+  >
+>;
+
 type Props = {
   account?: TokenAccount | Account;
   parentAccount?: Account;
-  navigation: any;
-  route: { params: RouteParams };
-  readOnlyModeEnabled: boolean;
-};
-
-type RouteParams = {
-  account?: AccountLike;
-  accountId: string;
-  parentId?: string;
-  modelId: DeviceModelId;
-  wired: boolean;
-  device?: Device;
-  currency?: Currency;
-  createTokenAccount?: boolean;
-  onSuccess?: (_?: string) => void;
-  onError?: () => void;
-};
+  readOnlyModeEnabled?: boolean;
+} & ScreenProps;
 
 export default function ReceiveConfirmation({ navigation }: Props) {
-  const route = useRoute();
+  const route = useRoute<ScreenProps["route"]>();
   const { account, parentAccount } = useSelector(accountScreenSelector(route));
 
   return account ? (
     <ReceiveConfirmationInner
       navigation={navigation}
       route={route}
-      account={account}
-      parentAccount={parentAccount}
+      account={account as Account | TokenAccount}
+      parentAccount={parentAccount ?? undefined}
     />
   ) : null;
 }
@@ -133,36 +134,80 @@ function ReceiveConfirmationInner({
 }: Props) {
   useEffect(() => {
     if(!route.params.verified) {
+      let selectAccountRoute: number | undefined;
+      for(let i: number = 0; i < navigation.getState().routes.length; ++i) {
+        if(navigation.getState().routes[i].name === ScreenName.ReceiveSelectAccount) {
+          selectAccountRoute = i;
+          break;
+        }
+      }
       if(navigation.getState().routes[0].name === ScreenName.ReceiveSelectCrypto) {
-        navigation.reset({
-          index: 1,
-          routes: [
-            navigation.getState().routes[0],
-            {
-              name: ScreenName.ReceiveConnectDevice,
-              params: {
-                ...route.params,
-                notSkippable: true,
-                transactionData: undefined
+        if(selectAccountRoute !== undefined) {
+          navigation.reset({
+            index: 2,
+            routes: [
+              navigation.getState().routes[0],
+              navigation.getState().routes[selectAccountRoute],
+              {
+                name: ScreenName.ReceiveConnectDevice,
+                params: {
+                  ...route.params,
+                  notSkippable: true,
+                  transactionData: undefined
+                }
               }
-            }
-          ]
-        });
+            ]
+          });
+        }
+        else {
+          navigation.reset({
+            index: 1,
+            routes: [
+              navigation.getState().routes[0],
+              {
+                name: ScreenName.ReceiveConnectDevice,
+                params: {
+                  ...route.params,
+                  notSkippable: true,
+                  transactionData: undefined
+                }
+              }
+            ]
+          });
+        }
       }
       else {
-        navigation.reset({
-          index: 0,
-          routes: [
-            {
-              name: ScreenName.ReceiveConnectDevice,
-              params: {
-                ...route.params,
-                notSkippable: true,
-                transactionData: undefined
+        if(selectAccountRoute !== undefined) {
+          navigation.reset({
+            index: 1,
+            routes: [
+              navigation.getState().routes[selectAccountRoute],
+              {
+                name: ScreenName.ReceiveConnectDevice,
+                params: {
+                  ...route.params,
+                  notSkippable: true,
+                  transactionData: undefined
+                }
               }
-            }
-          ]
-        });
+            ]
+          });
+        }
+        else {
+          navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: ScreenName.ReceiveConnectDevice,
+                params: {
+                  ...route.params,
+                  notSkippable: true,
+                  transactionData: undefined
+                }
+              }
+            ]
+          });
+        }
       }
     }
   }, []);
@@ -177,9 +222,9 @@ function ReceiveConfirmationInner({
   }
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const verified = route.params?.verified;
+  const verified = route.params?.verified ?? false;
   const [isModalOpened, setIsModalOpened] = useState(true);
-  const [hasAddedTokenAccount, setHasAddedTokenAccount] = useState();
+  const [hasAddedTokenAccount, setHasAddedTokenAccount] = useState(false);
   const [isToastDisplayed, setIsToastDisplayed] = useState(false);
   const [isVerifiedToastDisplayed, setIsVerifiedToastDisplayed] =
     useState(verified);
@@ -201,8 +246,6 @@ function ReceiveConfirmationInner({
   const [ signatureReceived, setSignatureReceived ] = useState(false);
   const [ transactionResponse, setTransactionResponse ] = useState(null);
   const dispatch = useDispatch();
-  const lastRoute = usePreviousRouteName();
-  const routerRoute = useRoute();
 
   const hideToast = useCallback(() => {
     setIsToastDisplayed(false);
@@ -214,11 +257,10 @@ function ReceiveConfirmationInner({
   const openAdditionalInfoModal = useCallback(() => {
     track("notification_clicked", {
       button: "Imported and created account",
-      screen: routerRoute.name,
     });
     setIsAddionalInfoModalOpen(true);
     hideToast();
-  }, [setIsAddionalInfoModalOpen, hideToast, routerRoute.name]);
+  }, [setIsAddionalInfoModalOpen, hideToast]);
 
   const closeAdditionalInfoModal = useCallback(() => {
     setIsAddionalInfoModalOpen(false);
@@ -227,12 +269,11 @@ function ReceiveConfirmationInner({
   const onRetry = useCallback(() => {
     track("button_clicked", {
       button: "Verify your address",
-      screen: routerRoute.name,
     });
     const params = { ...route.params, notSkippable: true };
     setIsModalOpened(false);
     navigation.navigate(ScreenName.ReceiveConnectDevice, params);
-  }, [navigation, route.params, routerRoute]);
+  }, [navigation, route.params]);
 
   const { width } = getWindowDimensions();
   const QRSize = Math.round(width / 1.8 - 16);
@@ -246,12 +287,14 @@ function ReceiveConfirmationInner({
       if (
         !newMainAccount.subAccounts ||
         !newMainAccount.subAccounts.find(
-          (acc: TokenAccount) => acc?.token?.id === currency.id,
+          acc =>
+            (acc as TokenAccount)?.token?.id ===
+            (currency as CryptoOrTokenCurrency).id,
         )
       ) {
         const emptyTokenAccount = makeEmptyTokenAccount(
-          newMainAccount,
-          currency,
+          newMainAccount as Account,
+          currency as TokenCurrency,
         );
         newMainAccount.subAccounts = [
           ...(newMainAccount.subAccounts || []),
@@ -261,8 +304,8 @@ function ReceiveConfirmationInner({
         // @TODO create a new action for adding a single account at a time instead of replacing
         dispatch(
           replaceAccounts({
-            scannedAccounts: [newMainAccount],
-            selectedIds: [newMainAccount.id],
+            scannedAccounts: [newMainAccount as Account],
+            selectedIds: [(newMainAccount as Account).id],
             renamings: {},
           }),
         );
@@ -280,27 +323,25 @@ function ReceiveConfirmationInner({
 
   useEffect(() => {
     setIsVerifiedToastDisplayed(verified);
-    if (verified) {
+    if (verified && currency) {
       track("Verification Success", { currency: currency.name });
     }
-  }, [verified, currency.name]);
+  }, [verified, currency]);
 
   const onShare = useCallback(() => {
     track("button_clicked", {
       button: "Share",
-      screen: routerRoute.name,
     });
     if (mainAccount?.freshAddress) {
       Share.share({ message: mainAccount?.freshAddress });
     }
-  }, [mainAccount?.freshAddress, routerRoute.name]);
+  }, [mainAccount?.freshAddress]);
 
   const onCopy = useCallback(() => {
     track("button_clicked", {
       button: "Copy",
-      screen: routerRoute.name,
     });
-  }, [routerRoute.name]);
+  }, []);
 
   const onContinue = useCallback(() => {
     setEnterTransaction(true);
@@ -546,7 +587,6 @@ function ReceiveConfirmationInner({
             <TrackScreen
               category="Receive"
               name="Enter Transaction"
-              source={lastRoute}
               currency={currency.name}
             />
             <Text variant="body" fontWeight="medium" color="neutral.c70" textAlign="center" mt={4}>
@@ -598,7 +638,6 @@ function ReceiveConfirmationInner({
             <TrackScreen
               category="Receive"
               name="Qr Code"
-              source={lastRoute}
               currency={currency.name}
             />
             <Flex p={6} alignItems="center" justifyContent="center">
@@ -681,8 +720,8 @@ function ReceiveConfirmationInner({
                     currency={currency}
                     color={colors.constant.white}
                     bg={
-                      currency?.color ||
-                      currency.parentCurrency?.color ||
+                      (currency as CryptoCurrency)?.color ||
+                      (currency as TokenCurrency).parentCurrency?.color ||
                       colors.constant.black
                     }
                     size={48}

@@ -65,12 +65,25 @@ export default class Sync {
         } = await Node.getPmmrIndices(cryptocurrency, startHeight, tipHeight);
         if(startIndex.isLessThanOrEqualTo(endIndex)) {
           let lastSyncedPercent: number = 0;
-          for(let currentIndex: BigNumber = startIndex;;) {
+          let getOutputs: Promise<{
+            highestIndex: BigNumber,
+            lastRetrievedIndex: BigNumber,
+            outputs: {
+              commitment: string,
+              proof: string,
+              type: string,
+              height: number
+            }[]
+          }> = Node.getOutputs(cryptocurrency, startIndex, endIndex, Sync.getOutputsGroupSize());
+          while(true) {
             const {
               highestIndex,
               lastRetrievedIndex,
               outputs
-            } = await Node.getOutputs(cryptocurrency, currentIndex, endIndex, Sync.getOutputsGroupSize());
+            } = await getOutputs;
+            if(highestIndex.isGreaterThan(lastRetrievedIndex)) {
+              getOutputs = Node.getOutputs(cryptocurrency, lastRetrievedIndex.plus(1), endIndex, Sync.getOutputsGroupSize());
+            }
             for(const output of outputs) {
               if(o) {
                 const syncedPercent = tipHeight.minus(startHeight).isZero() ? 100 : Math.min(Math.floor(BigNumber.maximum(new BigNumber(output.height).minus(startHeight), 0).dividedBy(tipHeight.minus(startHeight)).multipliedBy(100).toNumber()), 100);
@@ -159,7 +172,6 @@ export default class Sync {
             if(highestIndex.isLessThanOrEqualTo(lastRetrievedIndex)) {
               break;
             }
-            currentIndex = lastRetrievedIndex.plus(1);
           }
         }
         const newNextIdentifier = (highestIdentifier && highestIdentifier.includesValue(nextIdentifier)) ? highestIdentifier.getNext() : nextIdentifier;

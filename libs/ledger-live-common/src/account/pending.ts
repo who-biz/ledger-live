@@ -4,6 +4,16 @@ export function shouldRetainPendingOperation(
   account: Account,
   op: Operation
 ): boolean {
+
+  if (account.currency.family === "mimblewimble_coin") {
+    for (const operation of account.operations) {
+      if (operation.id === op.id) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   // FIXME: valueOf to compare dates in typescript
   const delay = new Date().valueOf() - op.date.valueOf();
   const last = account.operations[0];
@@ -15,10 +25,6 @@ export function shouldRetainPendingOperation(
     op.transactionSequenceNumber <= last.transactionSequenceNumber
   ) {
     return false;
-  }
-
-  if (account.currency.family === "mimblewimble_coin") {
-    return true;
   }
 
   return delay < getEnv("OPERATION_OPTIMISTIC_RETENTION");
