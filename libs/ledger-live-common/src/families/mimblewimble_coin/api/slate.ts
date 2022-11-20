@@ -592,7 +592,7 @@ export default class Slate {
     if((!this.relativeHeight && slate.relativeHeight) || (this.relativeHeight && !slate.relativeHeight) || (this.relativeHeight && !this.relativeHeight.isEqualTo(slate.relativeHeight!))) {
       return false;
     }
-    if((!this.height && slate.height) || (this.height && !slate.height) || this.height && !this.height.isEqualTo(slate.height!)) {
+    if((!this.height && slate.height) || (this.height && !slate.height) || (this.height && !this.height.isEqualTo(slate.height!))) {
       return false;
     }
     if((!this.timeToLiveCutOffHeight && slate.timeToLiveCutOffHeight) || (this.timeToLiveCutOffHeight && !slate.timeToLiveCutOffHeight) || (this.timeToLiveCutOffHeight && !this.timeToLiveCutOffHeight.isEqualTo(slate.timeToLiveCutOffHeight!))) {

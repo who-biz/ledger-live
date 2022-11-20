@@ -724,7 +724,7 @@ class StepReceiveFunds extends PureComponent<Props, State> {
             render={() => (
               <Box alignItems="center">
                 <QRCodeWrapper>
-                  <QRCode size={(transactionResponse !== null) ? 372 : 160} data={(transactionResponse !== null) ? transactionResponse : address} />
+                  <QRCode size={(transactionResponse !== null) ? 372 : 160} data={(transactionResponse !== null) ? transactionResponse : address} errorCorrectionLevel={"Q"} />
                 </QRCodeWrapper>
                 <Box mt={6}>
                   {(transactionResponse !== null) ? (

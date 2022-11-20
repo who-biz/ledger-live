@@ -504,7 +504,7 @@ class StepConnectDevice extends PureComponent<Props, State> {
             render={() => (
               <Box alignItems="center">
                 <QRCodeWrapper>
-                  <QRCode size={372} data={transactionData} />
+                  <QRCode size={372} data={transactionData} errorCorrectionLevel={"Q"} />
                 </QRCodeWrapper>
                 <Box mt={6}>
                   <ReadOnlyTransactionField transactionData={transactionData} />
