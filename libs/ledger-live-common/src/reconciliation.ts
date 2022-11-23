@@ -207,18 +207,36 @@ export function patchAccount(
     }
   }
 
-  const operations = patchOperations(
-    account.operations,
-    updatedRaw.operations,
-    updatedRaw.id,
-    subAccounts
-  );
-  const pendingOperations = patchOperations(
-    account.pendingOperations,
-    updatedRaw.pendingOperations,
-    updatedRaw.id,
-    subAccounts
-  );
+  let shouldMergeOps: boolean;
+  switch (account.currency.family) {
+    case "mimblewimble_coin":
+      shouldMergeOps = false;
+      break;
+    default:
+      shouldMergeOps = true;
+      break;
+  }
+  let operations: Operation[];
+  let pendingOperations: Operation[];
+  if (shouldMergeOps) {
+    operations = patchOperations(
+      account.operations,
+      updatedRaw.operations,
+      updatedRaw.id,
+      subAccounts
+    );
+    pendingOperations = patchOperations(
+      account.pendingOperations,
+      updatedRaw.pendingOperations,
+      updatedRaw.id,
+      subAccounts
+    );
+  }
+  else {
+    operations = updatedRaw.operations.map(raw => fromOperationRaw(raw, updatedRaw.id, subAccounts));
+    pendingOperations = updatedRaw.pendingOperations.map(raw => fromOperationRaw(raw, updatedRaw.id, subAccounts));
+  }
+
   const next: Account = { ...account };
   let changed = false;
 

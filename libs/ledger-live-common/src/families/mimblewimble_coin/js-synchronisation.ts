@@ -119,5 +119,6 @@ export const scanAccounts = makeScanAccounts({
 });
 
 export const sync = makeSync({
-  getAccountShape
+  getAccountShape,
+  shouldMergeOps: false
 });
