@@ -123,49 +123,51 @@ export default class Sync {
                   continue;
                 }
                 if(await Common.resolveIfPromise(Secp256k1Zkp.verifyBulletproof(outputProof, outputCommitment, Buffer.alloc(0)))) {
-                  const outputHeight = new BigNumber(output.height);
-                  let identifierHeight: BigNumber | null = messageComponents.identifier.getHeight(cryptocurrency);
-                  if(identifierHeight) {
-                    identifierHeight = identifierHeight.plus(outputHeight.dividedBy(Identifier.MAXIMUM_HEIGHT + 1).decimalPlaces(0, BigNumber.ROUND_HALF_CEIL).multipliedBy(Identifier.MAXIMUM_HEIGHT + 1));
-                     if(identifierHeight.minus(outputHeight).isGreaterThan(Sync.getIdentifierHeightOverageThreshold(cryptocurrency)) && identifierHeight.isGreaterThanOrEqualTo(Identifier.MAXIMUM_HEIGHT + 1)) {
-                      identifierHeight = identifierHeight.minus(Identifier.MAXIMUM_HEIGHT + 1);
+                  if(messageComponents.switchType !== Crypto.SwitchType.NONE) {
+                    const outputHeight = new BigNumber(output.height);
+                    let identifierHeight: BigNumber | null = messageComponents.identifier.getHeight(cryptocurrency);
+                    if(identifierHeight) {
+                      identifierHeight = identifierHeight.plus(outputHeight.dividedBy(Identifier.MAXIMUM_HEIGHT + 1).decimalPlaces(0, BigNumber.ROUND_HALF_CEIL).multipliedBy(Identifier.MAXIMUM_HEIGHT + 1));
+                       if(identifierHeight.minus(outputHeight).isGreaterThan(Sync.getIdentifierHeightOverageThreshold(cryptocurrency)) && identifierHeight.isGreaterThanOrEqualTo(Identifier.MAXIMUM_HEIGHT + 1)) {
+                        identifierHeight = identifierHeight.minus(Identifier.MAXIMUM_HEIGHT + 1);
+                      }
+                      if(outputHeight.minus(identifierHeight).isGreaterThan(Sync.getReplayDetectionThreshold(cryptocurrency))) {
+                        continue;
+                      }
                     }
-                    if(outputHeight.minus(identifierHeight).isGreaterThan(Sync.getReplayDetectionThreshold(cryptocurrency))) {
-                      continue;
+                    if(!highestIdentifier) {
+                      highestIdentifier = new Identifier();
                     }
-                  }
-                  if(!highestIdentifier) {
-                    highestIdentifier = new Identifier();
-                  }
-                  if(messageComponents.identifier.includesValue(highestIdentifier)) {
-                    highestIdentifier = messageComponents.identifier.removeExtras(cryptocurrency);
-                  }
-                  const {
-                    hash,
-                    timestamp
-                  } = await Node.getHeader(cryptocurrency, outputHeight);
-                  newOperations.unshift({
-                    id: encodeOperationId(accountId, output.commitment, "IN"),
-                    hash: "",
-                    type: (output.type === "Coinbase") ? "COINBASE_REWARD" : "IN",
-                    value: amount,
-                    fee: new BigNumber(-1),
-                    senders: [],
-                    recipients: [],
-                    blockHeight: output.height,
-                    blockHash: hash.toString("hex"),
-                    accountId,
-                    date: timestamp,
-                    extra: {
-                      outputCommitment,
-                      identifier: messageComponents.identifier,
-                      switchType: messageComponents.switchType,
-                      spent: false,
-                      kernelExcess: null,
-                      kernelOffset: null,
-                      recipientPaymentProofSignature: null
+                    if(messageComponents.identifier.includesValue(highestIdentifier)) {
+                      highestIdentifier = messageComponents.identifier.removeExtras(cryptocurrency);
                     }
-                  });
+                    const {
+                      hash,
+                      timestamp
+                    } = await Node.getHeader(cryptocurrency, outputHeight);
+                    newOperations.unshift({
+                      id: encodeOperationId(accountId, output.commitment, "IN"),
+                      hash: "",
+                      type: (output.type === "Coinbase") ? "COINBASE_REWARD" : "IN",
+                      value: amount,
+                      fee: new BigNumber(-1),
+                      senders: [],
+                      recipients: [],
+                      blockHeight: output.height,
+                      blockHash: hash.toString("hex"),
+                      accountId,
+                      date: timestamp,
+                      extra: {
+                        outputCommitment,
+                        identifier: messageComponents.identifier,
+                        switchType: messageComponents.switchType,
+                        spent: false,
+                        kernelExcess: null,
+                        kernelOffset: null,
+                        recipientPaymentProofSignature: null
+                      }
+                    });
+                  }
                 }
               }
             }
