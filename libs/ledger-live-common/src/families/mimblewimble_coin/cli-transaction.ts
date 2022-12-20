@@ -28,7 +28,7 @@ const inferTransactions = (
       id: undefined,
       offset: undefined,
       proof: undefined,
-      encryptedSecretNonce: undefined,
+      privateNonceIndex: undefined,
       transactionResponse: undefined,
       useDefaultBaseFee: true,
       baseFee: Consensus.getDefaultBaseFee(mainAccount.currency),

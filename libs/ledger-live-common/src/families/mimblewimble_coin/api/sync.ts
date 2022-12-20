@@ -10,6 +10,7 @@ import Secp256k1Zkp from "@nicolasflamel/secp256k1-zkp";
 import ProofBuilder from "./proofBuilder";
 import Common from "./common";
 import { Subscriber } from "rxjs";
+import Crypto from "./crypto"
 
 export default class Sync {
 

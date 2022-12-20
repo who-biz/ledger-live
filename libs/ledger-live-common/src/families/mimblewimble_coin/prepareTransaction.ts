@@ -29,7 +29,7 @@ export default async (
   id: string,
   offset: string,
   proof: string | undefined,
-  encryptedSecretNonce: string
+  privateNonceIndex: number
 }> => {
   const account = fromAccountRaw(accountRaw);
   const transaction = fromTransactionRaw(transactionRaw);
@@ -185,18 +185,17 @@ export default async (
       }
     }
   }
-  await mimbleWimbleCoin.startTransaction(account.freshAddresses[0].derivationPath, change, inputAmount.minus(fee), fee, slate.recipientPaymentProofAddress);
+  await mimbleWimbleCoin.startTransaction(account.freshAddresses[0].derivationPath, change, inputAmount.minus(fee), fee, 0, slate.recipientPaymentProofAddress);
   if(!change.isZero()) {
     await mimbleWimbleCoin.includeOutputInTransaction(change, currentIdentifier.withHeight(account.currency, slate.height!), Crypto.SwitchType.REGULAR);
   }
   for(const operation of inputs) {
     await mimbleWimbleCoin.includeInputInTransaction(operation.value, operation.extra.identifier, operation.extra.switchType);
   }
-  await mimbleWimbleCoin.applyOffsetToTransaction(slate.offset);
+  const privateNonceIndex = await mimbleWimbleCoin.applyOffsetToTransaction(slate.offset) as number;
   const publicBlindExcess = await mimbleWimbleCoin.getTransactionPublicKey();
   const publicNonce = await mimbleWimbleCoin.getTransactionPublicNonce();
   slate.addParticipant(new SlateParticipant(SlateParticipant.SENDER_ID, publicBlindExcess, publicNonce));
-  const encryptedSecretNonce = await mimbleWimbleCoin.getTransactionEncryptedSecretNonce();
   const serializedSlate = await slate.serialize(Slate.Purpose.SEND_INITIAL, true);
   return {
     transactionData: (serializedSlate instanceof Buffer) ? await Slatepack.encode(account, serializedSlate, mimbleWimbleCoin, slate.recipientPaymentProofAddress) : JSONBigNumber.stringify(serializedSlate),
@@ -204,6 +203,6 @@ export default async (
     id: slate.id,
     offset: slate.offset.toString("hex"),
     proof: slate.outputs.length ? slate.outputs[0].proof.toString("hex") : undefined,
-    encryptedSecretNonce: encryptedSecretNonce.toString("hex")
+    privateNonceIndex
   };
 }

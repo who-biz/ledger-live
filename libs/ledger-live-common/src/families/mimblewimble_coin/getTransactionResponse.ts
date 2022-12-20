@@ -239,7 +239,7 @@ export default (
         if(!slate.addOutputs([new SlateOutput(SlateOutput.Features.PLAIN, commitment, proof)])) {
           throw new MimbleWimbleCoinAddingToSlateFailed("Failed adding output to slate");
         }
-        await mimbleWimbleCoin.startTransaction(account.freshAddresses[0].derivationPath, slate.amount, new BigNumber(0), slate.fee, slate.senderPaymentProofAddress);
+        await mimbleWimbleCoin.startTransaction(account.freshAddresses[0].derivationPath, slate.amount, new BigNumber(0), slate.fee, 0, slate.senderPaymentProofAddress);
         await mimbleWimbleCoin.includeOutputInTransaction(slate.amount, (account as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextIdentifier.withHeight(account.currency, tipHeight.plus(1)), Crypto.SwitchType.REGULAR);
         if(slate.isCompact()) {
           await mimbleWimbleCoin.applyOffsetToTransaction(slate.offset);

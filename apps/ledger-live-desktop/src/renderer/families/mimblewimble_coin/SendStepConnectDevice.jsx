@@ -108,7 +108,7 @@ class StepConnectDevice extends PureComponent<Props, State> {
       id: undefined,
       offset: undefined,
       proof: undefined,
-      encryptedSecretNonce: undefined,
+      privateNonceIndex: undefined,
       transactionResponse: undefined
     }));
   }
@@ -145,14 +145,14 @@ class StepConnectDevice extends PureComponent<Props, State> {
             id,
             offset,
             proof,
-            encryptedSecretNonce
+            privateNonceIndex
           }: {
             transactionData: string;
             height: string;
             id: string;
             offset: string;
             proof: string | undefined;
-            encryptedSecretNonce: string;
+            privateNonceIndex: number;
           }
         ) => {
           qrcode.toString(transactionData, {
@@ -172,7 +172,7 @@ class StepConnectDevice extends PureComponent<Props, State> {
                 id,
                 offset: Buffer.from(offset, "hex"),
                 proof: (proof !== undefined) ? Buffer.from(proof, "hex") : undefined,
-                encryptedSecretNonce: Buffer.from(encryptedSecretNonce, "hex")
+                privateNonceIndex
               }));
             }
           });

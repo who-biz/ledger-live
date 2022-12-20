@@ -27,7 +27,7 @@ export type Transaction = TransactionCommon & {
   id: string | undefined;
   offset: Buffer | undefined;
   proof: Buffer | undefined;
-  encryptedSecretNonce: Buffer | undefined;
+  privateNonceIndex: number | undefined;
   transactionResponse: string | undefined;
   useDefaultBaseFee: boolean;
   baseFee: BigNumber;
@@ -41,7 +41,7 @@ export type TransactionRaw = TransactionCommonRaw & {
   id: string | undefined;
   offset: string | undefined;
   proof: string | undefined;
-  encryptedSecretNonce: string | undefined;
+  privateNonceIndex: number | undefined;
   transactionResponse: string | undefined;
   useDefaultBaseFee: boolean;
   baseFee: string;

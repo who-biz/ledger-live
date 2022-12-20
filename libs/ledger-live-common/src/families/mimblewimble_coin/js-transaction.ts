@@ -17,7 +17,7 @@ export const createTransaction = (
     id: undefined,
     offset: undefined,
     proof: undefined,
-    encryptedSecretNonce: undefined,
+    privateNonceIndex: undefined,
     transactionResponse: undefined,
     useDefaultBaseFee: true,
     baseFee: Consensus.getDefaultBaseFee(account.currency),

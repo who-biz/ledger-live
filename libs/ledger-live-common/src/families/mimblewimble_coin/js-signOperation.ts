@@ -314,27 +314,29 @@ export default (
             }
           }
         }
-        await mimbleWimbleCoin.startTransaction(account.freshAddresses[0].derivationPath, change, inputAmount.minus(fee), fee, slate.recipientPaymentProofAddress);
+        let privateNonceIndex: number;
+        if(transaction.sendAsFile) {
+          privateNonceIndex = transaction.privateNonceIndex!;
+        }
+        else {
+          privateNonceIndex = 0;
+        }
+        await mimbleWimbleCoin.startTransaction(account.freshAddresses[0].derivationPath, change, inputAmount.minus(fee), fee, privateNonceIndex, slate.recipientPaymentProofAddress);
         if(!change.isZero()) {
           await mimbleWimbleCoin.includeOutputInTransaction(change, currentIdentifier.withHeight(account.currency, slate.height!), Crypto.SwitchType.REGULAR);
         }
         for(const operation of inputs) {
           await mimbleWimbleCoin.includeInputInTransaction(operation.value, operation.extra.identifier, operation.extra.switchType);
         }
-        await mimbleWimbleCoin.applyOffsetToTransaction(slate.offset);
-        const publicBlindExcess = await mimbleWimbleCoin.getTransactionPublicKey();
         if(transaction.sendAsFile) {
-          await mimbleWimbleCoin.setTransactionEncryptedSecretNonce(transaction.encryptedSecretNonce!);
-        }
-        const publicNonce = await mimbleWimbleCoin.getTransactionPublicNonce();
-        slate.addParticipant(new SlateParticipant(SlateParticipant.SENDER_ID, publicBlindExcess, publicNonce));
-        let encryptedSecretNonce: Buffer;
-        if(transaction.sendAsFile) {
-          encryptedSecretNonce = transaction.encryptedSecretNonce!;
+          await mimbleWimbleCoin.applyOffsetToTransaction(slate.offset);
         }
         else {
-          encryptedSecretNonce = await mimbleWimbleCoin.getTransactionEncryptedSecretNonce();
+          privateNonceIndex = await mimbleWimbleCoin.applyOffsetToTransaction(slate.offset) as number;
         }
+        const publicBlindExcess = await mimbleWimbleCoin.getTransactionPublicKey();
+        const publicNonce = await mimbleWimbleCoin.getTransactionPublicNonce();
+        slate.addParticipant(new SlateParticipant(SlateParticipant.SENDER_ID, publicBlindExcess, publicNonce));
         let serializedSlateResponse: {[key: string]: any} | Buffer;
         if(transaction.sendAsFile) {
           const response = transaction.transactionResponse!.trim();
@@ -396,7 +398,7 @@ export default (
             serializedSlateResponse = await WalletApi.getSerializedSlateResponse(recipientAddress, serializedSlate) as {[key: string]: any};
           }
         }
-        await mimbleWimbleCoin.startTransaction(account.freshAddresses[0].derivationPath, change, inputAmount.minus(fee), fee, slate.recipientPaymentProofAddress);
+        await mimbleWimbleCoin.startTransaction(account.freshAddresses[0].derivationPath, change, inputAmount.minus(fee), fee, privateNonceIndex, slate.recipientPaymentProofAddress);
         if(!change.isZero()) {
           await mimbleWimbleCoin.includeOutputInTransaction(change, currentIdentifier.withHeight(account.currency, slate.height!), Crypto.SwitchType.REGULAR);
         }
@@ -404,7 +406,6 @@ export default (
           await mimbleWimbleCoin.includeInputInTransaction(operation.value, operation.extra.identifier, operation.extra.switchType);
         }
         await mimbleWimbleCoin.applyOffsetToTransaction(slate.offset);
-        await mimbleWimbleCoin.setTransactionEncryptedSecretNonce(encryptedSecretNonce);
         let slateResponse: Slate;
         try {
           slateResponse = await Slate.unserialize(serializedSlateResponse, slate.cryptocurrency, Slate.Purpose.SEND_RESPONSE, slate);

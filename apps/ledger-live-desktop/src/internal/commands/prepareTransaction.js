@@ -23,7 +23,7 @@ const cmd = ({
   id: string,
   offset: string,
   proof: string | undefined,
-  encryptedSecretNonce: string
+  privateNonceIndex: number
 }> => withDevice(deviceId)(transport => from(prepareTransaction(account, transport, transaction)));
 
 export default cmd;

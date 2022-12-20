@@ -213,14 +213,14 @@ export default function ConnectDevice(
             id,
             offset,
             proof,
-            encryptedSecretNonce
+            privateNonceIndex
           }: {
             transactionData: string;
             height: string;
             id: string;
             offset: string;
             proof: string | undefined;
-            encryptedSecretNonce: string;
+            privateNonceIndex: number;
           }
         ) => {
           qrcode.toString(transactionData, {
@@ -238,7 +238,7 @@ export default function ConnectDevice(
                 id,
                 offset: Buffer.from(offset, "hex"),
                 proof: (proof !== undefined) ? Buffer.from(proof, "hex") : undefined,
-                encryptedSecretNonce: Buffer.from(encryptedSecretNonce, "hex"),
+                privateNonceIndex,
                 transactionResponse: undefined
               }));
             }

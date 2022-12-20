@@ -39,13 +39,11 @@ export default class MimbleWimbleCoin {
     CONTINUE_TRANSACTION_INCLUDE_INPUT: 0x0F,
     CONTINUE_TRANSACTION_APPLY_OFFSET: 0x10,
     CONTINUE_TRANSACTION_GET_PUBLIC_KEY: 0x11,
-    CONTINUE_TRANSACTION_GET_ENCRYPTED_SECRET_NONCE: 0x12,
-    CONTINUE_TRANSACTION_SET_ENCRYPTED_SECRET_NONCE: 0x13,
-    CONTINUE_TRANSACTION_GET_PUBLIC_NONCE: 0x14,
-    CONTINUE_TRANSACTION_GET_MESSAGE_SIGNATURE: 0x15,
-    FINISH_TRANSACTION: 0x16,
-    GET_MQS_TIMESTAMP_SIGNATURE: 0x17,
-    GET_TOR_CERTIFICATE_SIGNATURE: 0x18
+    CONTINUE_TRANSACTION_GET_PUBLIC_NONCE: 0x12,
+    CONTINUE_TRANSACTION_GET_MESSAGE_SIGNATURE: 0x13,
+    FINISH_TRANSACTION: 0x14,
+    GET_MQS_TIMESTAMP_SIGNATURE: 0x15,
+    GET_TOR_CERTIFICATE_SIGNATURE: 0x16
   };
   private static readonly Status = {
     UNKNOWN_CLASS: 0xB100,
@@ -222,6 +220,7 @@ export default class MimbleWimbleCoin {
     output: BigNumber,
     input: BigNumber,
     fee: BigNumber,
+    privateNonceIndex: number,
     recipientOrSenderPaymentProofAddress: string | null
   ) {
     const bipPath = BIPPath.fromString(path).toPathArray();
@@ -240,14 +239,15 @@ export default class MimbleWimbleCoin {
     if(recipientOrSenderPaymentProofAddress !== null && !recipientOrSenderPaymentProofAddress) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid recipient or sender payment proof address");
     }
-    const buffer = Buffer.alloc(Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + ((recipientOrSenderPaymentProofAddress !== null) ? recipientOrSenderPaymentProofAddress.length : 0));
+    const buffer = Buffer.alloc(Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT + ((recipientOrSenderPaymentProofAddress !== null) ? recipientOrSenderPaymentProofAddress.length : 0));
     buffer.writeUInt32LE(bipPath[Crypto.BIP44_PATH_ACCOUNT_INDEX] & ~Crypto.HARDENED_PATH_MASK, 0);
     buffer.writeUInt32LE((bipPath.length <= Crypto.BIP44_PATH_INDEX_INDEX) ? Crypto.BIP44_PATH_DEFAULT_INDEX : bipPath[Crypto.BIP44_PATH_INDEX_INDEX], Uint32Array.BYTES_PER_ELEMENT);
     Uint64Array.writeLittleEndian(buffer, output, Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT);
     Uint64Array.writeLittleEndian(buffer, input, Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT);
     Uint64Array.writeLittleEndian(buffer, fee, Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT);
+    buffer.writeUInt8(privateNonceIndex, Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT);
     if(recipientOrSenderPaymentProofAddress !== null) {
-      buffer.write(recipientOrSenderPaymentProofAddress, Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT);
+      buffer.write(recipientOrSenderPaymentProofAddress, Uint32Array.BYTES_PER_ELEMENT + Uint32Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint64Array.BYTES_PER_ELEMENT + Uint8Array.BYTES_PER_ELEMENT);
     }
     await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.START_TRANSACTION, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, buffer, [MimbleWimbleCoin.Status.SUCCESS]);
   }
@@ -290,11 +290,12 @@ export default class MimbleWimbleCoin {
 
   public async applyOffsetToTransaction(
     offset: Buffer
-  ) {
+  ): Promise<number | null>  {
     if(offset.length !== Crypto.SECP256K1_PRIVATE_KEY_LENGTH) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid offset");
     }
-    await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.CONTINUE_TRANSACTION_APPLY_OFFSET, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, offset, [MimbleWimbleCoin.Status.SUCCESS]);
+    const applyOffsetResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.CONTINUE_TRANSACTION_APPLY_OFFSET, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, offset, [MimbleWimbleCoin.Status.SUCCESS]);
+    return (applyOffsetResponse.length > MimbleWimbleCoin.STATUS_LENGTH) ? applyOffsetResponse.readUInt8(0) : null;
   }
 
   public async getTransactionPublicKey(): Promise<Buffer> {
@@ -307,21 +308,6 @@ export default class MimbleWimbleCoin {
     const getTransactionPublicNonceResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.CONTINUE_TRANSACTION_GET_PUBLIC_NONCE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, undefined, [MimbleWimbleCoin.Status.SUCCESS]);
     const transactionPublicNonce = Common.subarray(getTransactionPublicNonceResponse, 0, getTransactionPublicNonceResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
     return transactionPublicNonce;
-  }
-
-  public async getTransactionEncryptedSecretNonce(): Promise<Buffer> {
-    const getTransactionEncryptedSecretNonceResponse = await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.CONTINUE_TRANSACTION_GET_ENCRYPTED_SECRET_NONCE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, undefined, [MimbleWimbleCoin.Status.SUCCESS]);
-    const transactionEncryptedSecretNonce = Common.subarray(getTransactionEncryptedSecretNonceResponse, 0, getTransactionEncryptedSecretNonceResponse.length - MimbleWimbleCoin.STATUS_LENGTH);
-    return transactionEncryptedSecretNonce;
-  }
-
-  public async setTransactionEncryptedSecretNonce(
-    encryptedSecretNonce: Buffer
-  ) {
-    if(!encryptedSecretNonce.length) {
-      throw new MimbleWimbleCoinInvalidParameters("Invalid encrypted secret nonce");
-    }
-    await this.transport.send(MimbleWimbleCoin.CLASS, MimbleWimbleCoin.Instruction.CONTINUE_TRANSACTION_SET_ENCRYPTED_SECRET_NONCE, MimbleWimbleCoin.NO_PARAMETER, MimbleWimbleCoin.NO_PARAMETER, encryptedSecretNonce, [MimbleWimbleCoin.Status.SUCCESS]);
   }
 
   public async getTransactionSignature(
