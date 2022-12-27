@@ -49,7 +49,8 @@ export default class JsonRpc {
         url: `${url}/v2/foreign`,
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Accept-Encoding": "gzip"
         },
         timeout: JsonRpc.TIMEOUT_SECONDS * Common.MILLISECONDS_IN_A_SECOND,
         data: JSONBigNumber.stringify({
