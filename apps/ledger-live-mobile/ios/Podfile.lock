@@ -767,7 +767,6 @@ DEPENDENCIES:
   - "RNVectorIcons (from `../../../node_modules/.pnpm/react-native-vector-icons@8.1.0/node_modules/react-native-vector-icons`)"
   - "secp256k1-zkp-react (from `../../../node_modules/.pnpm/@nicolasflamel+secp256k1-zkp-react@0.0.11_ondxtwf5lqq5g76dzmsmwamaca/node_modules/@nicolasflamel/secp256k1-zkp-react`)"
   - "smaz-react (from `../../../node_modules/.pnpm/@nicolasflamel+smaz-react@0.0.11_ondxtwf5lqq5g76dzmsmwamaca/node_modules/@nicolasflamel/smaz-react`)"
-  - "storyly-react-native (from `../../../node_modules/.pnpm/storyly-react-native@1.24.1_ondxtwf5lqq5g76dzmsmwamaca/node_modules/storyly-react-native`)"
   - "segment-analytics-react-native (from `../../../node_modules/.pnpm/@segment+analytics-react-native@2.9.1_ondxtwf5lqq5g76dzmsmwamaca/node_modules/@segment/analytics-react-native`)"
   - "sovran-react-native (from `../../../node_modules/.pnpm/@segment+sovran-react-native@0.4.5_ondxtwf5lqq5g76dzmsmwamaca/node_modules/@segment/sovran-react-native`)"
   - "storyly-react-native (from `../../../node_modules/.pnpm/storyly-react-native@1.26.2_ondxtwf5lqq5g76dzmsmwamaca/node_modules/storyly-react-native`)"
