@@ -21,6 +21,7 @@ import StepConnectDevice, { StepConnectDeviceFooter } from "./steps/StepConnectD
 import StepWarning, { StepWarningFooter } from "./steps/StepWarning";
 import StepReceiveFunds, { StepReceiveFundsFooter } from "./steps/StepReceiveFunds";
 import byFamily from "~/renderer/generated/StepReceiveFunds";
+import StepReceiveStakingFlow, { StepReceiveStakingFooter } from "./steps/StepReceiveStakingFlow";
 
 export type StepId = "warning" | "account" | "device" | "receive";
 
@@ -55,19 +56,19 @@ type Props = {|
 
 export type StepProps = {
   t: TFunction,
-  transitionTo: string => void,
+  transitionTo: (id: string) => void,
   device: ?Device,
   account: ?AccountLike,
   eventType?: string,
   parentAccount: ?Account,
   token: ?TokenCurrency,
   receiveTokenMode: boolean,
-  closeModal: void => void,
+  closeModal: () => void,
   isAddressVerified: ?boolean,
   verifyAddressError: ?Error,
-  onRetry: void => void,
-  onSkipConfirm: void => void,
-  onResetSkip: void => void,
+  onRetry: () => void,
+  onSkipConfirm: () => void,
+  onResetSkip: () => void,
   onChangeToken: (token: ?TokenCurrency) => void,
   onChangeAccount: (account: ?AccountLike, tokenAccount: ?Account) => void,
   onChangeAddressVerified: (?boolean, ?Error) => void,
@@ -105,6 +106,12 @@ const createSteps = (): Array<St> => [
     component: StepReceiveFunds,
     footer: StepReceiveFundsFooter,
   },
+  {
+    id: "stakingFlow",
+    excludeFromBreadcrumb: true,
+    component: StepReceiveStakingFlow,
+    footer: StepReceiveStakingFooter,
+  },
 ];
 
 const mapStateToProps = createStructuredSelector({
@@ -133,6 +140,8 @@ const Body = ({
   const [parentAccount, setParentAccount] = useState(() => params && params.parentAccount);
   const [disabledSteps, setDisabledSteps] = useState([]);
   const [token, setToken] = useState(null);
+  const [hideBreadcrumb, setHideBreadcrumb] = useState(false);
+  const [title, setTitle] = useState("");
 
   const currency = getAccountCurrency(account);
   const currencyName = currency ? currency.name : undefined;
@@ -221,10 +230,25 @@ const Body = ({
     }
   }, [accounts, account, params, handleChangeAccount]);
 
+  useEffect(() => {
+    const currentStep = steps.find(step => step.id === stepId);
+    setHideBreadcrumb(currentStep.excludeFromBreadcrumb);
+    switch (stepId) {
+      case "warning":
+        setTitle(t("common.information"));
+        break;
+      case "stakingFlow":
+        setTitle(t("receive.steps.staking.title", { currencyName: currency.name }));
+        break;
+      default:
+        setTitle(t("receive.title"));
+    }
+  }, [steps, stepId, t, currency.name]);
+
   const errorSteps = verifyAddressError ? [2] : [];
 
   const stepperProps = {
-    title: stepId === "warning" ? t("common.information") : t("receive.title"),
+    title,
     device,
     account,
     parentAccount,
@@ -234,7 +258,7 @@ const Body = ({
     errorSteps,
     disabledSteps,
     receiveTokenMode: !!params.receiveTokenMode,
-    hideBreadcrumb: stepId === "warning",
+    hideBreadcrumb,
     token,
     isAddressVerified,
     verifyAddressError,

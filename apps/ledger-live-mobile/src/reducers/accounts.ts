@@ -29,7 +29,6 @@ import {
   getAccountCurrency,
   importAccountsReduce,
   isUpToDateAccount,
-  withoutToken,
   clearAccount,
   nestedSortAccounts,
   makeEmptyTokenAccount,
@@ -46,7 +45,7 @@ import type {
   AccountsUpdateAccountWithUpdaterPayload,
   SettingsBlacklistTokenPayload,
 } from "../actions/types";
-import { AccountsActionTypes, SettingsActionTypes } from "../actions/types";
+import { AccountsActionTypes } from "../actions/types";
 import accountModel from "../logic/accountModel";
 
 export const INITIAL_STATE: AccountsState = {
@@ -113,17 +112,7 @@ const handlers: ReducerMap<AccountsState, Payload> = {
   [AccountsActionTypes.CLEAN_CACHE]: (state: AccountsState) => ({
     active: state.active.map(clearAccount),
   }),
-
-  [SettingsActionTypes.BLACKLIST_TOKEN]: (state, action) => ({
-    active: state.active.map(a =>
-      withoutToken(
-        a,
-        (action as Action<SettingsBlacklistTokenPayload>).payload.tokenId,
-      ),
-    ),
-  }),
-
-  [SettingsActionTypes.DANGEROUSLY_OVERRIDE_STATE]: (state: AccountsState) => ({
+  DANGEROUSLY_OVERRIDE_STATE: (state: AccountsState): AccountsState => ({
     ...state,
   }),
 };
@@ -194,15 +183,28 @@ export const cryptoCurrenciesSelector = createSelector(
 );
 export const accountsTuplesByCurrencySelector = createSelector(
   accountsSelector,
-  (_: State, { currency }: { currency: CryptoCurrency | TokenCurrency }) =>
-    currency,
+  (
+    _: State,
+    {
+      currency,
+    }: {
+      currency: CryptoCurrency | TokenCurrency;
+    },
+  ) => currency,
+  (_: State, { accountIds }: { accountIds?: Map<string, boolean> }) =>
+    accountIds,
   (
     accounts,
     currency,
+    accountIds,
   ): { account: AccountLike; subAccount: SubAccount | null }[] => {
     if (currency.type === "TokenCurrency") {
       return accounts
-        .filter(account => account.currency.id === currency.parentCurrency.id)
+        .filter(
+          account =>
+            account.currency.id === currency.parentCurrency.id &&
+            (accountIds ? accountIds.has(account.id) : true),
+        )
         .map(account => ({
           account,
           subAccount:
@@ -217,7 +219,11 @@ export const accountsTuplesByCurrencySelector = createSelector(
     }
 
     return accounts
-      .filter(account => account.currency.id === currency.id)
+      .filter(
+        account =>
+          account.currency.id === currency.id &&
+          (accountIds ? accountIds.has(account.id) : true),
+      )
       .map(account => ({
         account,
         subAccount: null,
@@ -238,9 +244,10 @@ export const flattenAccountsByCryptoCurrencySelector = createSelector(
 );
 const emptyArray: AccountLike[] = [];
 export const accountsByCryptoCurrencyScreenSelector =
-  (currency: CryptoCurrency) => (state: State) => {
+  (currency: CryptoOrTokenCurrency, accountIds?: Map<string, boolean>) =>
+  (state: State) => {
     if (!currency) return emptyArray;
-    return accountsTuplesByCurrencySelector(state, { currency });
+    return accountsTuplesByCurrencySelector(state, { currency, accountIds });
   };
 
 export const flattenAccountsByCryptoCurrencyScreenSelector =

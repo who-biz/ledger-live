@@ -10,6 +10,7 @@ import evm from "../families/evm/deviceTransactionConfig";
 import filecoin from "../families/filecoin/deviceTransactionConfig";
 import hedera from "../families/hedera/deviceTransactionConfig";
 import mimblewimble_coin from "../families/mimblewimble_coin/deviceTransactionConfig";
+import near from "../families/near/deviceTransactionConfig";
 import osmosis from "../families/osmosis/deviceTransactionConfig";
 import polkadot from "../families/polkadot/deviceTransactionConfig";
 import ripple from "../families/ripple/deviceTransactionConfig";
@@ -31,6 +32,7 @@ export default {
   filecoin,
   hedera,
   mimblewimble_coin,
+  near,
   osmosis,
   polkadot,
   ripple,

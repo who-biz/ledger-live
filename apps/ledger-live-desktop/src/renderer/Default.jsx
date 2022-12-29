@@ -34,7 +34,6 @@ import IsNewVersion from "~/renderer/components/IsNewVersion";
 import IsSystemLanguageAvailable from "~/renderer/components/IsSystemLanguageAvailable";
 // $FlowFixMe
 import IsTermOfUseUpdated from "./components/IsTermOfUseUpdated";
-import DeviceBusyIndicator from "~/renderer/components/DeviceBusyIndicator";
 import KeyboardContent from "~/renderer/components/KeyboardContent";
 import PerfIndicator from "~/renderer/components/PerfIndicator";
 import MainSideBar from "~/renderer/components/MainSideBar";
@@ -51,7 +50,6 @@ import DebugSkeletons from "~/renderer/components/debug/DebugSkeletons";
 import { DisableTransactionBroadcastWarning } from "~/renderer/components/debug/DisableTransactionBroadcastWarning";
 import { DebugWrapper } from "~/renderer/components/debug/shared";
 import useDeeplink from "~/renderer/hooks/useDeeplinking";
-import useStoryly from "~/renderer/hooks/useStoryly";
 import useUSBTroubleshooting from "~/renderer/hooks/useUSBTroubleshooting";
 import ModalsLayer from "./ModalsLayer";
 import { ToastOverlay } from "~/renderer/components/ToastOverlay";
@@ -153,7 +151,6 @@ export default function Default() {
   useListenToHidDevices();
   useDeeplink();
   useUSBTroubleshooting();
-  useStoryly();
 
   useProviders(); // prefetch data from swap providers here
 
@@ -282,7 +279,6 @@ export default function Default() {
                         <NightlyLayer />
                       ) : null}
 
-                      <DeviceBusyIndicator />
                       <KeyboardContent sequence="BJBJBJ">
                         <PerfIndicator />
                       </KeyboardContent>

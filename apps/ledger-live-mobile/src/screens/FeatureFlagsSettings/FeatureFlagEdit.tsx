@@ -20,7 +20,13 @@ const FeatureFlagEdit: React.FC<{
    * pureValue is the value of the flag without the keys set programmatically
    * by Legder Live.
    * */
-  const { overriddenByEnv, overridesRemote, ...pureValue } = flagValue || {};
+  const {
+    overriddenByEnv,
+    overridesRemote,
+    enabledOverriddenForCurrentLanguage,
+    enabledOverriddenForCurrentMobileVersion,
+    ...pureValue
+  } = flagValue || {};
 
   const stringifiedPureValue = useMemo(
     () => (pureValue ? JSON.stringify(pureValue) : undefined),
@@ -88,10 +94,11 @@ const FeatureFlagEdit: React.FC<{
         )}
       />
       <Flex flexDirection="row" mt={3}>
-        <Button type="main" outline onPress={handleRestoreFeature}>
+        <Button size="small" type="main" outline onPress={handleRestoreFeature}>
           {t("settings.debug.featureFlagsRestore")}
         </Button>
         <Button
+          size="small"
           disabled={!inputValue}
           type="main"
           onPress={handleOverrideFeature}

@@ -1,7 +1,9 @@
-import React, { PropsWithChildren, useCallback, useState } from "react";
-import { useSelector } from "react-redux";
+import React, { PropsWithChildren, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import isEqual from "lodash/isEqual";
+import semver from "semver";
 import remoteConfig from "@react-native-firebase/remote-config";
+import VersionNumber from "react-native-version-number";
 import {
   FeatureFlagsProvider,
   defaultFeatures,
@@ -9,10 +11,50 @@ import {
 import { FeatureId, Feature } from "@ledgerhq/types-live";
 import { getEnv } from "@ledgerhq/live-common/env";
 
-import { formatFeatureId } from "./FirebaseRemoteConfig";
-import { languageSelector } from "../reducers/settings";
+import { formatToFirebaseFeatureId } from "./FirebaseRemoteConfig";
+import {
+  languageSelector,
+  overriddenFeatureFlagsSelector,
+} from "../reducers/settings";
+import {
+  setOverriddenFeatureFlag,
+  setOverriddenFeatureFlags,
+} from "../actions/settings";
+
+const checkFeatureFlagVersion = (feature: Feature | undefined) => {
+  if (
+    feature &&
+    feature.enabled &&
+    feature.mobile_version &&
+    !semver.satisfies(VersionNumber.appVersion, feature.mobile_version, {
+      includePrerelease: true,
+    })
+  ) {
+    return {
+      enabledOverriddenForCurrentMobileVersion: true,
+      ...feature,
+      enabled: false,
+    };
+  }
+  return feature;
+};
 
 type Props = PropsWithChildren<unknown>;
+
+const isFeature = (key: string): boolean => {
+  try {
+    const value = remoteConfig().getValue(formatToFirebaseFeatureId(key));
+
+    if (!value || !value.asString()) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error(`Failed to check if feature "${key}" exists`);
+    return false;
+  }
+};
 
 const getFeature = (args: {
   key: FeatureId;
@@ -24,7 +66,7 @@ const getFeature = (args: {
   try {
     // Nb prioritize local overrides
     if (allowOverride && localOverrides && localOverrides[key]) {
-      return localOverrides[key];
+      return checkFeatureFlagVersion(localOverrides[key]);
     }
 
     const envFlags = getEnv("FEATURE_FLAGS") as
@@ -41,7 +83,7 @@ const getFeature = (args: {
         };
     }
 
-    const value = remoteConfig().getValue(formatFeatureId(key));
+    const value = remoteConfig().getValue(formatToFirebaseFeatureId(key));
     const feature = JSON.parse(value.asString());
 
     if (
@@ -58,7 +100,7 @@ const getFeature = (args: {
       };
     }
 
-    return feature;
+    return checkFeatureFlagVersion(feature);
   } catch (error) {
     console.error(`Failed to retrieve feature "${key}"`);
     return null;
@@ -82,7 +124,8 @@ export const getAllDivergedFlags = (
 };
 
 export const FirebaseFeatureFlagsProvider: React.FC<Props> = ({ children }) => {
-  const [localOverrides, setLocalOverrides] = useState({});
+  const localOverrides = useSelector(overriddenFeatureFlagsSelector);
+  const dispatch = useDispatch();
 
   const appLanguage = useSelector(languageSelector);
 
@@ -96,25 +139,20 @@ export const FirebaseFeatureFlagsProvider: React.FC<Props> = ({ children }) => {
       if (!isEqual(actualRemoteValue, value)) {
         const { overriddenByEnv: _, ...pureValue } = value;
         const overridenValue = { ...pureValue, overridesRemote: true };
-        setLocalOverrides(currentOverrides => ({
-          ...currentOverrides,
-          [key]: overridenValue,
-        }));
+        dispatch(setOverriddenFeatureFlag(key, overridenValue));
       } else {
-        setLocalOverrides(currentOverrides => ({
-          ...currentOverrides,
-          [key]: undefined,
-        }));
+        dispatch(setOverriddenFeatureFlag(key, undefined));
       }
     },
-    [appLanguage],
+    [appLanguage, dispatch],
   );
 
   const resetFeature = (key: FeatureId): void => {
-    setLocalOverrides(currentOverrides => ({
-      ...currentOverrides,
-      [key]: undefined,
-    }));
+    dispatch(setOverriddenFeatureFlag(key, undefined));
+  };
+
+  const resetFeatures = (): void => {
+    dispatch(setOverriddenFeatureFlags({}));
   };
 
   // Nb wrapped because the method is also called from outside.
@@ -126,9 +164,11 @@ export const FirebaseFeatureFlagsProvider: React.FC<Props> = ({ children }) => {
 
   return (
     <FeatureFlagsProvider
+      isFeature={isFeature}
       getFeature={wrappedGetFeature}
       overrideFeature={overrideFeature}
       resetFeature={resetFeature}
+      resetFeatures={resetFeatures}
     >
       {children}
     </FeatureFlagsProvider>

@@ -130,6 +130,9 @@ const iconsComponent = {
   ACTIVATE: Vote,
   REGISTER: IconPlus,
   COINBASE_REWARD: ClaimRewards,
+  STAKE: IconDelegate,
+  UNSTAKE: IconUndelegate,
+  WITHDRAW_UNSTAKED: IconCoins,
 };
 
 class ConfirmationCheck extends PureComponent<{

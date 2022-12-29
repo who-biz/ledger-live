@@ -5,7 +5,12 @@ import type {
   ImportAccountsReduceInput,
 } from "@ledgerhq/live-common/account/index";
 import { Device } from "@ledgerhq/live-common/hw/actions/types";
-import type { Account, DeviceModelInfo } from "@ledgerhq/types-live";
+import type {
+  Account,
+  DeviceModelInfo,
+  Feature,
+  FeatureId,
+} from "@ledgerhq/types-live";
 import type { Payload as PostOnboardingPayload } from "@ledgerhq/live-common/postOnboarding/reducer";
 import { Transaction } from "@ledgerhq/live-common/generated/types";
 import { ExchangeRate } from "@ledgerhq/live-common/exchange/swap/types";
@@ -24,6 +29,8 @@ import type {
   State,
   WalletConnectState,
   SwapStateType,
+  DynamicContentState,
+  ProtectState,
 } from "../reducers/types";
 import type { Unpacked } from "../types/helpers";
 
@@ -162,6 +169,27 @@ export type NotificationsPayload =
   | NotificationsSetEventTriggeredPayload
   | NotificationsSetDataOfUserPayload;
 
+// === DYNAMIC CONTENT ACTIONS ===
+
+export enum DynamicContentActionTypes {
+  DYNAMIC_CONTENT_SET_WALLET_CARDS = "DYNAMIC_CONTENT_SET_WALLET_CARDS",
+  DYNAMIC_CONTENT_SET_ASSET_CARDS = "DYNAMIC_CONTENT_SET_ASSET_CARDS",
+}
+
+export type DynamicContentSetWalletCardsPayload = Pick<
+  DynamicContentState,
+  "walletCards"
+>;
+
+export type DynamicContentSetAssetCardsPayload = Pick<
+  DynamicContentState,
+  "assetsCards"
+>;
+
+export type DynamicContentPayload =
+  | DynamicContentSetWalletCardsPayload
+  | DynamicContentSetAssetCardsPayload;
+
 // === RATINGS ACTIONS ===
 
 export enum RatingsActionTypes {
@@ -209,6 +237,7 @@ export enum SettingsActionTypes {
   SETTINGS_SET_PAIRS = "SETTINGS_SET_PAIRS",
   SETTINGS_SET_SELECTED_TIME_RANGE = "SETTINGS_SET_SELECTED_TIME_RANGE",
   SETTINGS_COMPLETE_ONBOARDING = "SETTINGS_COMPLETE_ONBOARDING",
+  SETTINGS_COMPLETE_CUSTOM_IMAGE_FLOW = "SETTINGS_COMPLETE_CUSTOM_IMAGE_FLOW",
   SETTINGS_INSTALL_APP_FIRST_TIME = "SETTINGS_INSTALL_APP_FIRST_TIME",
   SETTINGS_SET_READONLY_MODE = "SETTINGS_SET_READONLY_MODE",
   SETTINGS_SET_EXPERIMENTAL_USB_SUPPORT = "SETTINGS_SET_EXPERIMENTAL_USB_SUPPORT",
@@ -224,6 +253,7 @@ export enum SettingsActionTypes {
   SETTINGS_SET_THEME = "SETTINGS_SET_THEME",
   SETTINGS_SET_OS_THEME = "SETTINGS_SET_OS_THEME",
   SETTINGS_SET_CAROUSEL_VISIBILITY = "SETTINGS_SET_CAROUSEL_VISIBILITY",
+  SETTINGS_SET_DISMISSED_DYNAMIC_CARDS = "SETTINGS_SET_DISMISSED_DYNAMIC_CARDS",
   SETTINGS_SET_DISCREET_MODE = "SETTINGS_SET_DISCREET_MODE",
   SETTINGS_SET_LANGUAGE = "SETTINGS_SET_LANGUAGE",
   SETTINGS_SET_LOCALE = "SETTINGS_SET_LOCALE",
@@ -232,9 +262,11 @@ export enum SettingsActionTypes {
   ACCEPT_SWAP_PROVIDER = "ACCEPT_SWAP_PROVIDER",
   LAST_SEEN_DEVICE = "LAST_SEEN_DEVICE",
   LAST_SEEN_DEVICE_INFO = "LAST_SEEN_DEVICE_INFO",
+  SET_LAST_SEEN_CUSTOM_IMAGE = "SET_LAST_SEEN_CUSTOM_IMAGE",
   ADD_STARRED_MARKET_COINS = "ADD_STARRED_MARKET_COINS",
   REMOVE_STARRED_MARKET_COINS = "REMOVE_STARRED_MARKET_COINS",
   SET_LAST_CONNECTED_DEVICE = "SET_LAST_CONNECTED_DEVICE",
+  SET_CUSTOM_IMAGE_BACKUP = "SET_CUSTOM_IMAGE_BACKUP",
   SET_HAS_ORDERED_NANO = "SET_HAS_ORDERED_NANO",
   SET_MARKET_REQUEST_PARAMS = "SET_MARKET_REQUEST_PARAMS",
   SET_MARKET_COUNTER_CURRENCY = "SET_MARKET_COUNTER_CURRENCY",
@@ -243,6 +275,10 @@ export enum SettingsActionTypes {
   SET_FIRST_CONNECTION_HAS_DEVICE = "SET_FIRST_CONNECTION_HAS_DEVICE",
   SET_NOTIFICATIONS = "SET_NOTIFICATIONS",
   RESET_SWAP_LOGIN_AND_KYC_DATA = "RESET_SWAP_LOGIN_AND_KYC_DATA",
+  WALLET_TAB_NAVIGATOR_LAST_VISITED_TAB = "WALLET_TAB_NAVIGATOR_LAST_VISITED_TAB",
+  SET_OVERRIDDEN_FEATURE_FLAG = "SET_OVERRIDDEN_FEATURE_FLAG",
+  SET_OVERRIDDEN_FEATURE_FLAGS = "SET_OVERRIDDEN_FEATURE_FLAGS",
+  SET_FEATURE_FLAGS_BANNER_VISIBLE = "SET_FEATURE_FLAGS_BANNER_VISIBLE",
 }
 
 export type SettingsImportPayload = Partial<SettingsState>;
@@ -290,10 +326,6 @@ export type SettingsSetReadOnlyModePayload = Pick<
   SettingsState,
   "readOnlyModeEnabled"
 >;
-export type SettingsSetExperimentalUsbSupportPayload = Pick<
-  SettingsState,
-  "experimentalUSBEnabled"
->;
 export type SettingsHideEmptyTokenAccountsPayload = Pick<
   SettingsState,
   "hideEmptyTokenAccounts"
@@ -313,6 +345,10 @@ export type SettingsSetCarouselVisibilityPayload = Pick<
   SettingsState,
   "carouselVisibility"
 >;
+export type SettingsSetDismissedDynamicCardsPayload = Pick<
+  SettingsState,
+  "dismissedDynamicCards"
+>;
 export type SettingsSetDiscreetModePayload = Pick<
   SettingsState,
   "discreetMode"
@@ -331,6 +367,10 @@ export type SettingsSetSwapKycPayload = {
 export type SettingsAcceptSwapProviderPayload = {
   acceptedProvider: Unpacked<SettingsState["swap"]["acceptedProviders"]>;
 };
+export type SettingsSetLastSeenCustomImagePayload = {
+  imageSize: number;
+  imageHash: string;
+};
 export type SettingsLastSeenDevicePayload = {
   deviceInfo: NonNullable<SettingsState["lastSeenDevice"]>["deviceInfo"];
 };
@@ -345,6 +385,10 @@ export type SettingsRemoveStarredMarketcoinsPayload = {
 };
 export type SettingsSetLastConnectedDevicePayload = {
   lastConnectedDevice: Device;
+};
+export type SettingsSetCustomImageBackupPayload = {
+  hex: string;
+  hash: string;
 };
 export type SettingsSetHasOrderedNanoPayload = Pick<
   SettingsState,
@@ -376,7 +420,23 @@ export type SettingsSetFirstConnectHasDeviceUpdatedPayload = Pick<
 export type SettingsSetNotificationsPayload = {
   notifications: Partial<SettingsState["notifications"]>;
 };
+export type SettingsSetWalletTabNavigatorLastVisitedTabPayload = Pick<
+  SettingsState,
+  "walletTabNavigatorLastVisitedTab"
+>;
 export type SettingsDangerouslyOverrideStatePayload = State;
+export type SettingsSetOverriddenFeatureFlagPlayload = {
+  id: FeatureId;
+  value: Feature | undefined;
+};
+export type SettingsSetOverriddenFeatureFlagsPlayload = Pick<
+  SettingsState,
+  "overriddenFeatureFlags"
+>;
+export type SettingsSetFeatureFlagsBannerVisiblePayload = Pick<
+  SettingsState,
+  "featureFlagsBannerVisible"
+>;
 export type SettingsPayload =
   | SettingsImportPayload
   | SettingsImportDesktopPayload
@@ -391,7 +451,6 @@ export type SettingsPayload =
   | SettingsSetSelectedTimeRangePayload
   | SettingsInstallAppFirstTimePayload
   | SettingsSetReadOnlyModePayload
-  | SettingsSetExperimentalUsbSupportPayload
   | SettingsHideEmptyTokenAccountsPayload
   | SettingsShowTokenPayload
   | SettingsBlacklistTokenPayload
@@ -410,6 +469,7 @@ export type SettingsPayload =
   | SettingsAcceptSwapProviderPayload
   | SettingsLastSeenDevicePayload
   | SettingsLastSeenDeviceInfoPayload
+  | SettingsSetLastSeenCustomImagePayload
   | SettingsAddStarredMarketcoinsPayload
   | SettingsRemoveStarredMarketcoinsPayload
   | SettingsSetLastConnectedDevicePayload
@@ -420,7 +480,10 @@ export type SettingsPayload =
   | SettingsSetSensitiveAnalyticsPayload
   | SettingsSetFirstConnectHasDeviceUpdatedPayload
   | SettingsSetNotificationsPayload
-  | SettingsDangerouslyOverrideStatePayload;
+  | SettingsDangerouslyOverrideStatePayload
+  | SettingsSetOverriddenFeatureFlagPlayload
+  | SettingsSetOverriddenFeatureFlagsPlayload
+  | SettingsSetFeatureFlagsBannerVisiblePayload;
 
 // === WALLET CONNECT ACTIONS ===
 
@@ -448,6 +511,19 @@ export type SwapPayload =
   | UpdateTransactionPayload
   | UpdateRatePayload;
 
+// === PROTECT ACTIONS ===
+
+export enum ProtectActionTypes {
+  UPDATE_DATA = "UPDATE_DATA",
+  UPDATE_PROTECT_STATUS = "UPDATE_PROTECT_STATUS",
+}
+
+export type ProtectDataPayload = Pick<ProtectState, "data">;
+
+export type ProtectStatusPayload = Pick<ProtectState, "protectStatus">;
+
+export type ProtectPayload = ProtectDataPayload | ProtectStatusPayload;
+
 // === PAYLOADS ===
 
 export type ActionsPayload =
@@ -459,4 +535,5 @@ export type ActionsPayload =
   | Action<SettingsPayload>
   | Action<WalletConnectPayload>
   | Action<PostOnboardingPayload>
-  | Action<SwapPayload>;
+  | Action<SwapPayload>
+  | Action<ProtectPayload>;
