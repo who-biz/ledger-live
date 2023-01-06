@@ -83,7 +83,7 @@
     "@ledgerhq/wallet-api-server": "^0.9.2",
     "@nicolasflamel/ed25519-react": "^0.0.9",
     "@nicolasflamel/secp256k1-zkp-react": "^0.0.11",
-    "@nicolasflamel/smaz-react": "^0.0.11",
+    "@nicolasflamel/smaz-react": "^0.0.12",
     "@nicolasflamel/x25519-react": "^0.0.9",
     "@polkadot/reactnative-identicon": "2.9.13",
     "@polkadot/x-randomvalues": "10.1.12",
