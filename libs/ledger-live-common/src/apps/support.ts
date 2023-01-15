@@ -38,10 +38,10 @@ const appVersionsRequired = {
   Celo: ">= 1.1.8",
   "Cardano ADA": ">= 4.1.0",
   Zcash: "> 2.0.6",
-  "MimbleWimble Coin": ">= 5.0.0",
-  "MimbleWimble Coin Floonet": ">= 5.0.0",
-  Grin: ">= 5.0.0",
-  "Grin Testnet": ">= 5.0.0",
+  "MimbleWimble Coin": ">= 6.0.1",
+  "MimbleWimble Coin Floonet": ">= 6.0.1",
+  Grin: ">= 6.0.1",
+  "Grin Testnet": ">= 6.0.1",
   NEAR: ">= 1.2.1",
 };
 export function mustUpgrade(
