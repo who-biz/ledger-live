@@ -9,7 +9,7 @@ import Box from "~/renderer/components/Box";
 import SendFeeMode from "~/renderer/components/SendFeeMode";
 import BigNumber from "bignumber.js";
 import Label from "~/renderer/components/Label";
-import { Trans } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { counterValueCurrencySelector } from "~/renderer/reducers/settings";
 import { useSendAmount } from "@ledgerhq/live-common/countervalues/react";
 import { useSelector } from "react-redux";
@@ -54,6 +54,7 @@ const SendAmountFields = (
     status,
     onChange
   } = props;
+  const { t } = useTranslation();
   const {
     cryptoUnit,
     fiatAmount,
@@ -85,7 +86,7 @@ const SendAmountFields = (
 
   return (
     <>
-      <SendFeeMode isAdvanceMode={!transaction.useDefaultBaseFee} setAdvanceMode={onChangeUseDefaultBaseFee} useLink={false} />
+      <SendFeeMode isAdvanceMode={!transaction.useDefaultBaseFee} setAdvanceMode={onChangeUseDefaultBaseFee} useLink={false} label={t("families.mimblewimble_coin.fee")} />
       {!transaction.useDefaultBaseFee ? (
         <Box>
           <Label>

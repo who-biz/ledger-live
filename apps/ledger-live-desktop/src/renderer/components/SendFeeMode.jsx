@@ -16,6 +16,7 @@ type Props = {
   isAdvanceMode: boolean,
   setAdvanceMode: *,
   useLink: boolean = true,
+  label: string | undefined,
 };
 
 const SelectorContainer = styled.div`
@@ -32,7 +33,7 @@ const Selector = styled(Tabbable)`
   padding: 4px 12px 4px 12px;
 `;
 
-const SendFeeMode = ({ isAdvanceMode, setAdvanceMode, useLink }: Props) => {
+const SendFeeMode = ({ isAdvanceMode, setAdvanceMode, useLink, label }: Props) => {
   const { t } = useTranslation();
   const setAdvanced = useCallback(() => setAdvanceMode(true), [setAdvanceMode]);
   const setStandard = useCallback(() => setAdvanceMode(false), [setAdvanceMode]);
@@ -45,10 +46,10 @@ const SendFeeMode = ({ isAdvanceMode, setAdvanceMode, useLink }: Props) => {
             openURL(urls.feesMoreInfo);
             track("Send Flow Fees Help Requested");
           }}
-          label={t("send.steps.amount.fees")}
+          label={(label !== undefined) ? label : t("send.steps.amount.fees")}
         />
       ) : (
-        <Label>{t("send.steps.amount.fees")}</Label>
+        <Label>{(label !== undefined) ? label : t("send.steps.amount.fees")}</Label>
       )}
       <SelectorContainer>
         <Selector active={!isAdvanceMode} onClick={setStandard}>
