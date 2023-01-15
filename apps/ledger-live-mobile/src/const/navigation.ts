@@ -15,6 +15,8 @@ export enum ScreenName {
   Assets = "Assets",
   BenchmarkQRStream = "BenchmarkQRStream",
   BitcoinEditCustomFees = "BitcoinEditCustomFees",
+  ClaimNftWelcome = "ClaimNftWelcome",
+  ClaimNftQrScan = "ClaimNftQrScan",
   ClaimRewardsConnectDevice = "ClaimRewardsConnectDevice",
   ClaimRewardsSelectDevice = "ClaimRewardsSelectDevice",
   ClaimRewardsValidationError = "ClaimRewardsValidationError",
@@ -42,6 +44,8 @@ export enum ScreenName {
   DebugInformation = "DebugInformation",
   DebugLogs = "DebugLogs",
   DebugLottie = "DebugLottie",
+  DebugTermsOfUse = "DebugTermsOfUse",
+  DebugVideos = "DebugVideos",
   DebugMockGenerateAccounts = "DebugMockGenerateAccounts",
   DebugNetwork = "DebugNetwork",
   DebugSettings = "DebugSettings",
@@ -408,7 +412,7 @@ export enum ScreenName {
   WalletConnectScan = "WalletConnectScan",
   WalletConnectConnect = "WalletConnectConnect",
   WalletConnectDeeplinkingSelectAccount = "WalletConnectDeeplinkingSelectAccount",
-  NotificationCenterNews = "NotificationCenterNews",
+  NotificationCenter = "NotificationCenter",
   NotificationCenterStatus = "NotificationCenterStatus",
   SignTransactionSummary = "SignTransactionSummary",
   SignTransactionSelectDevice = "SignTransactionSelectDevice",
@@ -431,6 +435,7 @@ export enum ScreenName {
   NoDeviceWallScreen = "NoDeviceWallScreen",
   DiscoverScreen = "DiscoverScreen",
   Learn = "Learn",
+  LearnWebView = "LearnWebView",
   // cardano
   CardanoEditMemo = "CardanoEditMemo",
   // hedera
@@ -467,6 +472,9 @@ export enum ScreenName {
   CustomImagePreviewPreEdit = "CustomImagePreviewPreEdit",
   CustomImagePreviewPostEdit = "CustomImagePreviewPostEdit",
   CustomImageNFTGallery = "CustomImageNFTGallery",
+
+  ClaimNftWelcomeScreen = "ClaimNftWelcomeScreen",
+  ClaimNftQrScanScreen = "ClaimNftQrScanScreen",
 
   PostOnboardingHub = "PostOnboardingHub",
   PostOnboardingDebugScreen = "PostOnboardingDebugScreen",
@@ -564,6 +572,9 @@ export enum NavigatorName {
 
   // Custom Image
   CustomImage = "CustomImage",
+
+  // Claim NFT
+  ClaimNft = "ClaimNft",
 
   WalletConnect = "WalletConnect",
 
