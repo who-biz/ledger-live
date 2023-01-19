@@ -40,7 +40,9 @@ export type ScanAccountEvent =
       type: "synced-percent";
       percent: number;
     }; // optional For mimblewimble_coin family
-
+/**
+ * More events will come in the future
+ */
 export type ScanAccountEventRaw =
   | {
       type: "discovered";
