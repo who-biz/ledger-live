@@ -24,7 +24,6 @@ type Props = {
   parentAccount?: Account | null;
   status?: TransactionStatus;
   setTransaction: (..._: Array<Transaction>) => void;
-  status: any;
   disabledStrategies?: Array<string>;
 } & CompositeScreenProps<
   | StackNavigatorProps<

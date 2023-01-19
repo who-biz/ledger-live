@@ -1,23 +1,20 @@
 import Common from "./common";
 const crypto = Common.isReactNative() ? null : require("crypto");
 const Aes = ((): any => {
-  if(Common.isReactNative()) {
+  if (Common.isReactNative()) {
+    // eslint-disable-next-line no-useless-catch
     try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       return require("react-native-aes-crypto").default;
-    }
-    catch(
-      error: any
-    ) {
+    } catch (error: any) {
       throw error;
     }
-  }
-  else {
+  } else {
     return null;
   }
 })();
 
 export default class Crypto {
-
   public static readonly HARDENED_PATH_MASK = 0x80000000;
   public static readonly BIP44_PATH_PURPOSE_INDEX = 0;
   public static readonly BIP44_PATH_COIN_TYPE_INDEX = 1;
@@ -29,7 +26,7 @@ export default class Crypto {
   public static readonly BIP44_PATH_DEFAULT_INDEX = 0;
   public static readonly SwitchType = {
     NONE: 0,
-    REGULAR: 1
+    REGULAR: 1,
   };
   public static readonly TAU_X_LENGTH = 32;
   public static readonly SECP256K1_PRIVATE_KEY_LENGTH = 32;
@@ -46,8 +43,7 @@ export default class Crypto {
   public static readonly CHACHA20_POLY1305_TAG_LENGTH = 16;
   public static readonly BASE64_PADDING_CHARACTER = "=";
 
-  private constructor() {
-  }
+  private constructor() {}
 
   public static async aesDecrypt(
     algorithm: string,
@@ -55,11 +51,22 @@ export default class Crypto {
     initializationVector: Buffer,
     data: Buffer
   ): Promise<Buffer> {
-    if(Common.isReactNative()) {
-      return Buffer.from(await Aes.decrypt(data.toString("base64"), key.toString("hex"), initializationVector.toString("hex"), algorithm), "base64");
-    }
-    else {
-      const decipher = crypto.createDecipheriv(algorithm, key, initializationVector);
+    if (Common.isReactNative()) {
+      return Buffer.from(
+        await Aes.decrypt(
+          data.toString("base64"),
+          key.toString("hex"),
+          initializationVector.toString("hex"),
+          algorithm
+        ),
+        "base64"
+      );
+    } else {
+      const decipher = crypto.createDecipheriv(
+        algorithm,
+        key,
+        initializationVector
+      );
       const start = decipher.update(data);
       const end = decipher.final();
       const result = Buffer.alloc(start.length + end.length);
@@ -69,13 +76,10 @@ export default class Crypto {
     }
   }
 
-  public static async randomBytes(
-    numberOfBytes: number
-  ): Promise<Buffer> {
-    if(Common.isReactNative()) {
+  public static async randomBytes(numberOfBytes: number): Promise<Buffer> {
+    if (Common.isReactNative()) {
       return Buffer.from(await Aes.randomKey(numberOfBytes), "hex");
-    }
-    else {
+    } else {
       return crypto.randomFillSync(Buffer.alloc(numberOfBytes));
     }
   }

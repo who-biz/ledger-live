@@ -1,4 +1,9 @@
-import { GetAccountShape, GetAccountShapeArg0, makeSync, makeScanAccounts } from "../../bridge/jsHelpers";
+import {
+  GetAccountShape,
+  GetAccountShapeArg0,
+  makeSync,
+  makeScanAccounts,
+} from "../../bridge/jsHelpers";
 import { encodeAccountId } from "../../account";
 import { MimbleWimbleCoinAccount } from "./types";
 import { Account, Address } from "@ledgerhq/types-live";
@@ -23,37 +28,42 @@ const getAccountShape: GetAccountShape = async (
     initialAccount,
     transport,
     derivationPath,
-    o
+    o,
   } = arg0;
-  const cacheCleared = initialAccount && initialAccount.lastSyncDate.valueOf() === new Date(0).valueOf();
+  const cacheCleared =
+    initialAccount &&
+    initialAccount.lastSyncDate.valueOf() === new Date(0).valueOf();
   let rootPublicKey: Buffer;
   let recentHeights: RecentHeight[];
   let nextIdentifier: Identifier;
-  if(initialAccount) {
-    rootPublicKey = (initialAccount as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.rootPublicKey;
-    recentHeights = (initialAccount as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.recentHeights;
-    nextIdentifier = (initialAccount as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextIdentifier;
-  }
-  else {
-    if(transport) {
+  if (initialAccount) {
+    rootPublicKey = (initialAccount as MimbleWimbleCoinAccount)
+      .mimbleWimbleCoinResources.rootPublicKey;
+    recentHeights = (initialAccount as MimbleWimbleCoinAccount)
+      .mimbleWimbleCoinResources.recentHeights;
+    nextIdentifier = (initialAccount as MimbleWimbleCoinAccount)
+      .mimbleWimbleCoinResources.nextIdentifier;
+  } else {
+    if (transport) {
       const mimbleWimbleCoin = new MimbleWimbleCoin(transport, currency);
-      if(o) {
+      if (o) {
         const bipPath = BIPPath.fromString(derivationPath).toPathArray();
         o.next({
           type: "device-root-public-key-requested",
-          index: bipPath[Crypto.BIP44_PATH_ACCOUNT_INDEX] & ~Crypto.HARDENED_PATH_MASK
+          index:
+            bipPath[Crypto.BIP44_PATH_ACCOUNT_INDEX] &
+            ~Crypto.HARDENED_PATH_MASK,
         });
       }
       rootPublicKey = await mimbleWimbleCoin.getRootPublicKey(derivationPath);
-      if(o) {
+      if (o) {
         o.next({
-          type: "device-root-public-key-granted"
+          type: "device-root-public-key-granted",
         });
       }
       recentHeights = [];
       nextIdentifier = new Identifier();
-    }
-    else {
+    } else {
       throw new DisconnectedDevice();
     }
   }
@@ -63,7 +73,7 @@ const getAccountShape: GetAccountShape = async (
     version: "2",
     currencyId: currency.id,
     xpubOrAddress: seedCookie,
-    derivationMode
+    derivationMode,
   });
   const {
     newOperations,
@@ -71,14 +81,29 @@ const getAccountShape: GetAccountShape = async (
     newAccountHeight,
     newNextIdentifier,
     balanceChange,
-    spendableBalanceChange
-  } = await Sync.sync(currency, rootPublicKey, initialAccount?.operations || [], initialAccount?.pendingOperations || [], cacheCleared ? [] : recentHeights, initialAccount ? new BigNumber(initialAccount.blockHeight) : Consensus.getHardwareWalletStartingHeight(currency), nextIdentifier, accountId, o);
-  const freshAddresses: Address[] = [{
-    address: initialAccount?.freshAddresses[0].address || address,
-    derivationPath: initialAccount?.freshAddresses[0].derivationPath || derivationPath
-  }];
-  if(!initialAccount && newOperations.length) {
-    if(transport) {
+    spendableBalanceChange,
+  } = await Sync.sync(
+    currency,
+    rootPublicKey,
+    initialAccount?.operations || [],
+    initialAccount?.pendingOperations || [],
+    cacheCleared ? [] : recentHeights,
+    initialAccount
+      ? new BigNumber(initialAccount.blockHeight)
+      : Consensus.getHardwareWalletStartingHeight(currency),
+    nextIdentifier,
+    accountId,
+    o
+  );
+  const freshAddresses: Address[] = [
+    {
+      address: initialAccount?.freshAddresses[0].address || address,
+      derivationPath:
+        initialAccount?.freshAddresses[0].derivationPath || derivationPath,
+    },
+  ];
+  if (!initialAccount && newOperations.length) {
+    if (transport) {
       const bipPath = BIPPath.fromString(derivationPath).toPathArray();
       bipPath[Crypto.BIP44_PATH_INDEX_INDEX] = newOperations.length;
       const newDerivationPath = BIPPath.fromPathArray(bipPath).toString(true);
@@ -87,18 +112,21 @@ const getAccountShape: GetAccountShape = async (
       freshAddresses.length = 0;
       freshAddresses.push({
         address: newAddress,
-        derivationPath: newDerivationPath
+        derivationPath: newDerivationPath,
       });
-    }
-    else {
+    } else {
       throw new DisconnectedDevice();
     }
   }
   return {
     id: accountId,
     xpub: seedCookie,
-    balance: initialAccount ? initialAccount.balance.plus(balanceChange) : balanceChange,
-    spendableBalance: initialAccount ? initialAccount.spendableBalance.plus(spendableBalanceChange) : spendableBalanceChange,
+    balance: initialAccount
+      ? initialAccount.balance.plus(balanceChange)
+      : balanceChange,
+    spendableBalance: initialAccount
+      ? initialAccount.spendableBalance.plus(spendableBalanceChange)
+      : spendableBalanceChange,
     operations: newOperations,
     operationsCount: newOperations.length,
     freshAddresses,
@@ -109,16 +137,19 @@ const getAccountShape: GetAccountShape = async (
       rootPublicKey,
       recentHeights: newRecentHeights,
       nextIdentifier: newNextIdentifier,
-      nextTransactionSequenceNumber: initialAccount ? (initialAccount as MimbleWimbleCoinAccount).mimbleWimbleCoinResources.nextTransactionSequenceNumber : 0
-    }
+      nextTransactionSequenceNumber: initialAccount
+        ? (initialAccount as MimbleWimbleCoinAccount).mimbleWimbleCoinResources
+            .nextTransactionSequenceNumber
+        : 0,
+    },
   } as Partial<Account>;
 };
 
 export const scanAccounts = makeScanAccounts({
-  getAccountShape
+  getAccountShape,
 });
 
 export const sync = makeSync({
   getAccountShape,
-  shouldMergeOps: false
+  shouldMergeOps: false,
 });

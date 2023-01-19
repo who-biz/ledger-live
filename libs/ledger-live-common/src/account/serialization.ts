@@ -105,7 +105,10 @@ import {
 import { SolanaAccount, SolanaAccountRaw } from "../families/solana/types";
 import { TezosAccount, TezosAccountRaw } from "../families/tezos/types";
 import { CeloAccount, CeloAccountRaw } from "../families/celo/types";
-import { MimbleWimbleCoinAccount, MimbleWimbleCoinAccountRaw } from "../families/mimblewimble_coin/types";
+import {
+  MimbleWimbleCoinAccount,
+  MimbleWimbleCoinAccountRaw,
+} from "../families/mimblewimble_coin/types";
 import { NearAccount, NearAccountRaw } from "../families/near/types";
 
 export { toCosmosResourcesRaw, fromCosmosResourcesRaw };
@@ -882,8 +885,9 @@ export function fromAccountRaw(rawAccount: AccountRaw): Account {
       break;
     }
     case "mimblewimble_coin": {
-      const mimbleWimbleCoinResourcesRaw = (rawAccount as MimbleWimbleCoinAccountRaw)
-        .mimbleWimbleCoinResources;
+      const mimbleWimbleCoinResourcesRaw = (
+        rawAccount as MimbleWimbleCoinAccountRaw
+      ).mimbleWimbleCoinResources;
       if (mimbleWimbleCoinResourcesRaw)
         (res as MimbleWimbleCoinAccount).mimbleWimbleCoinResources =
           fromMimbleWimbleCoinResourcesRaw(mimbleWimbleCoinResourcesRaw);
@@ -1086,9 +1090,10 @@ export function toAccountRaw(account: Account): AccountRaw {
     case "mimblewimble_coin": {
       const mimbleWimbleCoinAccount = account as MimbleWimbleCoinAccount;
       if (mimbleWimbleCoinAccount.mimbleWimbleCoinResources) {
-        (res as MimbleWimbleCoinAccountRaw).mimbleWimbleCoinResources = toMimbleWimbleCoinResourcesRaw(
-          mimbleWimbleCoinAccount.mimbleWimbleCoinResources
-        );
+        (res as MimbleWimbleCoinAccountRaw).mimbleWimbleCoinResources =
+          toMimbleWimbleCoinResourcesRaw(
+            mimbleWimbleCoinAccount.mimbleWimbleCoinResources
+          );
       }
       break;
     }

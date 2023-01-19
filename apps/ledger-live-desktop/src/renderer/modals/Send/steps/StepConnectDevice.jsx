@@ -7,9 +7,7 @@ import { getMainAccount } from "@ledgerhq/live-common/account/helpers";
 import invariant from "invariant";
 import byFamily from "~/renderer/generated/SendStepConnectDevice";
 
-export default function StepConnectDevice(
-  props: StepProps
-) {
+export default function StepConnectDevice(props: StepProps) {
   const {
     account,
     parentAccount,
@@ -61,13 +59,8 @@ export default function StepConnectDevice(
   );
 }
 
-export function StepConnectDeviceFooter(
-  props: StepProps
-) {
-  const {
-    account,
-    parentAccount
-  } = props;
+export function StepConnectDeviceFooter(props: StepProps) {
+  const { account, parentAccount } = props;
 
   const mainAccount = account ? getMainAccount(account, parentAccount) : null;
   invariant(account && mainAccount, "No account given");

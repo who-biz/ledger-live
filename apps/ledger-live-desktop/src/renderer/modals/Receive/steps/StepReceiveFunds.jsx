@@ -356,12 +356,8 @@ const StepReceiveFunds = (props: StepProps) => {
 
 export default StepReceiveFunds;
 
-
 export function StepReceiveFundsFooter(props: StepProps) {
-  const {
-    account,
-    parentAccount
-  } = props;
+  const { account, parentAccount } = props;
 
   const mainAccount = account ? getMainAccount(account, parentAccount) : null;
   invariant(account && mainAccount, "No account given");

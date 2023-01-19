@@ -16,6 +16,6 @@ export default (deviceInfo: DeviceInfo, modelId: DeviceModelId): boolean =>
   getEnv("DISABLE_FW_UPDATE_VERSION_CHECK") ||
   (Boolean(deviceVersionRangesForUpdate[modelId]) &&
     satisfies(
-      coerce(deviceInfo.version),
+      coerce(deviceInfo.version)!,
       deviceVersionRangesForUpdate[modelId] as string
     ));

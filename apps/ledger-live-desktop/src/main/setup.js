@@ -113,26 +113,27 @@ ipcMain.handle("open-file-dialog", async (event, title: string): Promise<?string
       const contents = await fsReadFile(result.filePaths[0], "utf8");
       return contents;
     }
-  } catch(e) {
-  }
+  } catch (e) {}
 
   return undefined;
 });
 
-ipcMain.handle("save-file-dialog", async (event, title: string, contents: string): Promise<boolean> => {
-  try {
-    const result = await dialog.showSaveDialog(BrowserWindow.getFocusedWindow(), {
-      title,
-    });
-    if (result.filePath) {
-      await fsWriteFile(result.filePath, contents);
-      return true;
-    }
-  } catch(e) {
-  }
+ipcMain.handle(
+  "save-file-dialog",
+  async (event, title: string, contents: string): Promise<boolean> => {
+    try {
+      const result = await dialog.showSaveDialog(BrowserWindow.getFocusedWindow(), {
+        title,
+      });
+      if (result.filePath) {
+        await fsWriteFile(result.filePath, contents);
+        return true;
+      }
+    } catch (e) {}
 
-  return false;
-});
+    return false;
+  },
+);
 
 process.setMaxListeners(0);
 

@@ -26,6 +26,9 @@ import { getCurrencyBridge } from "@ledgerhq/live-common/bridge/index";
 import { isTokenCurrency } from "@ledgerhq/live-common/currencies/index";
 import type { DerivationMode } from "@ledgerhq/live-common/derivation";
 import { useTheme } from "@react-navigation/native";
+import { Flex, Log } from "@ledgerhq/native-ui";
+import styled from "styled-components/native";
+import type { Device } from "@ledgerhq/live-common/hw/actions/types";
 import { replaceAccounts } from "../../actions/accounts";
 import { accountsSelector } from "../../reducers/accounts";
 import logger from "../../logger";
@@ -60,11 +63,8 @@ import {
 import { AddAccountsNavigatorParamList } from "../../components/RootNavigator/types/AddAccountsNavigator";
 import { BaseNavigatorStackParamList } from "../../components/RootNavigator/types/BaseNavigator";
 import { getDeviceAnimation } from "../../helpers/getDeviceAnimation";
-import { Flex, Log } from "@ledgerhq/native-ui";
 import Animation from "../../components/Animation";
-import styled from "styled-components/native";
 import SkipLock from "../../components/behaviour/SkipLock";
-import type { Device } from "@ledgerhq/live-common/hw/actions/types";
 
 const DeviceActionContainer = styled(Flex).attrs({
   flexDirection: "row",
@@ -100,7 +100,9 @@ const TitleText = ({
   disableUppercase?: boolean;
 }) => (
   <TitleContainer>
-    <Log extraTextProps={disableUppercase ? { textTransform: "none" } : undefined}>
+    <Log
+      extraTextProps={disableUppercase ? { textTransform: "none" } : undefined}
+    >
       {children}
     </Log>
   </TitleContainer>
@@ -120,25 +122,32 @@ const SectionAccounts = ({
   return <SelectableAccountsList useFullBalance {...rest} />;
 };
 
-const ApproveExportRootPublicKeyOnDevice = (
-  {
-    device,
-    accountIndex
-  }: {
-    device: Device;
-    accountIndex: number;
-  }
-) => {
+const ApproveExportRootPublicKeyOnDevice = ({
+  device,
+  accountIndex,
+}: {
+  device: Device;
+  accountIndex: number;
+}) => {
   const { theme } = useTheme();
   const { t } = useTranslation();
   return (
     <Flex>
       <DeviceActionContainer>
         <Wrapper>
-          <AnimationContainer marginTop="16px" withVerifyAddressHeight={device.modelId !== "blue"}>
-            <Animation source={getDeviceAnimation({ device, key: "validate", theme })} />
+          <AnimationContainer
+            marginTop="16px"
+            withVerifyAddressHeight={device.modelId !== "blue"}
+          >
+            <Animation
+              source={getDeviceAnimation({ device, key: "validate", theme })}
+            />
           </AnimationContainer>
-          <TitleText>{t("mimblewimble_coin.approveExportingRootPublicKey", { accountIndex: accountIndex.toFixed() })}</TitleText>
+          <TitleText>
+            {t("mimblewimble_coin.approveExportingRootPublicKey", {
+              accountIndex: accountIndex.toFixed(),
+            })}
+          </TitleText>
         </Wrapper>
       </DeviceActionContainer>
     </Flex>
@@ -172,9 +181,7 @@ const mapDispatchToProps = {
   replaceAccounts,
 };
 
-function AddAccountsAccounts(
-  props: Props
-) {
+function AddAccountsAccounts(props: Props) {
   const {
     navigation,
     route,
@@ -182,12 +189,7 @@ function AddAccountsAccounts(
     existingAccounts,
     blacklistedTokenIds,
   } = props;
-  const {
-    currency,
-    device,
-    inline,
-    returnToSwap,
-  } = route.params || {};
+  const { currency, device, inline, returnToSwap } = route.params || {};
   const { colors } = useTheme();
   const [scanning, setScanning] = useState(true);
   const [error, setError] = useState(null);
@@ -277,7 +279,7 @@ function AddAccountsAccounts(
       }),
     ).subscribe({
       next: ({ type, account, index, percent }) => {
-        switch(type) {
+        switch (type) {
           case "discovered":
             setLatestScannedAccount(account);
             setPercentComplete(0);
@@ -291,6 +293,8 @@ function AddAccountsAccounts(
             break;
           case "synced-percent":
             setPercentComplete(percent);
+            break;
+          default:
             break;
         }
       },
@@ -315,7 +319,7 @@ function AddAccountsAccounts(
       ...(route?.params ?? {}),
       currency,
     });
-  }, [navigation]);
+  }, [navigation, currency, route?.params]);
   const stopSubscription = useCallback((syncUI = true) => {
     if (scanSubscription.current) {
       scanSubscription.current.unsubscribe();
@@ -470,9 +474,7 @@ function AddAccountsAccounts(
         currencyName={currency.name}
       />
       <PreventNativeBack />
-      {rootPublicKeyRequested ? (
-        <SkipLock />
-      ) : null}
+      {rootPublicKeyRequested ? <SkipLock /> : null}
       <NavigationScrollView
         style={styles.inner}
         contentContainerStyle={styles.innerContent}
@@ -541,7 +543,9 @@ function AddAccountsAccounts(
             <Trans i18nKey="addAccounts.synchronizingDesc" />
           </LText>
         ) : null}
-        {scanning ? <ScanLoading colors={colors} percentComplete={percentComplete} /> : null}
+        {scanning ? (
+          <ScanLoading colors={colors} percentComplete={percentComplete} />
+        ) : null}
       </NavigationScrollView>
       {!!scannedAccounts.length && (
         <Footer
@@ -571,7 +575,10 @@ function AddAccountsAccounts(
         }
       />
       <BottomModal isOpened={rootPublicKeyRequested} noCloseButton={true}>
-        <ApproveExportRootPublicKeyOnDevice device={device} accountIndex={accountIndex} />
+        <ApproveExportRootPublicKeyOnDevice
+          device={device}
+          accountIndex={accountIndex}
+        />
       </BottomModal>
     </SafeAreaView>
   );
@@ -730,7 +737,10 @@ class ScanLoading extends PureComponent<{
           <LiveLogo color={colors.grey} size={16} />
         </Spinning>
         <LText semiBold style={styles.scanLoadingText} color="grey">
-          <Trans i18nKey="mimblewimble_coin.synchronizing" values={{ percentComplete: percentComplete.toFixed() }} />
+          <Trans
+            i18nKey="mimblewimble_coin.synchronizing"
+            values={{ percentComplete: percentComplete.toFixed() }}
+          />
         </LText>
       </View>
     );

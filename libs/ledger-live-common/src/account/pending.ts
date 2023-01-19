@@ -4,7 +4,6 @@ export function shouldRetainPendingOperation(
   account: Account,
   op: Operation
 ): boolean {
-
   if (account.currency.family === "mimblewimble_coin") {
     for (const operation of account.operations) {
       if (operation.id === op.id) {

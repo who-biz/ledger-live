@@ -24,7 +24,7 @@ const Right = styled(Box).attrs(() => ({
 
 const RightIconWrapper = styled(Box).attrs(() => ({
   px: 3,
-  py: 3
+  py: 3,
 }))`
   width: ${space[3] * 2 + 16}px;
   z-index: 2;
@@ -52,71 +52,57 @@ const BackgroundLayer = styled(Box)`
 `;
 
 type Props = {
-  onChange: (string) => void,
-  t: TFunction
+  onChange: string => void,
+  t: TFunction,
 };
 
 type State = {
-  qrReaderOpened: boolean
+  qrReaderOpened: boolean,
 };
 
 class TextAreaTransaction extends PureComponent<Props, State> {
-
-  constructor(
-    props: Props
-  ) {
+  constructor(props: Props) {
     super(props);
     this.state = {
-      qrReaderOpened: false
+      qrReaderOpened: false,
     };
     this.element = createRef();
   }
 
   handleClickQrCode = () => {
-    const {
-      qrReaderOpened
-    } = this.state;
-    this.setState((
-      previousState: State
-    ) => ({
-      qrReaderOpened: !previousState.qrReaderOpened
+    const { qrReaderOpened } = this.state;
+    this.setState((previousState: State) => ({
+      qrReaderOpened: !previousState.qrReaderOpened,
     }));
     !qrReaderOpened ? track("Send Flow QR Code Opened") : track("Send Flow QR Code Closed");
   };
 
-  handlePickQrCode = (
-    value: string
-  ) => {
+  handlePickQrCode = (value: string) => {
     this.setValue(value);
     this.setState({
-      qrReaderOpened: false
+      qrReaderOpened: false,
     });
   };
 
   handleClickUploadFile = async () => {
-    const {
-      t
-    } = this.props;
-    const fileContents = await ipcRenderer.invoke("open-file-dialog", t("families.mimblewimble_coin.openTransactionFile"));
-    if(fileContents !== undefined) {
+    const { t } = this.props;
+    const fileContents = await ipcRenderer.invoke(
+      "open-file-dialog",
+      t("families.mimblewimble_coin.openTransactionFile"),
+    );
+    if (fileContents !== undefined) {
       this.setValue(fileContents);
     }
   };
 
-  setValue = (
-    value: string
-  ) => {
-    const {
-      onChange
-    } = this.props;
+  setValue = (value: string) => {
+    const { onChange } = this.props;
     onChange(value);
     this.element.current.scrollTop = 0;
   };
 
   render() {
-    const {
-      qrReaderOpened
-    } = this.state;
+    const { qrReaderOpened } = this.state;
 
     return (
       <TextArea
@@ -124,7 +110,10 @@ class TextAreaTransaction extends PureComponent<Props, State> {
         ref={this.element}
         renderRight={
           <Right>
-            <RightIconWrapper style={qrReaderOpened ? { opacity: 1 } : {}} onClick={this.handleClickQrCode}>
+            <RightIconWrapper
+              style={qrReaderOpened ? { opacity: 1 } : {}}
+              onClick={this.handleClickQrCode}
+            >
               <IconQrCode size={16} />
               {qrReaderOpened ? (
                 <>

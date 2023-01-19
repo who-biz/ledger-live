@@ -11,6 +11,9 @@ import { getCurrencyBridge } from "@ledgerhq/live-common/bridge/index";
 
 import { Flex, InfiniteLoader, Log } from "@ledgerhq/native-ui";
 import { makeEmptyTokenAccount } from "@ledgerhq/live-common/account/index";
+import type { Device } from "@ledgerhq/live-common/hw/actions/types";
+import styled from "styled-components/native";
+import { useTheme } from "@react-navigation/native";
 import { replaceAccounts } from "../../actions/accounts";
 import logger from "../../logger";
 import { ScreenName } from "../../const";
@@ -29,11 +32,8 @@ import {
   StackNavigatorProps,
 } from "../../components/RootNavigator/types/helpers";
 import { RootStackParamList } from "../../components/RootNavigator/types/RootNavigator";
-import type { Device } from "@ledgerhq/live-common/hw/actions/types";
-import styled from "styled-components/native";
 import Animation from "../../components/Animation";
 import { getDeviceAnimation } from "../../helpers/getDeviceAnimation";
-import { useTheme } from "@react-navigation/native";
 import SkipLock from "../../components/behaviour/SkipLock";
 import BottomModal from "../../components/BottomModal";
 
@@ -71,31 +71,40 @@ const TitleText = ({
   disableUppercase?: boolean;
 }) => (
   <TitleContainer>
-    <Log extraTextProps={disableUppercase ? { textTransform: "none" } : undefined}>
+    <Log
+      extraTextProps={disableUppercase ? { textTransform: "none" } : undefined}
+    >
       {children}
     </Log>
   </TitleContainer>
 );
 
-const ApproveExportRootPublicKeyOnDevice = (
-  {
-    device,
-    accountIndex
-  }: {
-    device: Device;
-    accountIndex: number;
-  }
-) => {
+const ApproveExportRootPublicKeyOnDevice = ({
+  device,
+  accountIndex,
+}: {
+  device: Device;
+  accountIndex: number;
+}) => {
   const { theme } = useTheme();
   const { t } = useTranslation();
   return (
     <Flex>
       <DeviceActionContainer>
         <Wrapper>
-          <AnimationContainer marginTop="16px" withVerifyAddressHeight={device.modelId !== "blue"}>
-            <Animation source={getDeviceAnimation({ device, key: "validate", theme })} />
+          <AnimationContainer
+            marginTop="16px"
+            withVerifyAddressHeight={device.modelId !== "blue"}
+          >
+            <Animation
+              source={getDeviceAnimation({ device, key: "validate", theme })}
+            />
           </AnimationContainer>
-          <TitleText>{t("mimblewimble_coin.approveExportingRootPublicKey", { accountIndex: accountIndex.toFixed() })}</TitleText>
+          <TitleText>
+            {t("mimblewimble_coin.approveExportingRootPublicKey", {
+              accountIndex: accountIndex.toFixed(),
+            })}
+          </TitleText>
         </Wrapper>
       </DeviceActionContainer>
     </Flex>
@@ -109,10 +118,7 @@ type Props = StackNavigatorProps<
 
 function AddAccountsAccounts(props: Props) {
   const { route, navigation } = props;
-  const {
-    currency,
-    device,
-  } = route.params || {};
+  const { currency, device } = route.params || {};
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
@@ -152,8 +158,16 @@ function AddAccountsAccounts(props: Props) {
         syncConfig,
       }),
     ).subscribe({
-      next: ({ type, account, index }: { type: string, account: Account, index: number }) => {
-        switch(type) {
+      next: ({
+        type,
+        account,
+        index,
+      }: {
+        type: string;
+        account: Account;
+        index: number;
+      }) => {
+        switch (type) {
           case "discovered":
             if (currency.type === "TokenCurrency") {
               // handle token accounts cases where we want to create empty new token accounts
@@ -185,6 +199,8 @@ function AddAccountsAccounts(props: Props) {
             break;
           case "device-root-public-key-granted":
             setRootPublicKeyRequested(false);
+            break;
+          default:
             break;
         }
       },
@@ -307,9 +323,7 @@ function AddAccountsAccounts(props: Props) {
         currencyName={currency.name}
       />
       <PreventNativeBack />
-      {rootPublicKeyRequested ? (
-        <SkipLock />
-      ) : null}
+      {rootPublicKeyRequested ? <SkipLock /> : null}
       {scanning ? (
         <ScanLoading
           currency={currency}
@@ -336,7 +350,10 @@ function AddAccountsAccounts(props: Props) {
         }
       />
       <BottomModal isOpened={rootPublicKeyRequested} noCloseButton={true}>
-        <ApproveExportRootPublicKeyOnDevice device={device} accountIndex={accountIndex} />
+        <ApproveExportRootPublicKeyOnDevice
+          device={device}
+          accountIndex={accountIndex}
+        />
       </BottomModal>
     </>
   );

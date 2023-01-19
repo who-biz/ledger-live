@@ -74,7 +74,7 @@ export type StepProps = {
   onChangeAddressVerified: (?boolean, ?Error) => void,
   onClose: () => void,
   currencyName: ?string,
-  onChangeOnBack: (StepProps) => void,
+  onChangeOnBack: StepProps => void,
 };
 
 export type St = Step<StepId, StepProps>;
@@ -158,26 +158,29 @@ const Body = ({
     closeModal("MODAL_RECEIVE");
   }, [closeModal]);
 
-  const handleStepChange = useCallback((e) => {
-    onChangeStepId(e.id);
-    if (e.id === "receive") {
-      // custom family action for StepReceiveFundsOnBack
-      let onBack: (StepProps) => void | undefined;
-      const CustomStepReceiveFunds = byFamily[currency.family];
-      if (CustomStepReceiveFunds && CustomStepReceiveFunds.StepReceiveFundsOnBack) {
-        onBack = CustomStepReceiveFunds.StepReceiveFundsOnBack;
-      } else {
-        onBack = undefined;
+  const handleStepChange = useCallback(
+    e => {
+      onChangeStepId(e.id);
+      if (e.id === "receive") {
+        // custom family action for StepReceiveFundsOnBack
+        let onBack: StepProps => void | undefined;
+        const CustomStepReceiveFunds = byFamily[currency.family];
+        if (CustomStepReceiveFunds && CustomStepReceiveFunds.StepReceiveFundsOnBack) {
+          onBack = CustomStepReceiveFunds.StepReceiveFundsOnBack;
+        } else {
+          onBack = undefined;
+        }
+        setSteps([
+          ...steps.slice(0, 3),
+          {
+            ...steps[3],
+            onBack,
+          },
+        ]);
       }
-      setSteps([
-        ...steps.slice(0, 3),
-        {
-          ...steps[3],
-          onBack,
-        },
-      ]);
-    }
-  }, [onChangeStepId, steps, setSteps]);
+    },
+    [onChangeStepId, steps, setSteps, currency.family],
+  );
 
   const handleResetSkip = useCallback(() => {
     setDisabledSteps([]);
@@ -196,23 +199,24 @@ const Body = ({
     onChangeStepId("receive");
   }, [onChangeAddressVerified, setDisabledSteps, steps, onChangeStepId]);
 
-  const handleChangeOnBack = useCallback((
-    onBack: (StepProps) => void
-  ) => {
-    for(let i: number = 0; i < steps.length; ++i) {
-      if (steps[i].id === stepId) {
-        setSteps([
-          ...steps.slice(0, i),
-          {
-            ...steps[i],
-            onBack,
-          },
-          ...steps.slice(i + 1),
-        ]);
-        break;
+  const handleChangeOnBack = useCallback(
+    (onBack: StepProps => void) => {
+      for (let i: number = 0; i < steps.length; ++i) {
+        if (steps[i].id === stepId) {
+          setSteps([
+            ...steps.slice(0, i),
+            {
+              ...steps[i],
+              onBack,
+            },
+            ...steps.slice(i + 1),
+          ]);
+          break;
+        }
       }
-    }
-  }, [stepId, steps, setSteps]);
+    },
+    [stepId, steps, setSteps],
+  );
 
   useEffect(() => {
     const stepId =

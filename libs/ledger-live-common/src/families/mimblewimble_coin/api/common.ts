@@ -2,7 +2,6 @@ import os from "os";
 import BigNumber from "bignumber.js";
 
 export default class Common {
-
   public static readonly MILLISECONDS_IN_A_SECOND = 1000;
   public static readonly SECONDS_IN_A_MINUTE = 60;
   public static readonly MINUTES_IN_AN_HOUR = 60;
@@ -23,88 +22,84 @@ export default class Common {
   public static readonly UUID_FOURTH_SECTION_SERIALIZED_LENGTH = 2;
   public static readonly UUID_FIFTH_SECTION_SERIALIZED_LENGTH = 6;
 
-  private constructor() {
-  }
+  private constructor() {}
 
-  public static isHexString(
-    string: string
-  ): boolean {
-    if(typeof string !== "string") {
+  public static isHexString(string: string): boolean {
+    if (typeof string !== "string") {
       return false;
     }
     return /^(?:[0-9A-F]{2})+$/iu.test(string);
   }
 
-  public static isNumberString(
-    string: string
-  ): boolean {
-    if(typeof string !== "string") {
+  public static isNumberString(string: string): boolean {
+    if (typeof string !== "string") {
       return false;
     }
     return /^[+-]?(?:0(?:\.\d+)?|[1-9]\d*(?:\.\d+)?|\.\d+)$/u.test(string);
   }
 
   public static isLowMemoryDevice(): boolean {
-    return os.totalmem() / Common.BYTES_IN_A_KILOBYTE / Common.KILOBYTES_IN_A_MEGABYTE / Common.MEGABYTES_IN_A_GIGABYTE < Common.HIGH_MEMORY_DEVICE_RAM_THRESHOLD_GIGABYTES;
+    return (
+      os.totalmem() /
+        Common.BYTES_IN_A_KILOBYTE /
+        Common.KILOBYTES_IN_A_MEGABYTE /
+        Common.MEGABYTES_IN_A_GIGABYTE <
+      Common.HIGH_MEMORY_DEVICE_RAM_THRESHOLD_GIGABYTES
+    );
   }
 
-  public static isUuidString(
-    string: string
-  ): boolean {
-    if(typeof string !== "string") {
+  public static isUuidString(string: string): boolean {
+    if (typeof string !== "string") {
       return false;
     }
-    return /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/ui.test(string);
+    return /^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$/iu.test(
+      string
+    );
   }
 
-  public static isRandomUuid(
-    uuid: string
-  ): boolean {
+  public static isRandomUuid(uuid: string): boolean {
     return uuid[14] === "4";
   }
 
-  public static isPureObject(
-    value: any
-  ): boolean {
+  public static isPureObject(value: any): boolean {
     try {
       return Object.getPrototypeOf(value).constructor.name === "Object";
-    }
-    catch(
-      error: any
-    ) {
+    } catch (error: any) {
       return false;
     }
   }
 
-  public static isPrintableCharacter(
-    character: number
-  ): boolean {
+  public static isPrintableCharacter(character: number): boolean {
     return character >= " ".charCodeAt(0) && character <= "~".charCodeAt(0);
   }
 
   public static isReactNative(): boolean {
-    return typeof navigator !== "undefined" && navigator.product === "ReactNative";
+    return (
+      typeof navigator !== "undefined" && navigator.product === "ReactNative"
+    );
   }
 
-  public static subarray(
-    buffer: Buffer,
-    start: number = 0,
-    end?: number
-  ): Buffer {
+  public static subarray(buffer: Buffer, start = 0, end?: number): Buffer {
     const result = buffer.subarray(start, end);
-    return (result instanceof Buffer || (!Common.isPureObject(result) && Buffer.isBuffer(result))) ? result : Buffer.from(result);
+    return result instanceof Buffer ||
+      (!Common.isPureObject(result) && Buffer.isBuffer(result))
+      ? result
+      : Buffer.from(result);
   }
 
-  public static async resolveIfPromise(
-    value: any
-  ): Promise<any> {
-    const result: any = (value instanceof Promise) ? await value : value;
-    return (result instanceof Uint8Array && !(result instanceof Buffer) && (Common.isPureObject(result) || !Buffer.isBuffer(result))) ? Buffer.from(result) : result;
+  public static async resolveIfPromise(value: any): Promise<any> {
+    const result: any = value instanceof Promise ? await value : value;
+    return result instanceof Uint8Array &&
+      !(result instanceof Buffer) &&
+      (Common.isPureObject(result) || !Buffer.isBuffer(result))
+      ? Buffer.from(result)
+      : result;
   }
 
-  public static isBigNumber(
-    value: any
-  ): boolean {
-    return value instanceof BigNumber || (!Common.isPureObject(value) && BigNumber.isBigNumber(value));
+  public static isBigNumber(value: any): boolean {
+    return (
+      value instanceof BigNumber ||
+      (!Common.isPureObject(value) && BigNumber.isBigNumber(value))
+    );
   }
 }

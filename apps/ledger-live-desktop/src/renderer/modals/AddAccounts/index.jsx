@@ -267,7 +267,9 @@ class AddAccounts extends PureComponent<Props, State> {
     // custom family UI for StepImport
     if (stepId === "import") {
       const stepIndex = skipCurrencySelection ? 1 : 2;
-      const CustomStepImport = stepperProps.currency ? byFamily[stepperProps.currency.family] : undefined;
+      const CustomStepImport = stepperProps.currency
+        ? byFamily[stepperProps.currency.family]
+        : undefined;
       if (CustomStepImport) {
         if (CustomStepImport.StepImport) {
           this.STEPS[stepIndex].component = CustomStepImport.StepImport;

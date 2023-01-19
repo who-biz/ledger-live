@@ -31,7 +31,7 @@ import {
   StackNavigatorProps,
 } from "../../components/RootNavigator/types/helpers";
 import { SendFundsNavigatorStackParamList } from "../../components/RootNavigator/types/SendFundsNavigator";
-import sendRecipientFieldsByFamily from "../generated/SendRecipientFields";
+import sendRecipientFieldsByFamily from "../../generated/SendRecipientFields";
 import SupportLinkError from "../../components/SupportLinkError";
 import TranslatedError from "../../components/TranslatedError";
 import { ScreenName } from "../../const";
@@ -153,7 +153,8 @@ export default function SendSelectRecipient(props: Props) {
   if (!account || !transaction) return null;
   const error = withoutHiddenError(status.errors.recipient);
   const warning = status.warnings.recipient;
-  const CustomSendRecipientFields = sendRecipientFieldsByFamily[currency.family];
+  const CustomSendRecipientFields =
+    sendRecipientFieldsByFamily[currency.family];
   return (
     <>
       <SafeAreaView

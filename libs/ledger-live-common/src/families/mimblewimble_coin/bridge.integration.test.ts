@@ -13,8 +13,8 @@ const dataset: DatasetTest<Transaction> = {
     mimblewimble_coin,
     mimblewimble_coin_floonet,
     grin,
-    grin_testnet
-  }
+    grin_testnet,
+  },
 };
 
 testBridge(dataset);

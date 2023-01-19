@@ -9,7 +9,7 @@ import DeviceAction from "~/renderer/components/DeviceAction";
 import StepProgress from "~/renderer/components/StepProgress";
 import { createAction as createTransactionAction } from "@ledgerhq/live-common/hw/actions/transaction";
 import { createAction as createOpenAction } from "@ledgerhq/live-common/hw/actions/app";
-import type { Address, Operation, SignedOperation } from "@ledgerhq/types-live";
+import type { Operation, SignedOperation } from "@ledgerhq/types-live";
 import { command } from "~/renderer/commands";
 import { DeviceBlocker } from "~/renderer/components/DeviceAction/DeviceBlocker";
 import { getMainAccount } from "@ledgerhq/live-common/account/index";
@@ -32,7 +32,10 @@ import ModalBody from "~/renderer/components/Modal/ModalBody";
 import QRCode from "~/renderer/components/QRCode";
 import styled from "styled-components";
 import Button from "~/renderer/components/Button";
-import { validateTransactionResponse, addSentTransactionToAccount } from "@ledgerhq/live-common/families/mimblewimble_coin/react";
+import {
+  validateTransactionResponse,
+  addSentTransactionToAccount,
+} from "@ledgerhq/live-common/families/mimblewimble_coin/react";
 import BigNumber from "bignumber.js";
 
 const connectAppExec = command("connectApp");
@@ -56,23 +59,20 @@ type State = {
   finalizingTransaction: boolean,
   transactionResponse: string | null,
   transactionResponseError: Error | undefined,
-  transactionResponseWarning: Error | undefined
+  transactionResponseWarning: Error | undefined,
 };
 
 type Props = {
   ...StepProps,
-  updateAccountWithUpdater: (string, (Account) => Account) => void
+  updateAccountWithUpdater: (string, (Account) => Account) => void,
 };
 
 const mapDispatchToProps = {
-  updateAccountWithUpdater
+  updateAccountWithUpdater,
 };
 
 class StepConnectDevice extends PureComponent<Props, State> {
-
-  constructor(
-    props: Props
-  ) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       currentDevice: null,
@@ -81,7 +81,7 @@ class StepConnectDevice extends PureComponent<Props, State> {
       modalVisible: false,
       disableContinue: true,
       finalizingTransaction: false,
-      transactionResponse: null
+      transactionResponse: null,
     };
     this.prepareTransactionSubscription = null;
   }
@@ -90,33 +90,27 @@ class StepConnectDevice extends PureComponent<Props, State> {
     invariant(setFooterState, "Footer doesn't exist");
     setFooterState({
       ...this.state,
-      stepConnectDevice: this
+      stepConnectDevice: this,
     });
   }
 
   componentWillUnmount() {
-    const {
-      account,
-      parentAccount,
-      transaction,
-      onChangeTransaction
-    } = this.props;
+    const { account, parentAccount, transaction, onChangeTransaction } = this.props;
     this.unsubscribe();
     const bridge = getAccountBridge(account, parentAccount);
-    onChangeTransaction(bridge.updateTransaction(transaction, {
-      height: undefined,
-      id: undefined,
-      offset: undefined,
-      proof: undefined,
-      privateNonceIndex: undefined,
-      transactionResponse: undefined
-    }));
+    onChangeTransaction(
+      bridge.updateTransaction(transaction, {
+        height: undefined,
+        id: undefined,
+        offset: undefined,
+        proof: undefined,
+        privateNonceIndex: undefined,
+        transactionResponse: undefined,
+      }),
+    );
   }
 
-  componentDidUpdate(
-    previousProps: Props,
-    previousState: State
-  ) {
+  componentDidUpdate(previousProps: Props, previousState: State) {
     const {
       account,
       parentAccount,
@@ -125,204 +119,177 @@ class StepConnectDevice extends PureComponent<Props, State> {
       onTransactionError,
       transitionTo,
       closeModal,
-      onChangeTransaction
+      onChangeTransaction,
     } = this.props;
-    const {
-      currentDevice
-    } = this.state;
+    const { currentDevice } = this.state;
     const mainAccount = getMainAccount(account, parentAccount);
-    if(!previousState.currentDevice && currentDevice) {
+    if (!previousState.currentDevice && currentDevice) {
       this.unsubscribe();
       this.prepareTransactionSubscription = command("prepareTransaction")({
         account: toAccountRaw(mainAccount),
         deviceId: currentDevice.deviceId,
-        transaction: toTransactionRaw(transaction)
+        transaction: toTransactionRaw(transaction),
       }).subscribe({
-        next: (
-          {
+        next: ({
+          transactionData,
+          height,
+          id,
+          offset,
+          proof,
+          privateNonceIndex,
+        }: {
+          transactionData: string,
+          height: string,
+          id: string,
+          offset: string,
+          proof: string | undefined,
+          privateNonceIndex: number,
+        }) => {
+          qrcode.toString(
             transactionData,
-            height,
-            id,
-            offset,
-            proof,
-            privateNonceIndex
-          }: {
-            transactionData: string;
-            height: string;
-            id: string;
-            offset: string;
-            proof: string | undefined;
-            privateNonceIndex: number;
-          }
-        ) => {
-          qrcode.toString(transactionData, {
-            errorCorrectionLevel: "Q"
-          }, (
-            error: Error | null
-          ) => {
-            if(this.prepareTransactionSubscription) {
-              this.updateState({
-                transactionData,
-                useTransactionDataQrCode: !error,
-                currentDevice: null
-              });
-              const bridge = getAccountBridge(account, parentAccount);
-              onChangeTransaction(bridge.updateTransaction(transaction, {
-                height: new BigNumber(height),
-                id,
-                offset: Buffer.from(offset, "hex"),
-                proof: (proof !== undefined) ? Buffer.from(proof, "hex") : undefined,
-                privateNonceIndex
-              }));
-            }
-          });
+            {
+              errorCorrectionLevel: "Q",
+            },
+            (error: Error | null) => {
+              if (this.prepareTransactionSubscription) {
+                this.updateState({
+                  transactionData,
+                  useTransactionDataQrCode: !error,
+                  currentDevice: null,
+                });
+                const bridge = getAccountBridge(account, parentAccount);
+                onChangeTransaction(
+                  bridge.updateTransaction(transaction, {
+                    height: new BigNumber(height),
+                    id,
+                    offset: Buffer.from(offset, "hex"),
+                    proof: proof !== undefined ? Buffer.from(proof, "hex") : undefined,
+                    privateNonceIndex,
+                  }),
+                );
+              }
+            },
+          );
         },
-        error: (
-          error: Error
-        ) => {
+        error: (error: Error) => {
           this.updateState({
-            currentDevice: null
+            currentDevice: null,
           });
-          if(!onFailHandler) {
+          if (!onFailHandler) {
             onTransactionError(error);
             transitionTo("confirmation");
-          }
-          else {
+          } else {
             closeModal();
             onFailHandler(error);
           }
-        }
+        },
       });
-    }
-    else if(previousState.currentDevice && !currentDevice) {
+    } else if (previousState.currentDevice && !currentDevice) {
       this.unsubscribe();
     }
   }
 
   unsubscribe() {
-    if(this.prepareTransactionSubscription) {
+    if (this.prepareTransactionSubscription) {
       this.prepareTransactionSubscription.unsubscribe();
       this.prepareTransactionSubscription = null;
     }
   }
 
-  updateState(
-    newState: {[key: string]: any}
-  ) {
+  updateState(newState: { [key: string]: any }) {
     this.setState(newState);
     setFooterState(newState);
   }
 
   hideQRCodeModal = () => {
     this.updateState({
-      modalVisible: false
+      modalVisible: false,
     });
   };
 
   showQRCodeModal = () => {
     this.updateState({
-      modalVisible: true
+      modalVisible: true,
     });
   };
 
-  broadcast = async (
-    signedOperation: SignedOperation
-  ): Promise<Operation> => {
-    const {
-      account,
-      parentAccount
-    } = this.props;
+  broadcast = async (signedOperation: SignedOperation): Promise<Operation> => {
+    const { account, parentAccount } = this.props;
     const mainAccount = getMainAccount(account, parentAccount);
     const bridge = getAccountBridge(account, parentAccount);
     return execAndWaitAtLeast(3000, (): Promise<Operation> => {
       return bridge.broadcast({
         account: mainAccount,
-        signedOperation
+        signedOperation,
       });
     });
   };
 
-  onTransactionResponseChange = (
-    transactionResponse: string
-  ) => {
-    const {
-      account,
-      parentAccount,
-      transaction,
-      onChangeTransaction
-    } = this.props;
+  onTransactionResponseChange = (transactionResponse: string) => {
+    const { account, parentAccount, transaction, onChangeTransaction } = this.props;
     const mainAccount = getMainAccount(account, parentAccount);
-    if(transactionResponse) {
-      const {
-        error,
-        warning
-      } = validateTransactionResponse(mainAccount.currency, transactionResponse);
-      if(error) {
+    if (transactionResponse) {
+      const { error, warning } = validateTransactionResponse(
+        mainAccount.currency,
+        transactionResponse,
+      );
+      if (error) {
         this.updateState({
           transactionResponseError: error,
-          disableContinue: true
+          disableContinue: true,
         });
-      }
-      else {
+      } else {
         this.updateState({
           transactionResponseError: undefined,
-          disableContinue: false
+          disableContinue: false,
         });
       }
-      if(warning) {
+      if (warning) {
         this.updateState({
-          transactionResponseWarning: warning
+          transactionResponseWarning: warning,
         });
-      }
-      else {
+      } else {
         this.updateState({
-          transactionResponseWarning: undefined
+          transactionResponseWarning: undefined,
         });
       }
-    }
-    else {
+    } else {
       this.updateState({
         transactionResponseError: undefined,
         transactionResponseWarning: undefined,
-        disableContinue: true
+        disableContinue: true,
       });
     }
     this.updateState({
-      transactionResponse
+      transactionResponse,
     });
     const bridge = getAccountBridge(account, parentAccount);
-    onChangeTransaction(bridge.updateTransaction(transaction, {
-      transactionResponse
-    }));
+    onChangeTransaction(
+      bridge.updateTransaction(transaction, {
+        transactionResponse,
+      }),
+    );
   };
 
   onContinue = () => {
     this.updateState({
-      finalizingTransaction: true
+      finalizingTransaction: true,
     });
   };
 
-  onDeviceConnected = (
-    {
-      device
-    }: {
-      device: Device;
-    }
-  ) => {
+  onDeviceConnected = ({ device }: { device: Device }) => {
     this.updateState({
-      currentDevice: device
+      currentDevice: device,
     });
   };
 
-  onTransactionSigned = (
-    {
-      signedOperation,
-      transactionSignError
-    }: {
-      signedOperation: SignedOperation;
-      transactionSignError: Error;
-    }
-  ) => {
+  onTransactionSigned = ({
+    signedOperation,
+    transactionSignError,
+  }: {
+    signedOperation: SignedOperation,
+    transactionSignError: Error,
+  }) => {
     const {
       account,
       parentAccount,
@@ -333,47 +300,39 @@ class StepConnectDevice extends PureComponent<Props, State> {
       closeModal,
       onFailHandler,
       onTransactionError,
-      updateAccountWithUpdater
+      updateAccountWithUpdater,
     } = this.props;
-    if(signedOperation) {
+    if (signedOperation) {
       setSigned(true);
-      this.broadcast(signedOperation).then((
-        operation: Operation
-      ) => {
-        if(!onConfirmationHandler) {
-          onOperationBroadcasted(operation);
-          transitionTo("confirmation");
-        }
-        else {
-          closeModal();
-          onConfirmationHandler(operation);
-        }
-        const mainAccount = getMainAccount(account, parentAccount);
-        updateAccountWithUpdater(mainAccount.id, (
-          account: Account
-        ) => {
-          return addSentTransactionToAccount(account, signedOperation);
-        });
-      },
-      (
-        error: Error
-      ) => {
-        if(!onFailHandler) {
-          onTransactionError(error);
-          transitionTo("confirmation");
-        }
-        else {
-          closeModal();
-          onFailHandler(error);
-        }
-      });
-    }
-    else if(transactionSignError) {
-      if(!onFailHandler) {
+      this.broadcast(signedOperation).then(
+        (operation: Operation) => {
+          if (!onConfirmationHandler) {
+            onOperationBroadcasted(operation);
+            transitionTo("confirmation");
+          } else {
+            closeModal();
+            onConfirmationHandler(operation);
+          }
+          const mainAccount = getMainAccount(account, parentAccount);
+          updateAccountWithUpdater(mainAccount.id, (account: Account) => {
+            return addSentTransactionToAccount(account, signedOperation);
+          });
+        },
+        (error: Error) => {
+          if (!onFailHandler) {
+            onTransactionError(error);
+            transitionTo("confirmation");
+          } else {
+            closeModal();
+            onFailHandler(error);
+          }
+        },
+      );
+    } else if (transactionSignError) {
+      if (!onFailHandler) {
         onTransactionError(transactionSignError);
         transitionTo("confirmation");
-      }
-      else {
+      } else {
         closeModal();
         onFailHandler(transactionSignError);
       }
@@ -381,14 +340,7 @@ class StepConnectDevice extends PureComponent<Props, State> {
   };
 
   render() {
-    const {
-      account,
-      parentAccount,
-      transaction,
-      status,
-      isNFTSend,
-      currencyName
-    } = this.props;
+    const { account, parentAccount, transaction, status, isNFTSend, currencyName } = this.props;
     const {
       transactionData,
       useTransactionDataQrCode,
@@ -396,27 +348,27 @@ class StepConnectDevice extends PureComponent<Props, State> {
       finalizingTransaction,
       transactionResponse,
       transactionResponseError,
-      transactionResponseWarning
+      transactionResponseWarning,
     } = this.state;
 
     const mainAccount = account ? getMainAccount(account, parentAccount) : null;
     invariant(account && mainAccount, "No account given");
     const tokenCurrency = account && account.type === "TokenAccount" && account.token;
 
-    if(!transaction || !account) {
+    if (!transaction || !account) {
       return null;
     }
 
     return (
       <>
-        <Box px={(transactionData !== null && !finalizingTransaction) ? 2 : 0}>
+        <Box px={transactionData !== null && !finalizingTransaction ? 2 : 0}>
           <TrackPage
             category="Send Flow"
             name="Step ConnectDevice"
             currencyName={currencyName}
             isNFTSend={isNFTSend}
           />
-          {(!transaction.sendAsFile || finalizingTransaction) ? (
+          {!transaction.sendAsFile || finalizingTransaction ? (
             <DeviceAction
               action={transactionAction}
               request={{
@@ -424,18 +376,16 @@ class StepConnectDevice extends PureComponent<Props, State> {
                 parentAccount,
                 account,
                 transaction,
-                status
+                status,
               }}
-              Result={(
-                {
-                  signedOperation,
-                  device
-                }: {
-                  signedOperation: ?SignedOperation;
-                  device: Device;
-                }
-              ) => {
-                if(!signedOperation) {
+              Result={({
+                signedOperation,
+                device,
+              }: {
+                signedOperation: ?SignedOperation,
+                device: Device,
+              }) => {
+                if (!signedOperation) {
                   return null;
                 }
                 return (
@@ -448,11 +398,16 @@ class StepConnectDevice extends PureComponent<Props, State> {
               onResult={this.onTransactionSigned}
               analyticsPropertyFlow="send"
             />
-          ) : (transactionData !== null) ? (
+          ) : transactionData !== null ? (
             <>
               <Box flow={1} mb={4}>
                 <Box style={{ display: "block" }} horizontal flow={2} mb={3}>
-                  <Text style={{ flex: 1 }} ff="Inter|SemiBold" color="palette.text.shade100" fontSize={4}>
+                  <Text
+                    style={{ flex: 1 }}
+                    ff="Inter|SemiBold"
+                    color="palette.text.shade100"
+                    fontSize={4}
+                  >
                     <Trans i18nKey="families.mimblewimble_coin.transactionRequest" />
                   </Text>
                   {useTransactionDataQrCode ? (
@@ -480,18 +435,10 @@ class StepConnectDevice extends PureComponent<Props, State> {
             <DeviceAction
               action={openAction}
               request={{
-                account: mainAccount
+                account: mainAccount,
               }}
-              Result={(
-                {
-                  device,
-                }: {
-                  device: Device;
-                }
-              ) => {
-                return (
-                  <StepProgress modelId={device.modelId} />
-                );
+              Result={({ device }: { device: Device }) => {
+                return <StepProgress modelId={device.modelId} />;
               }}
               onResult={this.onDeviceConnected}
               analyticsPropertyFlow="send"
@@ -514,26 +461,21 @@ class StepConnectDevice extends PureComponent<Props, State> {
           />
         </Modal>
       </>
-    )
+    );
   }
 }
 
-interface FooterState extends State = {
-  stepConnectDevice: StepConnectDevice | undefined
-};
+interface FooterState extends State {
+  stepConnectDevice: StepConnectDevice | undefined;
+}
 
-let setFooterState: ({[key: string]: any}) => void | undefined;
+let setFooterState: ({ [key: string]: any }) => void | undefined;
 
 class StepConnectDeviceFooter extends PureComponent<StepProps, FooterState> {
-
-  constructor(
-    props: StepProps
-  ) {
+  constructor(props: StepProps) {
     super(props);
     this.state = {};
-    setFooterState = (
-      state: {[key: string]: any}
-    ) => {
+    setFooterState = (state: { [key: string]: any }) => {
       this.setState(state);
     };
   }
@@ -543,33 +485,36 @@ class StepConnectDeviceFooter extends PureComponent<StepProps, FooterState> {
   }
 
   render() {
-    const {
-      transaction
-    } = this.props;
+    const { transaction } = this.props;
     const {
       transactionData,
       disableContinue,
       stepConnectDevice,
-      finalizingTransaction
+      finalizingTransaction,
     } = this.state;
 
-    if(!stepConnectDevice) {
+    if (!stepConnectDevice) {
       return null;
     }
 
     return (
-        <>
-          {(transaction.sendAsFile && !finalizingTransaction && transactionData !== null) ? (
-            <Button data-test-id="modal-continue-button" primary disabled={disableContinue} onClick={stepConnectDevice.onContinue}>
-              <Trans i18nKey="common.continue" />
-            </Button>
-          ) : null}
-        </>
+      <>
+        {transaction.sendAsFile && !finalizingTransaction && transactionData !== null ? (
+          <Button
+            data-test-id="modal-continue-button"
+            primary
+            disabled={disableContinue}
+            onClick={stepConnectDevice.onContinue}
+          >
+            <Trans i18nKey="common.continue" />
+          </Button>
+        ) : null}
+      </>
     );
   }
 }
 
 export default {
   StepConnectDevice: connect(null, mapDispatchToProps)(StepConnectDevice),
-  StepConnectDeviceFooter
+  StepConnectDeviceFooter,
 };

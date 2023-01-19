@@ -4,9 +4,7 @@ import BigNumber from "bignumber.js";
 import estimateMaxSpendable from "./js-estimateMaxSpendable";
 import Consensus from "./api/consensus";
 
-export const createTransaction = (
-  account: Account
-): Transaction => {
+export const createTransaction = (account: Account): Transaction => {
   return {
     family: "mimblewimble_coin",
     amount: new BigNumber(0),
@@ -21,7 +19,7 @@ export const createTransaction = (
     transactionResponse: undefined,
     useDefaultBaseFee: true,
     baseFee: Consensus.getDefaultBaseFee(account.currency),
-    networkInfo: {}
+    networkInfo: {},
   };
 };
 
@@ -31,7 +29,7 @@ export const updateTransaction = (
 ): Transaction => {
   return {
     ...transaction,
-    ...patch
+    ...patch,
   };
 };
 
@@ -40,19 +38,19 @@ export const prepareTransaction = async (
   transaction: Transaction
 ): Promise<Transaction> => {
   let result: Transaction = transaction;
-  if(transaction.useDefaultBaseFee) {
+  if (transaction.useDefaultBaseFee) {
     result = {
       ...result,
-      baseFee: Consensus.getDefaultBaseFee(account.currency)
+      baseFee: Consensus.getDefaultBaseFee(account.currency),
     };
   }
-  if(transaction.useAllAmount) {
+  if (transaction.useAllAmount) {
     result = {
       ...result,
       amount: await estimateMaxSpendable({
         account,
-        transaction: result
-      })
+        transaction: result,
+      }),
     };
   }
   return result;

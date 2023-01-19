@@ -1,17 +1,18 @@
 import type { AccountBridge, CurrencyBridge } from "@ledgerhq/types-live";
-import type { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
 import type { Transaction } from "../types";
 import getTransactionStatus from "../js-getTransactionStatus";
 import estimateMaxSpendable from "../js-estimateMaxSpendable";
 import signOperation from "../js-signOperation";
 import broadcast from "../js-broadcast";
 import { scanAccounts, sync } from "../js-synchronisation";
-import { createTransaction, updateTransaction, prepareTransaction } from "../js-transaction";
+import {
+  createTransaction,
+  updateTransaction,
+  prepareTransaction,
+} from "../js-transaction";
 import { makeAccountBridgeReceive } from "../../../bridge/jsHelpers";
 
-const getPreloadStrategy = (
-  currency: CryptoCurrency
-): any => {};
+const getPreloadStrategy = (): any => {};
 
 const preload = async (): Promise<any> => {};
 
@@ -21,7 +22,7 @@ const currencyBridge: CurrencyBridge = {
   getPreloadStrategy,
   preload,
   hydrate,
-  scanAccounts
+  scanAccounts,
 };
 
 const receive = makeAccountBridgeReceive();
@@ -35,10 +36,10 @@ const accountBridge: AccountBridge<Transaction> = {
   sync,
   receive,
   signOperation,
-  broadcast
+  broadcast,
 };
 
 export default {
   currencyBridge,
-  accountBridge
+  accountBridge,
 };

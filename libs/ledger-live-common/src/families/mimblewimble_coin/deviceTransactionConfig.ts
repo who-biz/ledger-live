@@ -1,34 +1,41 @@
 import type { Transaction, TransactionStatus } from "./types";
 import type { DeviceTransactionField } from "../../transaction";
-import { MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient, MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress } from "./errors";
+import {
+  MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient,
+  MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress,
+} from "./errors";
 
-export default (
-  {
-    transaction,
-    status
-  }: {
-    transaction: Transaction;
-    status: TransactionStatus;
-  }
-): DeviceTransactionField[] => {
+export default ({
+  transaction,
+  status,
+}: {
+  transaction: Transaction;
+  status: TransactionStatus;
+}): DeviceTransactionField[] => {
   const fields: DeviceTransactionField[] = [];
   fields.push({
     type: "amount",
-    label: "Amount"
+    label: "Amount",
   });
   fields.push({
     type: "fees",
-    label: "Fee"
+    label: "Fee",
   });
   fields.push({
     type: "text",
     label: "Kernel Features",
-    value: "Plain"
+    value: "Plain",
   });
   fields.push({
     type: "text",
     label: "Recipient Payment Proof Address",
-    value: (status.warnings.recipient as any instanceof MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient || status.warnings.recipient as any instanceof MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress) ? "N/A" : transaction.recipient.trim()
+    value:
+      (status.warnings.recipient as any) instanceof
+        MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient ||
+      (status.warnings.recipient as any) instanceof
+        MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress
+        ? "N/A"
+        : transaction.recipient.trim(),
   });
   return fields;
-}
+};

@@ -222,9 +222,9 @@ export default function ConnectDevice(props: Props) {
   const { t } = useTranslation();
   const { account, parentAccount } = useSelector(accountScreenSelector(route));
   invariant(account, "account is required");
-  
+
   // custom family UI for SendFundsConnectDevice
-  if(route.name === ScreenName.SendConnectDevice) {
+  if (route.name === ScreenName.SendConnectDevice) {
     const CustomSendFundsConnectDevice = byFamily[account.currency.family];
     if (CustomSendFundsConnectDevice) {
       return <CustomSendFundsConnectDevice {...props} />;

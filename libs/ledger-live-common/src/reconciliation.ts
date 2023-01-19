@@ -58,7 +58,10 @@ import { SolanaAccount, SolanaAccountRaw } from "./families/solana/types";
 import { TezosAccount, TezosAccountRaw } from "./families/tezos/types";
 import { TronAccount, TronAccountRaw } from "./families/tron/types";
 import { CeloAccount, CeloAccountRaw } from "./families/celo/types";
-import { MimbleWimbleCoinAccount, MimbleWimbleCoinAccountRaw } from "./families/mimblewimble_coin/types";
+import {
+  MimbleWimbleCoinAccount,
+  MimbleWimbleCoinAccountRaw,
+} from "./families/mimblewimble_coin/types";
 import { NearAccount, NearAccountRaw } from "./families/near/types";
 
 // aim to build operations with the minimal diff & call to coin implementation possible
@@ -234,10 +237,13 @@ export function patchAccount(
       updatedRaw.id,
       subAccounts
     );
-  }
-  else {
-    operations = updatedRaw.operations.map(raw => fromOperationRaw(raw, updatedRaw.id, subAccounts));
-    pendingOperations = updatedRaw.pendingOperations.map(raw => fromOperationRaw(raw, updatedRaw.id, subAccounts));
+  } else {
+    operations = updatedRaw.operations.map((raw) =>
+      fromOperationRaw(raw, updatedRaw.id, subAccounts)
+    );
+    pendingOperations = updatedRaw.pendingOperations.map((raw) =>
+      fromOperationRaw(raw, updatedRaw.id, subAccounts)
+    );
   }
 
   const next: Account = { ...account };
@@ -538,19 +544,23 @@ export function patchAccount(
     }
     case "mimblewimble_coin": {
       const mimbleWimbleCoinAcc = account as MimbleWimbleCoinAccount;
-      const mimbleWimbleCoinUpdatedRaw = updatedRaw as MimbleWimbleCoinAccountRaw;
+      const mimbleWimbleCoinUpdatedRaw =
+        updatedRaw as MimbleWimbleCoinAccountRaw;
 
       if (
         mimbleWimbleCoinUpdatedRaw.mimbleWimbleCoinResources &&
         (!mimbleWimbleCoinAcc.mimbleWimbleCoinResources ||
           !areSameResources(
-            toMimbleWimbleCoinResourcesRaw(mimbleWimbleCoinAcc.mimbleWimbleCoinResources),
+            toMimbleWimbleCoinResourcesRaw(
+              mimbleWimbleCoinAcc.mimbleWimbleCoinResources
+            ),
             mimbleWimbleCoinUpdatedRaw.mimbleWimbleCoinResources
           ))
       ) {
-        (next as MimbleWimbleCoinAccount).mimbleWimbleCoinResources = fromMimbleWimbleCoinResourcesRaw(
-          mimbleWimbleCoinUpdatedRaw.mimbleWimbleCoinResources
-        );
+        (next as MimbleWimbleCoinAccount).mimbleWimbleCoinResources =
+          fromMimbleWimbleCoinResourcesRaw(
+            mimbleWimbleCoinUpdatedRaw.mimbleWimbleCoinResources
+          );
         changed = true;
       }
       break;

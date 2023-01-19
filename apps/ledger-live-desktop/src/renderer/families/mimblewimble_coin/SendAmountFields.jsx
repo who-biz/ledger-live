@@ -1,5 +1,5 @@
 // @flow
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import styled from "styled-components";
 import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
 import type { Account } from "@ledgerhq/types-live";
@@ -19,7 +19,7 @@ const InputRight = styled(Box).attrs(() => ({
   ff: "Inter|Medium",
   color: "palette.text.shade60",
   fontSize: 4,
-  justifyContent: "center"
+  justifyContent: "center",
 }))`
   padding-right: 10px;
 `;
@@ -42,51 +42,50 @@ type Props = {
   account: Account,
   transaction: Transaction,
   status: TransactionStatus,
-  onChange: Transaction => void
+  onChange: Transaction => void,
 };
 
-const SendAmountFields = (
-  props: Props
-) => {
-  const {
-    account,
-    transaction,
-    status,
-    onChange
-  } = props;
+const SendAmountFields = (props: Props) => {
+  const { account, transaction, status, onChange } = props;
   const { t } = useTranslation();
-  const {
-    cryptoUnit,
-    fiatAmount,
-    fiatUnit,
-    calculateCryptoAmount
-  } = useSendAmount({
+  const { cryptoUnit } = useSendAmount({
     account,
     fiatCurrency: useSelector(counterValueCurrencySelector),
-    cryptoAmount: transaction.baseFee
+    cryptoAmount: transaction.baseFee,
   });
 
-  const onChangeUseDefaultBaseFee = useCallback((
-    useDefaultBaseFee: boolean
-  ) => {
-    const bridge = getAccountBridge(account);
-    onChange(bridge.updateTransaction(transaction, {
-      useDefaultBaseFee: !useDefaultBaseFee
-    }));
-  }, [account, onChange, transaction]);
+  const onChangeUseDefaultBaseFee = useCallback(
+    (useDefaultBaseFee: boolean) => {
+      const bridge = getAccountBridge(account);
+      onChange(
+        bridge.updateTransaction(transaction, {
+          useDefaultBaseFee: !useDefaultBaseFee,
+        }),
+      );
+    },
+    [account, onChange, transaction],
+  );
 
-  const onChangeBaseFee = useCallback((
-    baseFee: string
-  ) => {
-    const bridge = getAccountBridge(account);
-    onChange(bridge.updateTransaction(transaction, {
-      baseFee: new BigNumber(baseFee)
-    }));
-  }, [account, onChange, transaction]);
+  const onChangeBaseFee = useCallback(
+    (baseFee: string) => {
+      const bridge = getAccountBridge(account);
+      onChange(
+        bridge.updateTransaction(transaction, {
+          baseFee: new BigNumber(baseFee),
+        }),
+      );
+    },
+    [account, onChange, transaction],
+  );
 
   return (
     <>
-      <SendFeeMode isAdvanceMode={!transaction.useDefaultBaseFee} setAdvanceMode={onChangeUseDefaultBaseFee} useLink={false} label={t("families.mimblewimble_coin.fee")} />
+      <SendFeeMode
+        isAdvanceMode={!transaction.useDefaultBaseFee}
+        setAdvanceMode={onChangeUseDefaultBaseFee}
+        useLink={false}
+        label={t("families.mimblewimble_coin.fee")}
+      />
       {!transaction.useDefaultBaseFee ? (
         <Box>
           <Label>
@@ -114,9 +113,9 @@ const SendAmountFields = (
       ) : null}
     </>
   );
-}
+};
 
 export default {
   component: SendAmountFields,
-  fields: ["baseFee"]
+  fields: ["baseFee"],
 };

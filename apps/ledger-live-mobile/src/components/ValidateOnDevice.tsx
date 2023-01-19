@@ -246,7 +246,11 @@ export default function ValidateOnDevice({
         </Flex>
       </ScrollView>
       {Footer ? (
-        <Footer transaction={transaction} recipientWording={recipientWording} status={status} />
+        <Footer
+          transaction={transaction}
+          recipientWording={recipientWording}
+          status={status}
+        />
       ) : (
         <Flex>
           <Alert type="help">{recipientWording}</Alert>

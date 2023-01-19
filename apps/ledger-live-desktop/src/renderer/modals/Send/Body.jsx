@@ -322,7 +322,9 @@ const Body = ({
 
   return (
     <Stepper {...stepperProps}>
-      {(stepId === "confirmation" && !transactionError) ? null : <SyncSkipUnderPriority priority={100} />}
+      {stepId === "confirmation" && !transactionError ? null : (
+        <SyncSkipUnderPriority priority={100} />
+      )}
       <Track onUnmount event="CloseModalSend" />
     </Stepper>
   );

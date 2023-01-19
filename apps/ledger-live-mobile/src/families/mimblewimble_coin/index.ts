@@ -5,5 +5,5 @@ import * as MimbleWimbleCoinScanTransactionData from "./ScanTransactionData";
 export {
   MimbleWimbleCoinEditBaseFee,
   MimbleWimbleCoinScanTransactionResponse,
-  MimbleWimbleCoinScanTransactionData
+  MimbleWimbleCoinScanTransactionData,
 };

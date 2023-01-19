@@ -47,7 +47,7 @@ export function decodeURIScheme(str: string): Data {
 
   const [, , scheme, address, , queryStr] = m;
 
-  if(scheme === "http" || scheme === "https") {
+  if (scheme === "http" || scheme === "https") {
     return {
       address: str,
     };

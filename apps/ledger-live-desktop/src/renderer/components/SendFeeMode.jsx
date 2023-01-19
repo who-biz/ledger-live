@@ -15,7 +15,7 @@ import Label from "~/renderer/components/Label";
 type Props = {
   isAdvanceMode: boolean,
   setAdvanceMode: *,
-  useLink: boolean = true,
+  useLink: boolean | undefined,
   label: string | undefined,
 };
 
@@ -40,16 +40,16 @@ const SendFeeMode = ({ isAdvanceMode, setAdvanceMode, useLink, label }: Props) =
 
   return (
     <Box horizontal alignItems="center" justifyContent="space-between">
-      {useLink ? (
+      {useLink === undefined || useLink ? (
         <LabelWithExternalIcon
           onClick={() => {
             openURL(urls.feesMoreInfo);
             track("Send Flow Fees Help Requested");
           }}
-          label={(label !== undefined) ? label : t("send.steps.amount.fees")}
+          label={label !== undefined ? label : t("send.steps.amount.fees")}
         />
       ) : (
-        <Label>{(label !== undefined) ? label : t("send.steps.amount.fees")}</Label>
+        <Label>{label !== undefined ? label : t("send.steps.amount.fees")}</Label>
       )}
       <SelectorContainer>
         <Selector active={!isAdvanceMode} onClick={setStandard}>

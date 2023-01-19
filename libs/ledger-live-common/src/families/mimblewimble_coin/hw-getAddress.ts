@@ -7,20 +7,20 @@ export default async (
   {
     currency,
     path,
-    verify
+    verify,
   }: {
     currency: CryptoCurrency;
     path: string;
     verify: boolean;
   }
 ): Promise<{
-  address: string,
-  path: string
+  address: string;
+  path: string;
 }> => {
   const mimbleWimbleCoin = new MimbleWimbleCoin(transport, currency);
   const address = await mimbleWimbleCoin.getAddress(path, verify);
   return {
     address,
-    path
+    path,
   };
-}
+};

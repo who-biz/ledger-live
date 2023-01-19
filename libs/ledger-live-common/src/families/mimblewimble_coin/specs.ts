@@ -10,9 +10,9 @@ const mimblewimble_coin: AppSpec<Transaction> = {
   currency: getCryptoCurrencyById("mimblewimble_coin"),
   appQuery: {
     model: DeviceModelId.nanoS,
-    appName: "MimbleWimble Coin"
+    appName: "MimbleWimble Coin",
   },
-  mutations: mimbleWimbleCoinLikeMutations()
+  mutations: mimbleWimbleCoinLikeMutations(),
 } as any;
 
 const mimblewimble_coin_floonet: AppSpec<Transaction> = {
@@ -21,9 +21,9 @@ const mimblewimble_coin_floonet: AppSpec<Transaction> = {
   dependency: "MimbleWimble Coin",
   appQuery: {
     model: DeviceModelId.nanoS,
-    appName: "MimbleWimble Coin Floonet"
+    appName: "MimbleWimble Coin Floonet",
   },
-  mutations: mimbleWimbleCoinLikeMutations()
+  mutations: mimbleWimbleCoinLikeMutations(),
 } as any;
 
 const grin: AppSpec<Transaction> = {
@@ -32,9 +32,9 @@ const grin: AppSpec<Transaction> = {
   dependency: "MimbleWimble Coin",
   appQuery: {
     model: DeviceModelId.nanoS,
-    appName: "Grin"
+    appName: "Grin",
   },
-  mutations: mimbleWimbleCoinLikeMutations()
+  mutations: mimbleWimbleCoinLikeMutations(),
 } as any;
 
 const grin_testnet: AppSpec<Transaction> = {
@@ -43,14 +43,14 @@ const grin_testnet: AppSpec<Transaction> = {
   dependency: "MimbleWimble Coin",
   appQuery: {
     model: DeviceModelId.nanoS,
-    appName: "Grin Testnet"
+    appName: "Grin Testnet",
   },
-  mutations: mimbleWimbleCoinLikeMutations()
+  mutations: mimbleWimbleCoinLikeMutations(),
 } as any;
 
 export default {
   mimblewimble_coin,
   mimblewimble_coin_floonet,
   grin,
-  grin_testnet
+  grin_testnet,
 };

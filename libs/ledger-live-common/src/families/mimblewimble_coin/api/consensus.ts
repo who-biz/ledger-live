@@ -4,65 +4,57 @@ import Common from "./common";
 import { MimbleWimbleCoinInvalidParameters } from "../errors";
 
 export default class Consensus {
+  private constructor() {}
 
-  private constructor() {
-  }
-
-  public static getBlockTimeSeconds(
-    cryptocurrency: CryptoCurrency
-  ): number {
+  public static getBlockTimeSeconds(cryptocurrency: CryptoCurrency): number {
     return cryptocurrency.blockAvgTime!;
   }
 
-  public static getBlockHeightMinute(
-    cryptocurrency: CryptoCurrency
-  ): number {
-    return Math.floor(Common.SECONDS_IN_A_MINUTE / Consensus.getBlockTimeSeconds(cryptocurrency));
+  public static getBlockHeightMinute(cryptocurrency: CryptoCurrency): number {
+    return Math.floor(
+      Common.SECONDS_IN_A_MINUTE / Consensus.getBlockTimeSeconds(cryptocurrency)
+    );
   }
 
-  public static getBlockHeightHour(
-    cryptocurrency: CryptoCurrency
-  ): number {
-    return Common.MINUTES_IN_AN_HOUR * Consensus.getBlockHeightMinute(cryptocurrency);
+  public static getBlockHeightHour(cryptocurrency: CryptoCurrency): number {
+    return (
+      Common.MINUTES_IN_AN_HOUR * Consensus.getBlockHeightMinute(cryptocurrency)
+    );
   }
 
-  public static getBlockHeightDay(
-    cryptocurrency: CryptoCurrency
-  ): number {
+  public static getBlockHeightDay(cryptocurrency: CryptoCurrency): number {
     return Common.HOURS_IN_A_DAY * Consensus.getBlockHeightHour(cryptocurrency);
   }
 
-  public static getBlockHeightWeek(
-    cryptocurrency: CryptoCurrency
-  ): number {
+  public static getBlockHeightWeek(cryptocurrency: CryptoCurrency): number {
     return Common.DAYS_IN_A_WEEK * Consensus.getBlockHeightDay(cryptocurrency);
   }
 
-  public static getBlockHeightYear(
-    cryptocurrency: CryptoCurrency
-  ): number {
-    return Common.WEEKS_IN_A_YEAR * Consensus.getBlockHeightWeek(cryptocurrency);
+  public static getBlockHeightYear(cryptocurrency: CryptoCurrency): number {
+    return (
+      Common.WEEKS_IN_A_YEAR * Consensus.getBlockHeightWeek(cryptocurrency)
+    );
   }
 
-  public static getDefaultBaseFee(
-    cryptocurrency: CryptoCurrency
-  ): BigNumber {
-    switch(cryptocurrency.id) {
+  public static getDefaultBaseFee(cryptocurrency: CryptoCurrency): BigNumber {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
       case "mimblewimble_coin_floonet":
-        return new BigNumber(`1E${cryptocurrency.units[0].magnitude.toFixed()}`).dividedToIntegerBy(1000);
+        return new BigNumber(
+          `1E${cryptocurrency.units[0].magnitude.toFixed()}`
+        ).dividedToIntegerBy(1000);
       case "grin":
       case "grin_testnet":
-        return new BigNumber(`1E${cryptocurrency.units[0].magnitude.toFixed()}`).dividedToIntegerBy(100).dividedToIntegerBy(20);
+        return new BigNumber(`1E${cryptocurrency.units[0].magnitude.toFixed()}`)
+          .dividedToIntegerBy(100)
+          .dividedToIntegerBy(20);
       default:
         throw new MimbleWimbleCoinInvalidParameters("Invalid cryptocurrency");
     }
   }
 
-  public static getCoinbaseMaturity(
-    cryptocurrency: CryptoCurrency
-  ): number {
-    switch(cryptocurrency.id) {
+  public static getCoinbaseMaturity(cryptocurrency: CryptoCurrency): number {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
       case "mimblewimble_coin_floonet":
       case "grin":
@@ -73,10 +65,8 @@ export default class Consensus {
     }
   }
 
-  public static getBlockOutputWeight(
-    cryptocurrency: CryptoCurrency
-  ): number {
-    switch(cryptocurrency.id) {
+  public static getBlockOutputWeight(cryptocurrency: CryptoCurrency): number {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
       case "mimblewimble_coin_floonet":
       case "grin":
@@ -86,10 +76,8 @@ export default class Consensus {
         throw new MimbleWimbleCoinInvalidParameters("Invalid cryptocurrency");
     }
   }
-  public static getBlockKernelWeight(
-    cryptocurrency: CryptoCurrency
-  ): number {
-    switch(cryptocurrency.id) {
+  public static getBlockKernelWeight(cryptocurrency: CryptoCurrency): number {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
       case "mimblewimble_coin_floonet":
       case "grin":
@@ -100,10 +88,8 @@ export default class Consensus {
     }
   }
 
-  public static getBlockInputWeight(
-    cryptocurrency: CryptoCurrency
-  ): number {
-    switch(cryptocurrency.id) {
+  public static getBlockInputWeight(cryptocurrency: CryptoCurrency): number {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
       case "mimblewimble_coin_floonet":
       case "grin":
@@ -114,10 +100,8 @@ export default class Consensus {
     }
   }
 
-  public static getMaximumBlockWeight(
-    cryptocurrency: CryptoCurrency
-  ): number {
-    switch(cryptocurrency.id) {
+  public static getMaximumBlockWeight(cryptocurrency: CryptoCurrency): number {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
       case "mimblewimble_coin_floonet":
       case "grin":
@@ -132,33 +116,41 @@ export default class Consensus {
     cryptocurrency: CryptoCurrency,
     height: BigNumber
   ): number {
-    switch(cryptocurrency.id) {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
       case "mimblewimble_coin_floonet":
-        if(height.isLessThan(Consensus.getC31HardForkHeight(cryptocurrency))) {
+        if (height.isLessThan(Consensus.getC31HardForkHeight(cryptocurrency))) {
           return 1;
-        }
-        else {
+        } else {
           return 2;
         }
       case "grin":
-        return BigNumber.minimum(height.dividedToIntegerBy(Consensus.getHardForkInterval(cryptocurrency)).plus(1), Consensus.getMaximumHeaderVersion(cryptocurrency)).toNumber();
+        return BigNumber.minimum(
+          height
+            .dividedToIntegerBy(Consensus.getHardForkInterval(cryptocurrency))
+            .plus(1),
+          Consensus.getMaximumHeaderVersion(cryptocurrency)
+        ).toNumber();
       case "grin_testnet":
-       if(height.isLessThan(Consensus.getFirstHardForkHeight(cryptocurrency))) {
-         return 1;
-       }
-       else if(height.isLessThan(Consensus.getSecondHardForkHeight(cryptocurrency))) {
-         return 2;
-       }
-       else if(height.isLessThan(Consensus.getThirdHardForkHeight(cryptocurrency))) {
-         return 3;
-       }
-       else if(height.isLessThan(Consensus.getFourthHardForkHeight(cryptocurrency))) {
-         return 4;
-       }
-       else {
-         return 5;
-       }
+        if (
+          height.isLessThan(Consensus.getFirstHardForkHeight(cryptocurrency))
+        ) {
+          return 1;
+        } else if (
+          height.isLessThan(Consensus.getSecondHardForkHeight(cryptocurrency))
+        ) {
+          return 2;
+        } else if (
+          height.isLessThan(Consensus.getThirdHardForkHeight(cryptocurrency))
+        ) {
+          return 3;
+        } else if (
+          height.isLessThan(Consensus.getFourthHardForkHeight(cryptocurrency))
+        ) {
+          return 4;
+        } else {
+          return 5;
+        }
       default:
         throw new MimbleWimbleCoinInvalidParameters("Invalid cryptocurrency");
     }
@@ -167,7 +159,7 @@ export default class Consensus {
   public static isNoRecentDuplicateKernelsEnabled(
     cryptocurrency: CryptoCurrency
   ): boolean {
-    switch(cryptocurrency.id) {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin_floonet":
       case "grin_testnet":
         return true;
@@ -182,7 +174,7 @@ export default class Consensus {
   public static getMaximumRelativeHeight(
     cryptocurrency: CryptoCurrency
   ): number {
-    switch(cryptocurrency.id) {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
       case "mimblewimble_coin_floonet":
       case "grin":
@@ -196,7 +188,7 @@ export default class Consensus {
   public static getBodyWeightOutputFactor(
     cryptocurrency: CryptoCurrency
   ): number {
-    switch(cryptocurrency.id) {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
       case "mimblewimble_coin_floonet":
         return 4;
@@ -205,10 +197,8 @@ export default class Consensus {
     }
   }
 
-  public static getMaximumFee(
-    cryptocurrency: CryptoCurrency
-  ): number {
-    switch(cryptocurrency.id) {
+  public static getMaximumFee(cryptocurrency: CryptoCurrency): number {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
       case "mimblewimble_coin_floonet":
         return Number.POSITIVE_INFINITY;
@@ -220,10 +210,8 @@ export default class Consensus {
     }
   }
 
-  public static getNodeName(
-    cryptocurrency: CryptoCurrency
-  ): string {
-    switch(cryptocurrency.id) {
+  public static getNodeName(cryptocurrency: CryptoCurrency): string {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
         return "MimbleWimble Coin";
       case "mimblewimble_coin_floonet":
@@ -240,7 +228,7 @@ export default class Consensus {
   public static getHardwareWalletStartingHeight(
     cryptocurrency: CryptoCurrency
   ): BigNumber {
-    switch(cryptocurrency.id) {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
         return new BigNumber(1239928);
       case "mimblewimble_coin_floonet":
@@ -255,9 +243,9 @@ export default class Consensus {
   }
 
   private static getC31HardForkHeight(
-    cryptocurrency: CryptoCurrency,
+    cryptocurrency: CryptoCurrency
   ): BigNumber {
-    switch(cryptocurrency.id) {
+    switch (cryptocurrency.id) {
       case "mimblewimble_coin":
         return new BigNumber(202500);
       case "mimblewimble_coin_floonet":
@@ -267,10 +255,8 @@ export default class Consensus {
     }
   }
 
-  private static getHardForkInterval(
-    cryptocurrency: CryptoCurrency,
-  ): number {
-    switch(cryptocurrency.id) {
+  private static getHardForkInterval(cryptocurrency: CryptoCurrency): number {
+    switch (cryptocurrency.id) {
       case "grin":
         return Math.floor(Consensus.getBlockHeightYear(cryptocurrency) / 2);
       default:
@@ -279,9 +265,9 @@ export default class Consensus {
   }
 
   private static getMaximumHeaderVersion(
-    cryptocurrency: CryptoCurrency,
+    cryptocurrency: CryptoCurrency
   ): number {
-    switch(cryptocurrency.id) {
+    switch (cryptocurrency.id) {
       case "grin":
         return 5;
       default:
@@ -290,9 +276,9 @@ export default class Consensus {
   }
 
   private static getFirstHardForkHeight(
-    cryptocurrency: CryptoCurrency,
+    cryptocurrency: CryptoCurrency
   ): BigNumber {
-    switch(cryptocurrency.id) {
+    switch (cryptocurrency.id) {
       case "grin_testnet":
         return new BigNumber(185040);
       default:
@@ -301,9 +287,9 @@ export default class Consensus {
   }
 
   private static getSecondHardForkHeight(
-    cryptocurrency: CryptoCurrency,
+    cryptocurrency: CryptoCurrency
   ): BigNumber {
-    switch(cryptocurrency.id) {
+    switch (cryptocurrency.id) {
       case "grin_testnet":
         return new BigNumber(298080);
       default:
@@ -312,9 +298,9 @@ export default class Consensus {
   }
 
   private static getThirdHardForkHeight(
-    cryptocurrency: CryptoCurrency,
+    cryptocurrency: CryptoCurrency
   ): BigNumber {
-    switch(cryptocurrency.id) {
+    switch (cryptocurrency.id) {
       case "grin_testnet":
         return new BigNumber(552960);
       default:
@@ -323,9 +309,9 @@ export default class Consensus {
   }
 
   private static getFourthHardForkHeight(
-    cryptocurrency: CryptoCurrency,
+    cryptocurrency: CryptoCurrency
   ): BigNumber {
-    switch(cryptocurrency.id) {
+    switch (cryptocurrency.id) {
       case "grin_testnet":
         return new BigNumber(642240);
       default:

@@ -1,23 +1,30 @@
-import { Account, AccountRaw, TransactionCommon, TransactionCommonRaw, TransactionStatusCommon, TransactionStatusCommonRaw } from "@ledgerhq/types-live";
+import {
+  Account,
+  AccountRaw,
+  TransactionCommon,
+  TransactionCommonRaw,
+  TransactionStatusCommon,
+  TransactionStatusCommonRaw,
+} from "@ledgerhq/types-live";
 import RecentHeight from "./api/recentHeight";
 import Identifier from "./api/identifier";
 import BigNumber from "bignumber.js";
 
 export type MimbleWimbleCoinResources = {
-  rootPublicKey: Buffer,
-  recentHeights: RecentHeight[],
-  nextIdentifier: Identifier,
-  nextTransactionSequenceNumber: number
+  rootPublicKey: Buffer;
+  recentHeights: RecentHeight[];
+  nextIdentifier: Identifier;
+  nextTransactionSequenceNumber: number;
 };
 
 export type MimbleWimbleCoinResourcesRaw = {
-  rootPublicKey: string,
+  rootPublicKey: string;
   recentHeights: {
-    height: string,
-    hash: string
-  }[],
-  nextIdentifier: string,
-  nextTransactionSequenceNumber: number
+    height: string;
+    hash: string;
+  }[];
+  nextIdentifier: string;
+  nextTransactionSequenceNumber: number;
 };
 
 export type Transaction = TransactionCommon & {
@@ -49,7 +56,7 @@ export type TransactionRaw = TransactionCommonRaw & {
 };
 
 export type MimbleWimbleCoinAccount = Account & {
-  mimbleWimbleCoinResources: MimbleWimbleCoinResources
+  mimbleWimbleCoinResources: MimbleWimbleCoinResources;
 };
 
 export type MimbleWimbleCoinAccountRaw = AccountRaw & {

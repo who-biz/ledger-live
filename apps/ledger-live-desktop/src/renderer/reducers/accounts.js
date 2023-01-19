@@ -83,7 +83,11 @@ const accountHash = (a: AccountLike) =>
   `${a.type === "Account" ? a.name : ""}-${a.id}${
     a.starred ? "-*" : ""
   }-${a.balance.toString()}-${a.spendableBalance.toString()}-swapHistory(${a.swapHistory.length})${
-    a.type === "Account" ? `-freshAddressPath${a.freshAddresses.length ? a.freshAddresses[0].derivationPath : a.freshAddressPath}` : ""
+    a.type === "Account"
+      ? `-freshAddressPath${
+          a.freshAddresses.length ? a.freshAddresses[0].derivationPath : a.freshAddressPath
+        }`
+      : ""
   }`;
 
 const shallowAccountsSelectorCreator = createSelectorCreator(defaultMemoize, (a, b) =>

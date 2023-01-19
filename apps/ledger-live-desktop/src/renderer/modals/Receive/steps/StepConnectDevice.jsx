@@ -42,16 +42,7 @@ export default function StepConnectDevice({
 }
 
 export function StepConnectDeviceFooter(props: StepProps) {
-  const {
-    account,
-    parentAccount,
-    t,
-    transitionTo,
-    onSkipConfirm,
-    device,
-    eventType,
-    currencyName,
-  } = props;
+  const { account, parentAccount, t, onSkipConfirm, eventType, currencyName } = props;
 
   const mainAccount = account ? getMainAccount(account, parentAccount) : null;
   invariant(account && mainAccount, "No account given");

@@ -1,21 +1,17 @@
 import type { Operation } from "@ledgerhq/types-live";
-import type { Unit } from "@ledgerhq/types-cryptoassets";
 import Identifier from "./api/identifier";
 
-const formatOperationSpecifics = (
-  operation: Operation,
-  unit: Unit | null | undefined
-): string => {
-  const {
-    outputCommitment
-  } = operation.extra;
-  return outputCommitment ? `\n  Output Commitment: ${outputCommitment.toString("hex")}` : "";
+const formatOperationSpecifics = (operation: Operation): string => {
+  const { outputCommitment } = operation.extra;
+  return outputCommitment
+    ? `\n  Output Commitment: ${outputCommitment.toString("hex")}`
+    : "";
 };
 
 export const fromOperationExtraRaw = (
   extra: Record<string, any> | null | undefined
 ): Record<string, any> | null | undefined => {
-  if(extra) {
+  if (extra) {
     const {
       outputCommitment,
       identifier,
@@ -23,54 +19,56 @@ export const fromOperationExtraRaw = (
       spent,
       kernelExcess,
       kernelOffset,
-      recipientPaymentProofSignature
+      recipientPaymentProofSignature,
     } = extra;
-    let values: {[key: string]: any} = {};
-    if(outputCommitment !== undefined) {
+    let values: { [key: string]: any } = {};
+    if (outputCommitment !== undefined) {
       values = {
         ...values,
-        outputCommitment: Buffer.from(outputCommitment, "hex")
+        outputCommitment: Buffer.from(outputCommitment, "hex"),
       };
     }
-    if(identifier !== undefined) {
+    if (identifier !== undefined) {
       values = {
         ...values,
-        identifier: new Identifier(Buffer.from(identifier, "hex"))
+        identifier: new Identifier(Buffer.from(identifier, "hex")),
       };
     }
-    if(switchType !== undefined) {
+    if (switchType !== undefined) {
       values = {
         ...values,
-        switchType
+        switchType,
       };
     }
-    if(spent !== undefined) {
+    if (spent !== undefined) {
       values = {
         ...values,
-        spent
+        spent,
       };
     }
-    if(kernelExcess !== undefined) {
+    if (kernelExcess !== undefined) {
       values = {
         ...values,
-        kernelExcess: kernelExcess ? Buffer.from(kernelExcess, "hex") : null
+        kernelExcess: kernelExcess ? Buffer.from(kernelExcess, "hex") : null,
       };
     }
-    if(kernelOffset !== undefined) {
+    if (kernelOffset !== undefined) {
       values = {
         ...values,
-        kernelOffset: kernelOffset ? Buffer.from(kernelOffset, "hex") : null
+        kernelOffset: kernelOffset ? Buffer.from(kernelOffset, "hex") : null,
       };
     }
-    if(recipientPaymentProofSignature !== undefined) {
+    if (recipientPaymentProofSignature !== undefined) {
       values = {
         ...values,
-        recipientPaymentProofSignature: recipientPaymentProofSignature ? Buffer.from(recipientPaymentProofSignature, "hex") : null
+        recipientPaymentProofSignature: recipientPaymentProofSignature
+          ? Buffer.from(recipientPaymentProofSignature, "hex")
+          : null,
       };
     }
     return {
       ...extra,
-      ...values
+      ...values,
     };
   }
   return extra;
@@ -79,7 +77,7 @@ export const fromOperationExtraRaw = (
 export const toOperationExtraRaw = (
   extra: Record<string, any> | null | undefined
 ): Record<string, any> | null | undefined => {
-  if(extra) {
+  if (extra) {
     const {
       outputCommitment,
       identifier,
@@ -87,54 +85,56 @@ export const toOperationExtraRaw = (
       spent,
       kernelExcess,
       kernelOffset,
-      recipientPaymentProofSignature
+      recipientPaymentProofSignature,
     } = extra;
-    let values: {[key: string]: any} = {};
-    if(outputCommitment !== undefined) {
+    let values: { [key: string]: any } = {};
+    if (outputCommitment !== undefined) {
       values = {
         ...values,
-        outputCommitment: outputCommitment.toString("hex")
+        outputCommitment: outputCommitment.toString("hex"),
       };
     }
-    if(identifier !== undefined) {
+    if (identifier !== undefined) {
       values = {
         ...values,
-        identifier: identifier.serialize().toString("hex")
+        identifier: identifier.serialize().toString("hex"),
       };
     }
-    if(switchType !== undefined) {
+    if (switchType !== undefined) {
       values = {
         ...values,
-        switchType
+        switchType,
       };
     }
-    if(spent !== undefined) {
+    if (spent !== undefined) {
       values = {
         ...values,
-        spent
+        spent,
       };
     }
-    if(kernelExcess !== undefined) {
+    if (kernelExcess !== undefined) {
       values = {
         ...values,
-        kernelExcess: kernelExcess ? kernelExcess.toString("hex") : null
+        kernelExcess: kernelExcess ? kernelExcess.toString("hex") : null,
       };
     }
-    if(kernelOffset !== undefined) {
+    if (kernelOffset !== undefined) {
       values = {
         ...values,
-        kernelOffset: kernelOffset ? kernelOffset.toString("hex") : null
+        kernelOffset: kernelOffset ? kernelOffset.toString("hex") : null,
       };
     }
-    if(recipientPaymentProofSignature !== undefined) {
+    if (recipientPaymentProofSignature !== undefined) {
       values = {
         ...values,
-        recipientPaymentProofSignature: recipientPaymentProofSignature ? recipientPaymentProofSignature.toString("hex") : null
+        recipientPaymentProofSignature: recipientPaymentProofSignature
+          ? recipientPaymentProofSignature.toString("hex")
+          : null,
       };
     }
     return {
       ...extra,
-      ...values
+      ...values,
     };
   }
   return extra;
@@ -143,5 +143,5 @@ export const toOperationExtraRaw = (
 export default {
   formatOperationSpecifics,
   fromOperationExtraRaw,
-  toOperationExtraRaw
+  toOperationExtraRaw,
 };

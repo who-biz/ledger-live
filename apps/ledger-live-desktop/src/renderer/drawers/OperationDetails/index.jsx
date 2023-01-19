@@ -372,7 +372,7 @@ const OperationD: React$ComponentType<Props> = (props: Props) => {
         <OpDetailsSection>
           <OpDetailsTitle>{t("operationDetails.fees")}</OpDetailsTitle>
           <OpDetailsData>
-            {(fee && fee.isPositive()) ? (
+            {fee && fee.isPositive() ? (
               <Box alignItems="flex-end">
                 <Box horizontal alignItems="center">
                   {urlFeesInfo ? (
@@ -616,9 +616,7 @@ const OperationD: React$ComponentType<Props> = (props: Props) => {
           </Box>
         </OpDetailsSection>
       ) : null}
-      {(hash || uniqueSenders.length || recipients.length) ? (
-        <B />
-      ) : null}
+      {hash || uniqueSenders.length || recipients.length ? <B /> : null}
       <OpDetailsExtra operation={operation} extra={extra} type={type} account={account} />
     </Box>
   );

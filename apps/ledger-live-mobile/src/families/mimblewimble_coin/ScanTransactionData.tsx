@@ -1,38 +1,29 @@
 import React, { useCallback } from "react";
+import i18next from "i18next";
+import { useTheme } from "styled-components/native";
 import { ScreenName } from "../../const";
 import Scanner from "../../components/Scanner";
-import i18next from "i18next";
 import HeaderRightClose from "../../components/HeaderRightClose";
 import TransparentHeaderNavigationOptions from "../../navigation/TransparentHeaderNavigationOptions";
-import { useTheme } from "styled-components/native";
 
 type Props = {
-  navigation: any;
+  navigation;
   route: {
-    params: RouteParams;
+    params;
   };
 };
 
-type RouteParams = {
-};
-
-function MimbleWimbleCoinScanTransactionData(
-  {
-    navigation,
-    route
-  }: Props
-) {
-  const onResult = useCallback((
-    result: string
-  ) => {
-    navigation.navigate(ScreenName.ReceiveConfirmation, {
-      ...route.params,
-      transactionData: result
-    });
-  }, [route.params, navigation]);
-  return (
-    <Scanner onResult={onResult} />
+function MimbleWimbleCoinScanTransactionData({ navigation, route }: Props) {
+  const onResult = useCallback(
+    (result: string) => {
+      navigation.navigate(ScreenName.ReceiveConfirmation, {
+        ...route.params,
+        transactionData: result,
+      });
+    },
+    [route.params, navigation],
   );
+  return <Scanner onResult={onResult} />;
 }
 
 const options = {
@@ -40,14 +31,9 @@ const options = {
   title: i18next.t("send.scan.title"),
   headerRight: () => {
     const { colors } = useTheme();
-    return (
-      <HeaderRightClose color={colors.white} preferDismiss={false} />
-     );
-   },
-   headerLeft: null
+    return <HeaderRightClose color={colors.white} preferDismiss={false} />;
+  },
+  headerLeft: null,
 };
 
-export {
-  MimbleWimbleCoinScanTransactionData as component,
-  options
-};
+export { MimbleWimbleCoinScanTransactionData as component, options };

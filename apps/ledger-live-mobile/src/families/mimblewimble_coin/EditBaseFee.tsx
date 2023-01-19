@@ -8,49 +8,49 @@ import { useTheme } from "@react-navigation/native";
 import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
 import { useSelector } from "react-redux";
 import type { Transaction } from "@ledgerhq/live-common/families/mimblewimble_coin/types";
+import { useSendAmount } from "@ledgerhq/live-common/countervalues/react";
+import { validateBaseFee } from "@ledgerhq/live-common/families/mimblewimble_coin/react";
+import { Account } from "@ledgerhq/types-live";
 import Button from "../../components/Button";
 import KeyboardView from "../../components/KeyboardView";
 import LText from "../../components/LText";
 import CurrencyInput from "../../components/CurrencyInput";
 import { counterValueCurrencySelector } from "../../reducers/settings";
-import { useSendAmount } from "@ledgerhq/live-common/countervalues/react";
 import TranslatedError from "../../components/TranslatedError";
-import { validateBaseFee } from "@ledgerhq/live-common/families/mimblewimble_coin/react";
 import { ScreenName } from "../../const";
-import { Account } from "@ledgerhq/types-live";
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1
+    flex: 1,
   },
   inputBox: {
     justifyContent: "center",
     padding: 7,
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
   },
   body: {
     flexDirection: "column",
-    flex: 1
+    flex: 1,
   },
   currency: {
-    fontSize: 32
+    fontSize: 32,
   },
   buttonContainer: {
-    marginHorizontal: 16
+    marginHorizontal: 16,
   },
   flex: {
     flex: 1,
     flexDirection: "column",
     justifyContent: "flex-end",
-    paddingBottom: 16
+    paddingBottom: 16,
   },
   error: {
-    fontSize: 14
-  }
+    fontSize: 14,
+  },
 });
 
 type Props = {
-  navigation: any;
+  navigation;
   route: {
     params: RouteParams;
   };
@@ -61,12 +61,7 @@ type RouteParams = {
   transaction: Transaction;
 };
 
-function MimbleWimbleCoinEditBaseFee(
-  {
-    navigation,
-    route
-  }: Props
-) {
+function MimbleWimbleCoinEditBaseFee({ navigation, route }: Props) {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { account, transaction } = route.params;
@@ -74,13 +69,11 @@ function MimbleWimbleCoinEditBaseFee(
   const { cryptoUnit } = useSendAmount({
     account,
     fiatCurrency,
-    cryptoAmount: transaction.baseFee
+    cryptoAmount: transaction.baseFee,
   });
   const [baseFee, setBaseFee] = useState(transaction.baseFee.toFixed());
   const [error, setError] = useState(undefined);
-  const onChangeBaseFee = useCallback((
-    baseFee: string
-  ) => {
+  const onChangeBaseFee = useCallback((baseFee: string) => {
     setBaseFee(baseFee);
     setError(validateBaseFee(baseFee));
   }, []);
@@ -91,14 +84,19 @@ function MimbleWimbleCoinEditBaseFee(
       accountId: account.id,
       transaction: bridge.updateTransaction(transaction, {
         useDefaultBaseFee: false,
-        baseFee: new BigNumber(baseFee)
-      })
+        baseFee: new BigNumber(baseFee),
+      }),
     });
   }, [account, route.params, navigation, transaction, baseFee]);
   return (
     <SafeAreaView style={styles.root} forceInset={{ bottom: "always" }}>
-      <KeyboardView style={[styles.body, { backgroundColor: colors.background }]} >
-        <ScrollView contentContainerStyle={styles.root} keyboardShouldPersistTaps="always" >
+      <KeyboardView
+        style={[styles.body, { backgroundColor: colors.background }]}
+      >
+        <ScrollView
+          contentContainerStyle={styles.root}
+          keyboardShouldPersistTaps="always"
+        >
           <View style={styles.inputBox}>
             <CurrencyInput
               isActive={true}
@@ -106,13 +104,13 @@ function MimbleWimbleCoinEditBaseFee(
               unit={cryptoUnit}
               value={transaction.baseFee}
               renderRight={
-                <LText style={styles.currency} semiBold color="grey" >
+                <LText style={styles.currency} semiBold color="grey">
                   {cryptoUnit.code}
                 </LText>
               }
               hasError={!!error}
             />
-            <LText style={styles.error} color={"alert"} numberOfLines={2} >
+            <LText style={styles.error} color={"alert"} numberOfLines={2}>
               <TranslatedError error={error} />
             </LText>
           </View>
@@ -134,10 +132,7 @@ function MimbleWimbleCoinEditBaseFee(
 
 const options = {
   title: i18next.t("mimblewimble_coin.baseFee"),
-  headerLeft: null
+  headerLeft: null,
 };
 
-export {
-  MimbleWimbleCoinEditBaseFee as component,
-  options
-};
+export { MimbleWimbleCoinEditBaseFee as component, options };

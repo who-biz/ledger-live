@@ -102,9 +102,7 @@ const mapDispatchToProps = {
   replaceAccounts,
 };
 
-function AddAccountsAccounts(
-  props: Props
-) {
+function AddAccountsAccounts(props: Props) {
   const {
     navigation,
     route,
@@ -120,7 +118,8 @@ function AddAccountsAccounts(
   } = route.params || {};
 
   // custom family UI for AddAccountsAccounts
-  const CustomAddAccountsAccounts = addAccountsAccountsByFamily[currency.family];
+  const CustomAddAccountsAccounts =
+    addAccountsAccountsByFamily[currency.family];
   if (CustomAddAccountsAccounts) {
     return <CustomAddAccountsAccounts {...props} />;
   }

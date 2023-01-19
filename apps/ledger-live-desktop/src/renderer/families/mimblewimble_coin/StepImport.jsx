@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useCallback, PureComponent } from "react";
 import styled from "styled-components";
 import { Trans } from "react-i18next";
 import { concat, from } from "rxjs";
-import { ignoreElements, filter, map } from "rxjs/operators";
+import { ignoreElements, filter } from "rxjs/operators";
 import type { Account } from "@ledgerhq/types-live";
 import { isAccountEmpty, groupAddAccounts } from "@ledgerhq/live-common/account/index";
 import { DeviceShouldStayInApp } from "@ledgerhq/errors";
@@ -26,20 +26,17 @@ import { renderVerifyUnwrapped } from "~/renderer/components/DeviceAction/render
 import useTheme from "~/renderer/hooks/useTheme";
 import { useDeviceBlocked } from "~/renderer/components/DeviceAction/DeviceBlocker";
 
-const remapTransportError = (
-  err: mixed,
-  appName: string
-): Error => {
-  if(!err || typeof err !== "object") {
+const remapTransportError = (err: mixed, appName: string): Error => {
+  if (!err || typeof err !== "object") {
     return err;
   }
-  const {
-    name,
-    statusCode
-  } = err;
-  const errorToThrow = (name === "BtcUnmatchedApp" || statusCode === 0x6982 || statusCode === 0x6700) ? new DeviceShouldStayInApp(null, {
-    appName
-  }) : err;
+  const { name, statusCode } = err;
+  const errorToThrow =
+    name === "BtcUnmatchedApp" || statusCode === 0x6982 || statusCode === 0x6700
+      ? new DeviceShouldStayInApp(null, {
+          appName,
+        })
+      : err;
   return errorToThrow;
 };
 
@@ -49,22 +46,18 @@ const LoadingRow = styled(Box).attrs(() => ({
   px: 3,
   alignItems: "center",
   justifyContent: "center",
-  mt: 1
+  mt: 1,
 }))`
   height: 48px;
   border: 1px dashed ${p => p.theme.colors.palette.text.shade60};
 `;
 
-const SectionAccounts = (
-  {
-    defaultSelected,
-    ...rest
-  }: any
-) => {
+const SectionAccounts = ({ defaultSelected, ...rest }: any) => {
   useEffect(() => {
-    if(defaultSelected && rest.onSelectAll) {
+    if (defaultSelected && rest.onSelectAll) {
       rest.onSelectAll(rest.accounts);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return <AccountsList {...rest} />;
 };
@@ -74,15 +67,13 @@ const Separator = styled.div`
   margin: 50px 0;
 `;
 
-const ApproveExportRootPublicKeyOnDevice = (
-  {
-    modelId,
-    accountIndex
-  }: {
-    modelId: string;
-    accountIndex: number;
-  }
-) => {
+const ApproveExportRootPublicKeyOnDevice = ({
+  modelId,
+  accountIndex,
+}: {
+  modelId: string,
+  accountIndex: number,
+}) => {
   const type = useTheme("colors.palette.type");
   return (
     <>
@@ -94,7 +85,10 @@ const ApproveExportRootPublicKeyOnDevice = (
           color="palette.text.shade100"
           fontSize={4}
         >
-          <Trans i18nKey="families.mimblewimble_coin.approveExportingRootPublicKey" values={{ accountIndex: accountIndex.toFixed() }} />
+          <Trans
+            i18nKey="families.mimblewimble_coin.approveExportingRootPublicKey"
+            values={{ accountIndex: accountIndex.toFixed() }}
+          />
         </Text>
       </Box>
       {renderVerifyUnwrapped({ modelId, type })}
@@ -105,17 +99,14 @@ const ApproveExportRootPublicKeyOnDevice = (
 type State = {
   modelId: string | undefined,
   accountIndex: number | undefined,
-  percentComplete: number
+  percentComplete: number,
 };
 
 class StepImport extends PureComponent<StepProps, State> {
-
-  constructor(
-    props: StepProps
-  ) {
+  constructor(props: StepProps) {
     super(props);
     this.state = {
-      percentComplete: 0
+      percentComplete: 0,
     };
   }
 
@@ -123,15 +114,15 @@ class StepImport extends PureComponent<StepProps, State> {
     this.props.setScanStatus("scanning");
   }
 
-  componentDidUpdate(
-    prevProps: StepProps
-  ) {
-    const didStartScan = prevProps.scanStatus !== "scanning" && this.props.scanStatus === "scanning";
-    const didFinishScan = prevProps.scanStatus !== "finished" && this.props.scanStatus === "finished";
-    if(didStartScan) {
+  componentDidUpdate(prevProps: StepProps) {
+    const didStartScan =
+      prevProps.scanStatus !== "scanning" && this.props.scanStatus === "scanning";
+    const didFinishScan =
+      prevProps.scanStatus !== "finished" && this.props.scanStatus === "finished";
+    if (didStartScan) {
       this.startScanAccountsDevice();
     }
-    if(didFinishScan) {
+    if (didFinishScan) {
       this.unsub();
     }
   }
@@ -143,7 +134,7 @@ class StepImport extends PureComponent<StepProps, State> {
   scanSubscription = null;
 
   unsub = () => {
-    if(this.scanSubscription) {
+    if (this.scanSubscription) {
       this.scanSubscription.unsubscribe();
     }
   };
@@ -151,30 +142,24 @@ class StepImport extends PureComponent<StepProps, State> {
   startScanAccountsDevice() {
     this.unsub();
 
-    const {
-      currency,
-      device,
-      setScanStatus,
-      setScannedAccounts,
-      blacklistedTokenIds
-    } = this.props;
+    const { currency, device, setScanStatus, setScannedAccounts, blacklistedTokenIds } = this.props;
 
     this.setState({
-      percentComplete: 0
+      percentComplete: 0,
     });
-    if(!currency || !device) {
+    if (!currency || !device) {
       return;
     }
-    const mainCurrency = (currency.type === "TokenCurrency") ? currency.parentCurrency : currency;
+    const mainCurrency = currency.type === "TokenCurrency" ? currency.parentCurrency : currency;
 
     try {
       const bridge = getCurrencyBridge(mainCurrency);
       let onlyNewAccounts: boolean = true;
       const syncConfig = {
         paginationConfig: {
-          operations: 20
+          operations: 20,
         },
-        blacklistedTokenIds
+        blacklistedTokenIds,
       };
 
       this.scanSubscription = concat(
@@ -182,81 +167,85 @@ class StepImport extends PureComponent<StepProps, State> {
         bridge.scanAccounts({
           currency: mainCurrency,
           deviceId: device.deviceId,
-          syncConfig
-        })
-      ).pipe(
-        filter(e => e.type === "discovered" || e.type === "device-root-public-key-requested" || e.type === "device-root-public-key-granted" || e.type === "synced-percent")
-      ).subscribe({
-        next: (
-         event
-        ) => {
-          switch(event.type) {
-            case "discovered":
-              const account = event.account;
-              const {
-                scannedAccounts,
-                checkedAccountsIds,
-                existingAccounts
-              } = this.props;
-              const hasAlreadyBeenScanned = !!scannedAccounts.find(a => account.id === a.id);
-              const hasAlreadyBeenImported = !!existingAccounts.find(a => account.id === a.id);
-              const isNewAccount = isAccountEmpty(account);
+          syncConfig,
+        }),
+      )
+        .pipe(
+          filter(
+            e =>
+              e.type === "discovered" ||
+              e.type === "device-root-public-key-requested" ||
+              e.type === "device-root-public-key-granted" ||
+              e.type === "synced-percent",
+          ),
+        )
+        .subscribe({
+          next: event => {
+            switch (event.type) {
+              case "discovered": {
+                const account = event.account;
+                const { scannedAccounts, checkedAccountsIds, existingAccounts } = this.props;
+                const hasAlreadyBeenScanned = !!scannedAccounts.find(a => account.id === a.id);
+                const hasAlreadyBeenImported = !!existingAccounts.find(a => account.id === a.id);
+                const isNewAccount = isAccountEmpty(account);
 
-              if(!isNewAccount && !hasAlreadyBeenImported) {
-                onlyNewAccounts = false;
-              }
-              if(!hasAlreadyBeenScanned) {
-                setScannedAccounts({
-                  scannedAccounts: [...scannedAccounts, account],
-                  checkedAccountsIds: onlyNewAccounts ? ((hasAlreadyBeenImported || checkedAccountsIds.length > 0) ? checkedAccountsIds : [account.id]) : ((!hasAlreadyBeenImported && !isNewAccount) ? uniq([...checkedAccountsIds, account.id]) : checkedAccountsIds)
+                if (!isNewAccount && !hasAlreadyBeenImported) {
+                  onlyNewAccounts = false;
+                }
+                if (!hasAlreadyBeenScanned) {
+                  setScannedAccounts({
+                    scannedAccounts: [...scannedAccounts, account],
+                    checkedAccountsIds: onlyNewAccounts
+                      ? hasAlreadyBeenImported || checkedAccountsIds.length > 0
+                        ? checkedAccountsIds
+                        : [account.id]
+                      : !hasAlreadyBeenImported && !isNewAccount
+                      ? uniq([...checkedAccountsIds, account.id])
+                      : checkedAccountsIds,
+                  });
+                }
+                this.setState({
+                  percentComplete: 0,
                 });
+                break;
               }
-              this.setState({
-                percentComplete: 0
-              });
-              break;
-            case "device-root-public-key-requested":
-              this.setState({
-                modelId: device.modelId,
-                accountIndex: event.index
-              });
-              break;
-            case "device-root-public-key-granted":
-              this.setState({
-                modelId: undefined,
-                accountIndex: undefined
-              });
-              break;
-            case "synced-percent":
-              this.setState({
-                percentComplete: event.percent
-              });
-              break;
-          }
-        },
-        complete: () => {
-          this.setState({
-            modelId: undefined,
-            accountIndex: undefined
-          });
-          setScanStatus("finished");
-        },
-        error: (
-          err
-        ) => {
-          this.setState({
-            modelId: undefined,
-            accountIndex: undefined
-          });
-          logger.critical(err);
-          const error = remapTransportError(err, currency.name);
-          setScanStatus("error", error);
-        }
-      });
-    }
-    catch(
-      err: any
-    ) {
+              case "device-root-public-key-requested":
+                this.setState({
+                  modelId: device.modelId,
+                  accountIndex: event.index,
+                });
+                break;
+              case "device-root-public-key-granted":
+                this.setState({
+                  modelId: undefined,
+                  accountIndex: undefined,
+                });
+                break;
+              case "synced-percent":
+                this.setState({
+                  percentComplete: event.percent,
+                });
+                break;
+            }
+          },
+          complete: () => {
+            this.setState({
+              modelId: undefined,
+              accountIndex: undefined,
+            });
+            setScanStatus("finished");
+          },
+          error: err => {
+            this.setState({
+              modelId: undefined,
+              accountIndex: undefined,
+            });
+            logger.critical(err);
+            const error = remapTransportError(err, currency.name);
+            setScanStatus("error", error);
+          },
+        });
+    } catch (err) {
       setScanStatus("error", err);
     }
   }
@@ -267,44 +256,29 @@ class StepImport extends PureComponent<StepProps, State> {
     this.startScanAccountsDevice();
   };
 
-  handleToggleAccount = (
-    account: Account
-  ) => {
-    const {
-      checkedAccountsIds,
-      setScannedAccounts
-    } = this.props;
+  handleToggleAccount = (account: Account) => {
+    const { checkedAccountsIds, setScannedAccounts } = this.props;
     const isChecked = checkedAccountsIds.find(id => id === account.id) !== undefined;
-    if(isChecked) {
+    if (isChecked) {
       setScannedAccounts({
         checkedAccountsIds: checkedAccountsIds.filter(id => id !== account.id),
       });
     } else {
       setScannedAccounts({
-        checkedAccountsIds: [...checkedAccountsIds, account.id]
+        checkedAccountsIds: [...checkedAccountsIds, account.id],
       });
     }
   };
 
-  handleSelectAll = (
-    accountsToSelect: Account[]
-  ) => {
-    const {
-      setScannedAccounts,
-      checkedAccountsIds
-    } = this.props;
+  handleSelectAll = (accountsToSelect: Account[]) => {
+    const { setScannedAccounts, checkedAccountsIds } = this.props;
     setScannedAccounts({
       checkedAccountsIds: uniq(checkedAccountsIds.concat(accountsToSelect.map(a => a.id))),
     });
   };
 
-  handleUnselectAll = (
-    accountsToRemove: Account[]
-  ) => {
-    const {
-      setScannedAccounts,
-      checkedAccountsIds
-    } = this.props;
+  handleUnselectAll = (accountsToRemove: Account[]) => {
+    const { setScannedAccounts, checkedAccountsIds } = this.props;
     setScannedAccounts({
       checkedAccountsIds: checkedAccountsIds.filter(id => !accountsToRemove.some(a => id === a.id)),
     });
@@ -320,24 +294,26 @@ class StepImport extends PureComponent<StepProps, State> {
       existingAccounts,
       setAccountName,
       editedNames,
-      t
+      t,
     } = this.props;
-    const {
-      modelId,
-      accountIndex,
-      percentComplete
-    } = this.state;
+    const { modelId, accountIndex, percentComplete } = this.state;
 
-    if(!currency) {
+    if (!currency) {
       return null;
     }
 
-    const mainCurrency = (currency.type === "TokenCurrency") ? currency.parentCurrency : currency;
-    const newAccountSchemes = scannedAccounts.filter(a1 => !existingAccounts.map(a2 => a2.id).includes(a1.id) && !a1.used).map(a => a.derivationMode);
-    const preferredNewAccountScheme = (newAccountSchemes && newAccountSchemes.length > 0) ? newAccountSchemes[0] : undefined;
+    const mainCurrency = currency.type === "TokenCurrency" ? currency.parentCurrency : currency;
+    const newAccountSchemes = scannedAccounts
+      .filter(a1 => !existingAccounts.map(a2 => a2.id).includes(a1.id) && !a1.used)
+      .map(a => a.derivationMode);
+    const preferredNewAccountScheme =
+      newAccountSchemes && newAccountSchemes.length > 0 ? newAccountSchemes[0] : undefined;
 
-    if(err) {
-      const errorHandled = ["UserRefusedOnDevice", "DisconnectedDevice", "DisconnectedDeviceDuringOperation"].indexOf(err.name) !== -1;
+    if (err) {
+      const errorHandled =
+        ["UserRefusedOnDevice", "DisconnectedDevice", "DisconnectedDeviceDuringOperation"].indexOf(
+          err.name,
+        ) !== -1;
       return (
         <ErrorDisplay
           error={err}
@@ -348,16 +324,13 @@ class StepImport extends PureComponent<StepProps, State> {
     }
 
     const currencyName = mainCurrency ? mainCurrency.name : "";
-    const {
-      sections,
-      alreadyEmptyAccount
-    } = groupAddAccounts(existingAccounts, scannedAccounts, {
+    const { sections, alreadyEmptyAccount } = groupAddAccounts(existingAccounts, scannedAccounts, {
       scanning: scanStatus === "scanning",
-      preferredNewAccountSchemes: [preferredNewAccountScheme]
+      preferredNewAccountSchemes: [preferredNewAccountScheme],
     });
 
     let creatable;
-    if(alreadyEmptyAccount) {
+    if (alreadyEmptyAccount) {
       creatable = (
         <Trans i18nKey="addAccounts.createNewAccount.noOperationOnLastAccount" parent="div">
           {" "}
@@ -366,8 +339,7 @@ class StepImport extends PureComponent<StepProps, State> {
           </Text>{" "}
         </Trans>
       );
-    }
-    else {
+    } else {
       creatable = (
         <Trans i18nKey="addAccounts.createNewAccount.noAccountToCreate" parent="div">
           {" "}
@@ -379,27 +351,21 @@ class StepImport extends PureComponent<StepProps, State> {
     }
 
     const emptyTexts = {
-      importable: t("addAccounts.noAccountToImport", {currencyName}),
-      creatable
+      importable: t("addAccounts.noAccountToImport", { currencyName }),
+      creatable,
     };
 
     return (
       <>
         <TrackPage category="AddAccounts" name="Step3" currencyName={currencyName} />
         <Box mt={-4}>
-          {sections.map(({
-            id,
-            selectable,
-            defaultSelected,
-            data,
-            supportLink
-          }, i) => {
+          {sections.map(({ id, selectable, defaultSelected, data, supportLink }, i) => {
             return (
               <SectionAccounts
                 currency={currency}
                 defaultSelected={defaultSelected}
                 key={id}
-                title={t(`addAccounts.sections.${id}.title`, {count: data.length})}
+                title={t(`addAccounts.sections.${id}.title`, { count: data.length })}
                 emptyText={emptyTexts[id]}
                 accounts={data}
                 autoFocusFirstInput={selectable && i === 0}
@@ -418,12 +384,14 @@ class StepImport extends PureComponent<StepProps, State> {
             <LoadingRow>
               <Spinner color="palette.text.shade60" size={16} />
               <Box ml={2} ff="Inter|Regular" color="palette.text.shade60" fontSize={4}>
-                {t("families.mimblewimble_coin.syncing", { percentComplete: percentComplete.toFixed() })}
+                {t("families.mimblewimble_coin.syncing", {
+                  percentComplete: percentComplete.toFixed(),
+                })}
               </Box>
             </LoadingRow>
           ) : null}
         </Box>
-        {(modelId !== undefined) ? (
+        {modelId !== undefined ? (
           <ApproveExportRootPublicKeyOnDevice modelId={modelId} accountIndex={accountIndex} />
         ) : null}
         {err && <Box shrink>{err.message}</Box>}
@@ -432,9 +400,7 @@ class StepImport extends PureComponent<StepProps, State> {
   }
 }
 
-const StepImportFooter = (
-  props: StepProps
-) => {
+const StepImportFooter = (props: StepProps) => {
   const {
     transitionTo,
     setScanStatus,
@@ -445,60 +411,57 @@ const StepImportFooter = (
     checkedAccountsIds,
     scannedAccounts,
     currency,
-    err,
     t,
-    device
+    device,
   } = props;
   const initialDevice = useRef(device);
 
-  const willCreateAccount = checkedAccountsIds.some((
-    id
-  ) => {
+  const willCreateAccount = checkedAccountsIds.some(id => {
     const account = scannedAccounts.find(a => a.id === id);
     return account && isAccountEmpty(account);
   });
 
-  const willAddAccounts = checkedAccountsIds.some((
-    id
-  ) => {
+  const willAddAccounts = checkedAccountsIds.some(id => {
     const account = scannedAccounts.find(a => a.id === id);
     return account && !isAccountEmpty(account);
   });
 
   const count = checkedAccountsIds.length;
   const willClose = !willCreateAccount && !willAddAccounts;
-  const ctaWording = (scanStatus === "scanning") ? t("common.sync.syncing") : (willClose ? t("common.close") : t("addAccounts.cta.add", {count}));
+  const ctaWording =
+    scanStatus === "scanning"
+      ? t("common.sync.syncing")
+      : willClose
+      ? t("common.close")
+      : t("addAccounts.cta.add", { count });
 
-  const onClick = willClose ? onCloseModal : async () => {
-    await onClickAdd();
-    transitionTo("finish");
-  };
+  const onClick = willClose
+    ? onCloseModal
+    : async () => {
+        await onClickAdd();
+        transitionTo("finish");
+      };
 
   const onRetry = useCallback(() => {
     resetScanState();
-    if(device !== initialDevice.current) {
+    if (device !== initialDevice.current) {
       transitionTo("connectDevice");
-    }
-    else {
+    } else {
       setScanStatus("scanning");
     }
   }, [resetScanState, device, transitionTo, setScanStatus]);
 
-  if(useDeviceBlocked()) {
+  if (useDeviceBlocked()) {
     return null;
   }
 
   return (
     <>
       <Box grow>{currency && <CurrencyBadge currency={currency} />}</Box>
-      {(scanStatus === "error") ? (
-        <RetryButton
-          data-test-id={"add-accounts-import-retry-button"}
-          primary
-          onClick={onRetry}
-        />
+      {scanStatus === "error" ? (
+        <RetryButton data-test-id={"add-accounts-import-retry-button"} primary onClick={onRetry} />
       ) : null}
-      {(scanStatus === "scanning") ? (
+      {scanStatus === "scanning" ? (
         <Button
           data-test-id={"add-accounts-import-stop-button"}
           onClick={() => setScanStatus("finished")}
@@ -506,7 +469,7 @@ const StepImportFooter = (
           {t("common.stop")}
         </Button>
       ) : null}
-      {(scanStatus === "error") ? null : (
+      {scanStatus === "error" ? null : (
         <Button
           data-test-id={"add-accounts-import-add-button"}
           primary
@@ -522,5 +485,5 @@ const StepImportFooter = (
 
 export default {
   StepImport,
-  StepImportFooter
+  StepImportFooter,
 };

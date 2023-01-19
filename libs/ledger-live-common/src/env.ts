@@ -122,7 +122,7 @@ const envDefinitions = {
     def: "https://grinnode.live:3413",
     desc: "Node for Grin",
   },
-   API_GRIN_TESTNET_NODE: {
+  API_GRIN_TESTNET_NODE: {
     parser: stringParser,
     def: "http://localhost:13413",
     desc: "Node for Grin testnet",

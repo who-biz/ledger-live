@@ -383,7 +383,7 @@ export default function Content({
             ) : undefined
           }
         >
-          {(operation.fee && operation.fee.isPositive()) ? (
+          {operation.fee && operation.fee.isPositive() ? (
             <View style={styles.feeValueContainer}>
               <LText style={sectionStyles.value} semiBold>
                 <CurrencyUnitValue

@@ -29,7 +29,7 @@ import {
   StackNavigatorProps,
 } from "../../components/RootNavigator/types/helpers";
 import { RootStackParamList } from "../../components/RootNavigator/types/RootNavigator";
-import byFamily from "../generated/ReceiveFundsAddAccount";
+import byFamily from "../../generated/ReceiveFundsAddAccount";
 
 type Props = StackNavigatorProps<
   ReceiveFundsStackParamList,
