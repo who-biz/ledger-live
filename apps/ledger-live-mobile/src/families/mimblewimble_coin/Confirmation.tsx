@@ -468,7 +468,7 @@ function ReceiveConfirmationInner({
               );
               break;
             default:
-             break;
+              break;
           }
         },
         error: (error: Error) => {

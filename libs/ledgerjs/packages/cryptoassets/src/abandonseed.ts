@@ -63,9 +63,11 @@ const abandonSeedAddresses: Record<string, string> = {
   songbird: "0x0000000000000000000000000000000000000000",
   flare: "0x0000000000000000000000000000000000000000",
   mimblewimble_coin: "htpob76thyhuc7zcfu3fm5rvii6um3v5vb7qtjubgqoryz6j6lb4txqd",
-  mimblewimble_coin_floonet: "7rgrlqdcygvsyjlrawpidkyy4bys67t343kh7knshea2gyld6gz67fid",
+  mimblewimble_coin_floonet:
+    "7rgrlqdcygvsyjlrawpidkyy4bys67t343kh7knshea2gyld6gz67fid",
   grin: "grin1pe6nvyy4n2nqh73l8kr80zqj5uf4cyqdu4jelqhxmmmjufw8g33q42r76l",
-  grin_testnet: "tgrin1txasfcykjh7vk47tadwy24x2wqhexkjk3e93nx7kuah8q87arlqsa3cnlw",
+  grin_testnet:
+    "tgrin1txasfcykjh7vk47tadwy24x2wqhexkjk3e93nx7kuah8q87arlqsa3cnlw",
   near: "4e7de0a21d8a20f970c86b6edf407906d7ba9e205979c3268270eef80a286e2d",
 };
 
