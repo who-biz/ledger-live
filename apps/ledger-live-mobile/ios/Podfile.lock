@@ -630,7 +630,7 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - secp256k1-zkp-react (0.0.11):
+  - secp256k1-zkp-react (0.0.13):
     - React-Core
   - segment-analytics-react-native (2.9.1):
     - React-Core
@@ -771,7 +771,7 @@ DEPENDENCIES:
   - "RNShare (from `../../../node_modules/.pnpm/react-native-share@7.9.0/node_modules/react-native-share`)"
   - "RNSVG (from `../../../node_modules/.pnpm/react-native-svg@12.3.0_ondxtwf5lqq5g76dzmsmwamaca/node_modules/react-native-svg`)"
   - "RNVectorIcons (from `../../../node_modules/.pnpm/react-native-vector-icons@8.1.0/node_modules/react-native-vector-icons`)"
-  - "secp256k1-zkp-react (from `../../../node_modules/.pnpm/@nicolasflamel+secp256k1-zkp-react@0.0.11_ondxtwf5lqq5g76dzmsmwamaca/node_modules/@nicolasflamel/secp256k1-zkp-react`)"
+  - "secp256k1-zkp-react (from `../../../node_modules/.pnpm/@nicolasflamel+secp256k1-zkp-react@0.0.13_ondxtwf5lqq5g76dzmsmwamaca/node_modules/@nicolasflamel/secp256k1-zkp-react`)"
   - "segment-analytics-react-native (from `../../../node_modules/.pnpm/@segment+analytics-react-native@2.9.1_ondxtwf5lqq5g76dzmsmwamaca/node_modules/@segment/analytics-react-native`)"
   - "smaz-react (from `../../../node_modules/.pnpm/@nicolasflamel+smaz-react@0.0.12_ondxtwf5lqq5g76dzmsmwamaca/node_modules/@nicolasflamel/smaz-react`)"
   - "sovran-react-native (from `../../../node_modules/.pnpm/@segment+sovran-react-native@0.4.5_ondxtwf5lqq5g76dzmsmwamaca/node_modules/@segment/sovran-react-native`)"
@@ -989,7 +989,7 @@ EXTERNAL SOURCES:
   RNVectorIcons:
     :path: "../../../node_modules/.pnpm/react-native-vector-icons@8.1.0/node_modules/react-native-vector-icons"
   secp256k1-zkp-react:
-    :path: "../../../node_modules/.pnpm/@nicolasflamel+secp256k1-zkp-react@0.0.11_ondxtwf5lqq5g76dzmsmwamaca/node_modules/@nicolasflamel/secp256k1-zkp-react"
+    :path: "../../../node_modules/.pnpm/@nicolasflamel+secp256k1-zkp-react@0.0.13_ondxtwf5lqq5g76dzmsmwamaca/node_modules/@nicolasflamel/secp256k1-zkp-react"
   segment-analytics-react-native:
     :path: "../../../node_modules/.pnpm/@segment+analytics-react-native@2.9.1_ondxtwf5lqq5g76dzmsmwamaca/node_modules/@segment/analytics-react-native"
   smaz-react:
@@ -1121,7 +1121,7 @@ SPEC CHECKSUMS:
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
-  secp256k1-zkp-react: 1d73431579650732f3c67f6e9cbb2b5503d507c1
+  secp256k1-zkp-react: a0cb6c2717cb62845c19624d22e04f09b11e8aad
   segment-analytics-react-native: 36a0e668c91fe9dc35a31079493d504c45ebf8d8
   Sentry: a0d4563fa4ddacba31fdcc35daaa8573d87224d6
   smaz-react: 0d1f1669c3dd2ac38bdafeae62968f6e7d1b65eb
