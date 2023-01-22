@@ -1068,7 +1068,7 @@ importers:
       '@ledgerhq/wallet-api-core': ^0.11.0
       '@ledgerhq/wallet-api-server': ^0.10.1
       '@nicolasflamel/ed25519': ^0.0.4
-      '@nicolasflamel/secp256k1-zkp': ^0.0.12
+      '@nicolasflamel/secp256k1-zkp': ^0.0.13
       '@nicolasflamel/smaz': ^0.0.6
       '@nicolasflamel/x25519': ^0.0.3
       '@polkadot/types': 9.8.1
@@ -1260,7 +1260,7 @@ importers:
       '@ledgerhq/wallet-api-core': 0.11.0
       '@ledgerhq/wallet-api-server': 0.10.1
       '@nicolasflamel/ed25519': 0.0.4_fvyp5h33mdlmlhalc4xfh32q7e
-      '@nicolasflamel/secp256k1-zkp': 0.0.12_fvyp5h33mdlmlhalc4xfh32q7e
+      '@nicolasflamel/secp256k1-zkp': 0.0.13_fvyp5h33mdlmlhalc4xfh32q7e
       '@nicolasflamel/smaz': 0.0.6_fvyp5h33mdlmlhalc4xfh32q7e
       '@nicolasflamel/x25519': 0.0.3_fvyp5h33mdlmlhalc4xfh32q7e
       '@polkadot/types': 9.8.1
@@ -12789,14 +12789,14 @@ packages:
       react-native: 0.68.5_qiqqwmyv63yhnuboofexv3s7x4
     dev: false
 
-  /@nicolasflamel/secp256k1-zkp-wasm/0.0.27:
-    resolution: {integrity: sha512-jsiFkfo3Qyr0e0lqtIClYNXFXbIxrlvZBNxrfjkyNpq2RkifT+Vgqrxx5htaOHvw2M+W02QlPGNh1F4jFqYfog==}
+  /@nicolasflamel/secp256k1-zkp-wasm/0.0.28:
+    resolution: {integrity: sha512-9Kmp9ywbIqfmOZbzQOp1304UEevnj3xMcZ2Ju6Hny1o9CSxHo08lcMdwmBkVD/5NwdjVxL1DL9zAy4bD+n+tRQ==}
     dev: false
 
-  /@nicolasflamel/secp256k1-zkp/0.0.12_fvyp5h33mdlmlhalc4xfh32q7e:
-    resolution: {integrity: sha512-QgM+lwHUNlqDH5888yIx6f4SNhj4dv/OcGuE1zWqGMSRMS0MOabB9uuANG7kzMGq4x4dgt6AdXDqk+8pt1dJ2g==}
+  /@nicolasflamel/secp256k1-zkp/0.0.13_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-k8dJsDDZ7dTYajlQDy73fc7fHRU4KQ+msgJDccgJFsXCjmwpy9buDoJZPYiMCE2VHNF+x2zu7V1xARMLDXYfbg==}
     dependencies:
-      '@nicolasflamel/secp256k1-zkp-wasm': 0.0.27
+      '@nicolasflamel/secp256k1-zkp-wasm': 0.0.28
     optionalDependencies:
       '@nicolasflamel/secp256k1-zkp-native': 0.0.24
       '@nicolasflamel/secp256k1-zkp-react': 0.0.13_fvyp5h33mdlmlhalc4xfh32q7e
