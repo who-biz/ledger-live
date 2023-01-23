@@ -1068,7 +1068,7 @@ importers:
       '@ledgerhq/wallet-api-core': ^0.11.0
       '@ledgerhq/wallet-api-server': ^0.10.1
       '@nicolasflamel/ed25519': ^0.0.4
-      '@nicolasflamel/secp256k1-zkp': ^0.0.13
+      '@nicolasflamel/secp256k1-zkp': ^0.0.14
       '@nicolasflamel/smaz': ^0.0.6
       '@nicolasflamel/x25519': ^0.0.3
       '@polkadot/types': 9.8.1
@@ -1260,7 +1260,7 @@ importers:
       '@ledgerhq/wallet-api-core': 0.11.0
       '@ledgerhq/wallet-api-server': 0.10.1
       '@nicolasflamel/ed25519': 0.0.4_fvyp5h33mdlmlhalc4xfh32q7e
-      '@nicolasflamel/secp256k1-zkp': 0.0.13_fvyp5h33mdlmlhalc4xfh32q7e
+      '@nicolasflamel/secp256k1-zkp': 0.0.14_fvyp5h33mdlmlhalc4xfh32q7e
       '@nicolasflamel/smaz': 0.0.6_fvyp5h33mdlmlhalc4xfh32q7e
       '@nicolasflamel/x25519': 0.0.3_fvyp5h33mdlmlhalc4xfh32q7e
       '@polkadot/types': 9.8.1
@@ -12789,14 +12789,14 @@ packages:
       react-native: 0.68.5_qiqqwmyv63yhnuboofexv3s7x4
     dev: false
 
-  /@nicolasflamel/secp256k1-zkp-wasm/0.0.28:
-    resolution: {integrity: sha512-9Kmp9ywbIqfmOZbzQOp1304UEevnj3xMcZ2Ju6Hny1o9CSxHo08lcMdwmBkVD/5NwdjVxL1DL9zAy4bD+n+tRQ==}
+  /@nicolasflamel/secp256k1-zkp-wasm/0.0.29:
+    resolution: {integrity: sha512-SfR6YHTzRAKj+w6rRP9fBLZh+nYeVthaxNRENjpxJpwYP9mije9uIxVXY+wym/gwClBLtG8+DU+ZvNkc1Bh12A==}
     dev: false
 
-  /@nicolasflamel/secp256k1-zkp/0.0.13_fvyp5h33mdlmlhalc4xfh32q7e:
-    resolution: {integrity: sha512-k8dJsDDZ7dTYajlQDy73fc7fHRU4KQ+msgJDccgJFsXCjmwpy9buDoJZPYiMCE2VHNF+x2zu7V1xARMLDXYfbg==}
+  /@nicolasflamel/secp256k1-zkp/0.0.14_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-llzLbl2GvkglkRuugXIYoRJYVNGNP/cY3Pz7xI2uWMz7gtMJVBtZx720dHGC5nhCz+882GOzcOXAEWml8PdPzw==}
     dependencies:
-      '@nicolasflamel/secp256k1-zkp-wasm': 0.0.28
+      '@nicolasflamel/secp256k1-zkp-wasm': 0.0.29
     optionalDependencies:
       '@nicolasflamel/secp256k1-zkp-native': 0.0.24
       '@nicolasflamel/secp256k1-zkp-react': 0.0.13_fvyp5h33mdlmlhalc4xfh32q7e
@@ -24425,7 +24425,7 @@ packages:
       mkdirp: 0.5.6
       move-concurrently: 1.0.1
       p-map: 3.0.0
-      promise-inflight: 1.0.1_bluebird@3.7.2
+      promise-inflight: 1.0.1
       rimraf: 2.7.1
       ssri: 7.1.1
       unique-filename: 1.1.1
@@ -45611,7 +45611,6 @@ packages:
     peerDependenciesMeta:
       bluebird:
         optional: true
-    dev: true
 
   /promise-inflight/1.0.1_bluebird@3.7.2:
     resolution: {integrity: sha512-6zWPyEOFaQBJYcGMHBKTKJ3u6TBsnMFOIZSa6ce1e/ZrrsOlnHRHbabMjLiBYKp+n44X9eUI6VUPaukCXHuG4g==}
