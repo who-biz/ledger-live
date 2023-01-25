@@ -1067,10 +1067,10 @@ importers:
       '@ledgerhq/types-live': workspace:^
       '@ledgerhq/wallet-api-core': ^0.11.0
       '@ledgerhq/wallet-api-server': ^0.10.1
-      '@nicolasflamel/ed25519': ^0.0.4
-      '@nicolasflamel/secp256k1-zkp': ^0.0.14
-      '@nicolasflamel/smaz': ^0.0.6
-      '@nicolasflamel/x25519': ^0.0.3
+      '@nicolasflamel/ed25519': ^0.0.5
+      '@nicolasflamel/secp256k1-zkp': ^0.0.15
+      '@nicolasflamel/smaz': ^0.0.7
+      '@nicolasflamel/x25519': ^0.0.4
       '@polkadot/types': 9.8.1
       '@polkadot/types-known': 9.8.1
       '@polkadot/util': 10.1.12
@@ -1259,10 +1259,10 @@ importers:
       '@ledgerhq/logs': link:../ledgerjs/packages/logs
       '@ledgerhq/wallet-api-core': 0.11.0
       '@ledgerhq/wallet-api-server': 0.10.1
-      '@nicolasflamel/ed25519': 0.0.4_fvyp5h33mdlmlhalc4xfh32q7e
-      '@nicolasflamel/secp256k1-zkp': 0.0.14_fvyp5h33mdlmlhalc4xfh32q7e
-      '@nicolasflamel/smaz': 0.0.6_fvyp5h33mdlmlhalc4xfh32q7e
-      '@nicolasflamel/x25519': 0.0.3_fvyp5h33mdlmlhalc4xfh32q7e
+      '@nicolasflamel/ed25519': 0.0.5_fvyp5h33mdlmlhalc4xfh32q7e
+      '@nicolasflamel/secp256k1-zkp': 0.0.15_fvyp5h33mdlmlhalc4xfh32q7e
+      '@nicolasflamel/smaz': 0.0.7_fvyp5h33mdlmlhalc4xfh32q7e
+      '@nicolasflamel/x25519': 0.0.4_fvyp5h33mdlmlhalc4xfh32q7e
       '@polkadot/types': 9.8.1
       '@polkadot/types-known': 9.8.1
       '@polkadot/util': 10.1.12
@@ -12715,8 +12715,8 @@ packages:
       call-me-maybe: 1.0.1
       glob-to-regexp: 0.3.0
 
-  /@nicolasflamel/ed25519-native/0.0.18:
-    resolution: {integrity: sha512-zKfVEDIui95AVXv/1iwKtIoUnxyvb+d0MOlaNfmuXezlVjjB+bUGVsbj+1iGLzPs/WUNMXv4S5VD3dKpNZ/dLg==}
+  /@nicolasflamel/ed25519-native/0.0.19:
+    resolution: {integrity: sha512-JhKOZsHtw4kJ5Tad21B7xKtkMW6G8xMAeL8JN+qH82xOyPPBF5ILw97ojBOizOAlQ4pMKCdQYhN7XWyl5rTtzg==}
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
@@ -12748,20 +12748,20 @@ packages:
     resolution: {integrity: sha512-iiOCCUnYSrVa2t+9i8Vumi0zZtmPqQvIvCrYEMcAE9J3vshCSn2XSpf2qW4qAGYBx+F3EhkgKWWGtapqJwkMTw==}
     dev: false
 
-  /@nicolasflamel/ed25519/0.0.4_fvyp5h33mdlmlhalc4xfh32q7e:
-    resolution: {integrity: sha512-R0mZwEl6XqDudd2/m99OhbcvWywCoC7ax3wemK4w+fhYUC598EE/YHAFwxNB39+2666zMecAPMOu7iTvMFz76A==}
+  /@nicolasflamel/ed25519/0.0.5_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-kliJFZTB6tZhgSOwDIId4qpPYB1VC/aOTLLercTMMC/fYAIgPRoa50DwAJtOOtS34XZmIsQcnCZnWdoyHLGaMA==}
     dependencies:
       '@nicolasflamel/ed25519-wasm': 0.0.22
     optionalDependencies:
-      '@nicolasflamel/ed25519-native': 0.0.18
+      '@nicolasflamel/ed25519-native': 0.0.19
       '@nicolasflamel/ed25519-react': 0.0.9_fvyp5h33mdlmlhalc4xfh32q7e
     transitivePeerDependencies:
       - react
       - react-native
     dev: false
 
-  /@nicolasflamel/secp256k1-zkp-native/0.0.24:
-    resolution: {integrity: sha512-uqLvgZ6OtvB38o4q07KuJBsBAUvMltRWpYps3GRtDZmDvIJaCpzEs0WMDsk3qv3R1ggt5Rba/xlB5dwpwoP3yA==}
+  /@nicolasflamel/secp256k1-zkp-native/0.0.25:
+    resolution: {integrity: sha512-iKS2IUEntmSDcysNoWXK0WY9E//Im0HD+Z9qYEka1Bl1hnVxGFOdh1Mu4aookLdhWjW8u2c9lBXlmjEltrMhEQ==}
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
@@ -12793,20 +12793,20 @@ packages:
     resolution: {integrity: sha512-SfR6YHTzRAKj+w6rRP9fBLZh+nYeVthaxNRENjpxJpwYP9mije9uIxVXY+wym/gwClBLtG8+DU+ZvNkc1Bh12A==}
     dev: false
 
-  /@nicolasflamel/secp256k1-zkp/0.0.14_fvyp5h33mdlmlhalc4xfh32q7e:
-    resolution: {integrity: sha512-llzLbl2GvkglkRuugXIYoRJYVNGNP/cY3Pz7xI2uWMz7gtMJVBtZx720dHGC5nhCz+882GOzcOXAEWml8PdPzw==}
+  /@nicolasflamel/secp256k1-zkp/0.0.15_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-ukZ9qAz/lnl9BIz9CypRr+n88Gtz7GbOpFJu6rWU6btyG7OpxCMTDv7yW1ngw2wcsIhq5Rg8pPcgvqyUXD7RHg==}
     dependencies:
       '@nicolasflamel/secp256k1-zkp-wasm': 0.0.29
     optionalDependencies:
-      '@nicolasflamel/secp256k1-zkp-native': 0.0.24
+      '@nicolasflamel/secp256k1-zkp-native': 0.0.25
       '@nicolasflamel/secp256k1-zkp-react': 0.0.13_fvyp5h33mdlmlhalc4xfh32q7e
     transitivePeerDependencies:
       - react
       - react-native
     dev: false
 
-  /@nicolasflamel/smaz-native/0.0.26:
-    resolution: {integrity: sha512-TmLtCbN3Z+aFvvvWv+99FVTTKRCSz4W+GnUu6RAcRkzJG6quOlFanpXsqmknIwlVuhvX9d3I9I0dr0m0cKS0GA==}
+  /@nicolasflamel/smaz-native/0.0.27:
+    resolution: {integrity: sha512-foWE+ytRlZJ65sxdJPLzUhjPaUHcD8wash6LRWmiz4FqFpqtzeBRItmSYhfV05nN1x19F7ChdwCm0nX8BZRO1A==}
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
@@ -12838,20 +12838,20 @@ packages:
     resolution: {integrity: sha512-ZDZozdgXsEcXJFKUCIgdHOyLDIVfSmH1/HBqk28WzVU2wq+fHbC4BdB7DDMIfFzTr+30syL3PBq+WFdG1mQYFg==}
     dev: false
 
-  /@nicolasflamel/smaz/0.0.6_fvyp5h33mdlmlhalc4xfh32q7e:
-    resolution: {integrity: sha512-vMYRU+RtK4IzDF/0dVT00raFNWGVhTc3eowIy1AIH93Y5CZDi/Pa/H58/TYdV4wimiZ9C5nlCTBHLg8qOnvL/w==}
+  /@nicolasflamel/smaz/0.0.7_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-9kkZhskF7o06w4DZo4Qm3YfLlFZFmjQXlqQDZzRn6Xj6edQ1Wa4BZLgGwC9t+DSITzP9g6cNhP+yLEw0vRiUzQ==}
     dependencies:
       '@nicolasflamel/smaz-wasm': 0.0.31
     optionalDependencies:
-      '@nicolasflamel/smaz-native': 0.0.26
+      '@nicolasflamel/smaz-native': 0.0.27
       '@nicolasflamel/smaz-react': 0.0.12_fvyp5h33mdlmlhalc4xfh32q7e
     transitivePeerDependencies:
       - react
       - react-native
     dev: false
 
-  /@nicolasflamel/x25519-native/0.0.19:
-    resolution: {integrity: sha512-16LrotJBLIEyZlYWguJK7lUPn0Suso/MBy8qOS1yy/x8vf8936LqLfT2qFR2fCrCF36Mlq3PqTptPEZwMXgiEw==}
+  /@nicolasflamel/x25519-native/0.0.20:
+    resolution: {integrity: sha512-C84Nc4fTzlu4uyyTwo+XFfF6StGplsd/5pVz70nrKPMen2cxjFV29Vp/DDXD6n8RoMJnj9eeJg0/3FW0JP1Hfg==}
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
@@ -12883,12 +12883,12 @@ packages:
     resolution: {integrity: sha512-t1arLhWPWVe9Tg5OwYHhuLSf64Cb0HKteObBVd7u/Ggb+io+RCzMy0GBInJyEeppihewn6p96OmqIQCxX1jREg==}
     dev: false
 
-  /@nicolasflamel/x25519/0.0.3_fvyp5h33mdlmlhalc4xfh32q7e:
-    resolution: {integrity: sha512-RWXV4V7rgecBhkRtgqAEbPjM4nMouKqXAtL00NfDEzCLogQchED+i6YnLYOjY0tr+lBHn8ra4JiKvykwzbPGkg==}
+  /@nicolasflamel/x25519/0.0.4_fvyp5h33mdlmlhalc4xfh32q7e:
+    resolution: {integrity: sha512-59sI3wuBXpfGOoqP2vmH1l1rQ640P0iFVR3O2TiAQ1Y61bn4lVeVjQ2iuaCpHBQ+Zo3qxNzLgtTrVHvOIQpIuw==}
     dependencies:
       '@nicolasflamel/x25519-wasm': 0.0.23
     optionalDependencies:
-      '@nicolasflamel/x25519-native': 0.0.19
+      '@nicolasflamel/x25519-native': 0.0.20
       '@nicolasflamel/x25519-react': 0.0.9_fvyp5h33mdlmlhalc4xfh32q7e
     transitivePeerDependencies:
       - react
@@ -24425,7 +24425,7 @@ packages:
       mkdirp: 0.5.6
       move-concurrently: 1.0.1
       p-map: 3.0.0
-      promise-inflight: 1.0.1
+      promise-inflight: 1.0.1_bluebird@3.7.2
       rimraf: 2.7.1
       ssri: 7.1.1
       unique-filename: 1.1.1
@@ -45611,6 +45611,7 @@ packages:
     peerDependenciesMeta:
       bluebird:
         optional: true
+    dev: true
 
   /promise-inflight/1.0.1_bluebird@3.7.2:
     resolution: {integrity: sha512-6zWPyEOFaQBJYcGMHBKTKJ3u6TBsnMFOIZSa6ce1e/ZrrsOlnHRHbabMjLiBYKp+n44X9eUI6VUPaukCXHuG4g==}
