@@ -74,7 +74,7 @@ export default class ProofBuilder {
     identifier: Identifier,
     switchType: number
   ): Buffer {
-    if (switchType > 0xff) {
+    if (switchType < 0 || switchType > 0xff) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid switchType");
     }
     const message = Buffer.alloc(ProofBuilder.MESSAGE_LENGTH);

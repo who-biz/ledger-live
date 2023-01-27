@@ -214,10 +214,10 @@ export default class MimbleWimbleCoin {
     if (!this.verifyBipPath(bipPath)) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid path");
     }
-    if (amount.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+    if (amount.isLessThan(0) || amount.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid amount");
     }
-    if (switchType > 0xff) {
+    if (switchType < 0 || switchType > 0xff) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid switch type");
     }
     const buffer = Buffer.alloc(
@@ -273,10 +273,10 @@ export default class MimbleWimbleCoin {
     if (!this.verifyBipPath(bipPath)) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid path");
     }
-    if (amount.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+    if (amount.isLessThan(0) || amount.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid amount");
     }
-    if (switchType > 0xff) {
+    if (switchType < 0 || switchType > 0xff) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid switch type");
     }
     if (
@@ -376,14 +376,19 @@ export default class MimbleWimbleCoin {
     if (!this.verifyBipPath(bipPath)) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid path");
     }
-    if (output.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+    if (output.isLessThan(0) || output.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid output");
     }
-    if (input.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+    if (input.isLessThan(0) || input.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid input");
     }
-    if (fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+    if (fee.isLessThan(0) || fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid fee");
+    }
+    if (privateNonceIndex < 0 || privateNonceIndex > 0xff) {
+      throw new MimbleWimbleCoinInvalidParameters(
+        "Invalid private nonce index"
+      );
     }
     if (
       recipientOrSenderPaymentProofAddress !== null &&
@@ -468,10 +473,10 @@ export default class MimbleWimbleCoin {
     identifier: Identifier,
     switchType: number
   ) {
-    if (amount.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+    if (amount.isLessThan(0) || amount.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid amount");
     }
-    if (switchType > 0xff) {
+    if (switchType < 0 || switchType > 0xff) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid switch type");
     }
     const buffer = Buffer.alloc(
@@ -500,10 +505,10 @@ export default class MimbleWimbleCoin {
     identifier: Identifier,
     switchType: number
   ) {
-    if (amount.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+    if (amount.isLessThan(0) || amount.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid amount");
     }
-    if (switchType > 0xff) {
+    if (switchType < 0 || switchType > 0xff) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid switch type");
     }
     const buffer = Buffer.alloc(
@@ -621,7 +626,10 @@ export default class MimbleWimbleCoin {
         kernelInformation.writeUInt8(kernelFeatures, 0);
         break;
       case SlateKernel.Features.HEIGHT_LOCKED:
-        if (lockHeight.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+        if (
+          lockHeight.isLessThan(0) ||
+          lockHeight.isGreaterThan("0xFFFFFFFFFFFFFFFF")
+        ) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid lock height");
         }
         kernelInformation = Buffer.alloc(
@@ -635,7 +643,11 @@ export default class MimbleWimbleCoin {
         );
         break;
       case SlateKernel.Features.NO_RECENT_DUPLICATE:
-        if (!relativeHeight || relativeHeight.isGreaterThan("0xFFFF")) {
+        if (
+          !relativeHeight ||
+          relativeHeight.isLessThan(0) ||
+          relativeHeight.isGreaterThan("0xFFFF")
+        ) {
           throw new MimbleWimbleCoinInvalidParameters(
             "Invalid relative height"
           );
@@ -1178,7 +1190,7 @@ export default class MimbleWimbleCoin {
       return false;
     }
     for (const path of bipPath) {
-      if (path > 0xffffffff) {
+      if (path < 0 || path > 0xffffffff) {
         return false;
       }
     }

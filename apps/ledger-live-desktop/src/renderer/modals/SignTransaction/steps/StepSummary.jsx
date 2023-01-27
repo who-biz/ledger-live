@@ -130,7 +130,7 @@ export default class StepSummary extends PureComponent<StepProps> {
                 </Text>
                 <Ellipsis>
                   <Text ff="Inter" color="palette.text.shade100" fontSize={4}>
-                    {transaction.recipient}
+                    {transaction.recipient.trim()}
                   </Text>
                 </Ellipsis>
               </Box>

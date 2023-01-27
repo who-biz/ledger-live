@@ -176,6 +176,7 @@ const Body = ({
             ...steps[3],
             onBack,
           },
+          ...steps.slice(4),
         ]);
       }
     },

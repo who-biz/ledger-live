@@ -79,14 +79,20 @@ class StepImport extends PureComponent<StepProps, { showAllCreatedAccounts: bool
   }
 
   componentDidMount() {
-    this.props.setScanStatus("scanning");
+    const { currency, setScanStatus } = this.props;
+    if (currency && byFamilyStepImport[currency.family]) {
+      return;
+    }
+    setScanStatus("scanning");
   }
 
   componentDidUpdate(prevProps: StepProps) {
-    const didStartScan =
-      prevProps.scanStatus !== "scanning" && this.props.scanStatus === "scanning";
-    const didFinishScan =
-      prevProps.scanStatus !== "finished" && this.props.scanStatus === "finished";
+    const { currency, scanStatus } = this.props;
+    if (currency && byFamilyStepImport[currency.family]) {
+      return;
+    }
+    const didStartScan = prevProps.scanStatus !== "scanning" && scanStatus === "scanning";
+    const didFinishScan = prevProps.scanStatus !== "finished" && scanStatus === "finished";
 
     // handle case when we click on retry sync
     if (didStartScan) {
@@ -100,6 +106,10 @@ class StepImport extends PureComponent<StepProps, { showAllCreatedAccounts: bool
   }
 
   componentWillUnmount() {
+    const { currency } = this.props;
+    if (currency && byFamilyStepImport[currency.family]) {
+      return;
+    }
     this.unsub();
   }
 
@@ -260,6 +270,15 @@ class StepImport extends PureComponent<StepProps, { showAllCreatedAccounts: bool
     const preferredNewAccountScheme =
       newAccountSchemes && newAccountSchemes.length > 0 ? newAccountSchemes[0] : undefined;
 
+    // custom family UI for StepImport
+    const CustomStepImport = byFamilyStepImport[currency.family];
+    if (CustomStepImport) {
+      if (CustomStepImport.StepImport) {
+        return <CustomStepImport.StepImport {...this.props} />;
+      }
+      return <CustomStepImport {...this.props} />;
+    }
+
     if (err) {
       return (
         <ErrorDisplay
@@ -271,7 +290,6 @@ class StepImport extends PureComponent<StepProps, { showAllCreatedAccounts: bool
     }
 
     const currencyName = mainCurrency ? mainCurrency.name : "";
-
     const { sections, alreadyEmptyAccount } = groupAddAccounts(existingAccounts, scannedAccounts, {
       scanning: scanStatus === "scanning",
       preferredNewAccountSchemes: this.state.showAllCreatedAccounts

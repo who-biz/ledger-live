@@ -24,7 +24,6 @@ import StepConnectDevice from "./steps/StepConnectDevice";
 import StepImport, { StepImportFooter } from "./steps/StepImport";
 import StepFinish, { StepFinishFooter } from "./steps/StepFinish";
 import { blacklistedTokenIdsSelector } from "~/renderer/reducers/settings";
-import byFamily from "~/renderer/generated/StepImport";
 
 type Props = {
   device: ?Device,
@@ -263,23 +262,6 @@ class AddAccounts extends PureComponent<Props, State> {
       stepId = "connectDevice";
     }
     stepperProps.currency = stepperProps.currency || this.props.currency;
-
-    // custom family UI for StepImport
-    if (stepId === "import") {
-      const stepIndex = skipCurrencySelection ? 1 : 2;
-      const CustomStepImport = stepperProps.currency
-        ? byFamily[stepperProps.currency.family]
-        : undefined;
-      if (CustomStepImport) {
-        if (CustomStepImport.StepImport) {
-          this.STEPS[stepIndex].component = CustomStepImport.StepImport;
-        } else {
-          this.STEPS[stepIndex].component = CustomStepImport;
-        }
-      } else {
-        this.STEPS[stepIndex].component = StepImport;
-      }
-    }
 
     return (
       <Modal

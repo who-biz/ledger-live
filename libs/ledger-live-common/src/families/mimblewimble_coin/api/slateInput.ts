@@ -71,7 +71,7 @@ export default class SlateInput {
   }
 
   public getHash(): Buffer {
-    if (this.features > 0xff) {
+    if (this.features < 0 || this.features > 0xff) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid slate features");
     }
     const data = Buffer.alloc(

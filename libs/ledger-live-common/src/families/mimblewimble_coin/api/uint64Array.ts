@@ -7,7 +7,7 @@ export default class Uint64Array {
   public static writeBigEndian(buffer: Buffer, value: BigNumber, offset = 0) {
     if (
       value.isNaN() ||
-      value.isNegative() ||
+      value.isLessThan(0) ||
       value.isGreaterThan("0xFFFFFFFFFFFFFFFF")
     ) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid value");
@@ -29,7 +29,7 @@ export default class Uint64Array {
   ) {
     if (
       value.isNaN() ||
-      value.isNegative() ||
+      value.isLessThan(0) ||
       value.isGreaterThan("0xFFFFFFFFFFFFFFFF")
     ) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid value");

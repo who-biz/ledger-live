@@ -2341,7 +2341,10 @@ export default class Slate {
         );
       case "grin":
       case "grin_testnet": {
-        if (this.amount.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+        if (
+          this.amount.isLessThan(0) ||
+          this.amount.isGreaterThan("0xFFFFFFFFFFFFFFFF")
+        ) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid amount");
         }
         const senderPaymentProofPublicKey =

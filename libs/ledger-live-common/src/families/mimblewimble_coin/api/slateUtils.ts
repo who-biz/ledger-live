@@ -235,7 +235,10 @@ export default class SlateUtils {
       numberOfDigits - 1,
       SlateUtils.COMPRESSED_NUMBER_OF_DIGITS_LENGTH
     );
-    if (reducedValue.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+    if (
+      reducedValue.isLessThan(0) ||
+      reducedValue.isGreaterThan("0xFFFFFFFFFFFFFFFF")
+    ) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid uint64 value");
     }
     let bytes: Buffer = Buffer.alloc(Uint64Array.BYTES_PER_ELEMENT);
@@ -486,7 +489,7 @@ export default class SlateUtils {
   }
 
   public static writeUint8(bitWriter: BitWriter, value: number) {
-    if (value > 0xff) {
+    if (value < 0 || value > 0xff) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid uint8 value");
     }
     bitWriter.setBits(value, Common.BITS_IN_A_BYTE);
@@ -497,7 +500,7 @@ export default class SlateUtils {
   }
 
   public static writeUint16(bitWriter: BitWriter, value: number) {
-    if (value > 0xffff) {
+    if (value < 0 || value > 0xffff) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid uint16 value");
     }
     const buffer = Buffer.alloc(Uint16Array.BYTES_PER_ELEMENT);
@@ -510,7 +513,7 @@ export default class SlateUtils {
   }
 
   public static writeUint32(bitWriter: BitWriter, value: number) {
-    if (value > 0xffffffff) {
+    if (value < 0 || value > 0xffffffff) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid uint32 value");
     }
     const buffer = Buffer.alloc(Uint32Array.BYTES_PER_ELEMENT);
@@ -525,7 +528,7 @@ export default class SlateUtils {
   }
 
   public static writeUint64(bitWriter: BitWriter, value: BigNumber) {
-    if (value.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+    if (value.isLessThan(0) || value.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
       throw new MimbleWimbleCoinInvalidParameters("Invalid uint64 value");
     }
     const buffer = Buffer.alloc(Uint64Array.BYTES_PER_ELEMENT);

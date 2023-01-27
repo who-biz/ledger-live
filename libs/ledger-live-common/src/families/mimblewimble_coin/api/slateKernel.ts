@@ -200,7 +200,10 @@ export default class SlateKernel {
         );
         break;
       case SlateKernel.Features.PLAIN:
-        if (this.fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+        if (
+          this.fee.isLessThan(0) ||
+          this.fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")
+        ) {
           throw new MimbleWimbleCoinInvalidParameters(
             "Invalid slate kernel fee"
           );
@@ -231,12 +234,18 @@ export default class SlateKernel {
         );
         break;
       case SlateKernel.Features.HEIGHT_LOCKED:
-        if (this.fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+        if (
+          this.fee.isLessThan(0) ||
+          this.fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")
+        ) {
           throw new MimbleWimbleCoinInvalidParameters(
             "Invalid slate kernel fee"
           );
         }
-        if (this.lockHeight.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+        if (
+          this.lockHeight.isLessThan(0) ||
+          this.lockHeight.isGreaterThan("0xFFFFFFFFFFFFFFFF")
+        ) {
           throw new MimbleWimbleCoinInvalidParameters(
             "Invalid slate kernel lock height"
           );
@@ -267,12 +276,18 @@ export default class SlateKernel {
         );
         break;
       case SlateKernel.Features.NO_RECENT_DUPLICATE:
-        if (this.fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+        if (
+          this.fee.isLessThan(0) ||
+          this.fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")
+        ) {
           throw new MimbleWimbleCoinInvalidParameters(
             "Invalid slate kernel fee"
           );
         }
-        if (this.relativeHeight!.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+        if (
+          this.relativeHeight!.isLessThan(0) ||
+          this.relativeHeight!.isGreaterThan("0xFFFFFFFFFFFFFFFF")
+        ) {
           throw new MimbleWimbleCoinInvalidParameters(
             "Invalid slate kernel relative height"
           );
@@ -352,7 +367,7 @@ export default class SlateKernel {
         data.writeUInt8(features, 0);
         break;
       case SlateKernel.Features.PLAIN:
-        if (fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+        if (fee.isLessThan(0) || fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid fee");
         }
         data = Buffer.alloc(
@@ -362,10 +377,13 @@ export default class SlateKernel {
         Uint64Array.writeBigEndian(data, fee, Uint8Array.BYTES_PER_ELEMENT);
         break;
       case SlateKernel.Features.HEIGHT_LOCKED:
-        if (fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+        if (fee.isLessThan(0) || fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid fee");
         }
-        if (lockHeight.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+        if (
+          lockHeight.isLessThan(0) ||
+          lockHeight.isGreaterThan("0xFFFFFFFFFFFFFFFF")
+        ) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid lock height");
         }
         data = Buffer.alloc(
@@ -382,10 +400,13 @@ export default class SlateKernel {
         );
         break;
       case SlateKernel.Features.NO_RECENT_DUPLICATE:
-        if (fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
+        if (fee.isLessThan(0) || fee.isGreaterThan("0xFFFFFFFFFFFFFFFF")) {
           throw new MimbleWimbleCoinInvalidParameters("Invalid fee");
         }
-        if (relativeHeight!.isGreaterThan("0xFFFF")) {
+        if (
+          relativeHeight!.isLessThan(0) ||
+          relativeHeight!.isGreaterThan("0xFFFF")
+        ) {
           throw new MimbleWimbleCoinInvalidParameters(
             "Invalid relative height"
           );
