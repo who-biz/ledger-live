@@ -290,6 +290,7 @@ class StepImport extends PureComponent<StepProps, { showAllCreatedAccounts: bool
     }
 
     const currencyName = mainCurrency ? mainCurrency.name : "";
+
     const { sections, alreadyEmptyAccount } = groupAddAccounts(existingAccounts, scannedAccounts, {
       scanning: scanStatus === "scanning",
       preferredNewAccountSchemes: this.state.showAllCreatedAccounts
@@ -428,9 +429,11 @@ export const StepImportFooter = (props: StepProps) => {
   };
 
   // custom family UI for StepImportFooter
-  const CustomStepImport = byFamilyStepImport[currency.family];
-  if (CustomStepImport && CustomStepImport.StepImportFooter) {
-    return <CustomStepImport.StepImportFooter {...props} />;
+  if (currency) {
+    const CustomStepImport = byFamilyStepImport[currency.family];
+    if (CustomStepImport && CustomStepImport.StepImportFooter) {
+      return <CustomStepImport.StepImportFooter {...props} />;
+    }
   }
 
   return (

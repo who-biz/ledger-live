@@ -164,9 +164,13 @@ const Body = ({
       if (e.id === "receive") {
         // custom family action for StepReceiveFundsOnBack
         let onBack: StepProps => void | undefined;
-        const CustomStepReceiveFunds = byFamily[currency.family];
-        if (CustomStepReceiveFunds && CustomStepReceiveFunds.StepReceiveFundsOnBack) {
-          onBack = CustomStepReceiveFunds.StepReceiveFundsOnBack;
+        if (currency) {
+          const CustomStepReceiveFunds = byFamily[currency.family];
+          if (CustomStepReceiveFunds && CustomStepReceiveFunds.StepReceiveFundsOnBack) {
+            onBack = CustomStepReceiveFunds.StepReceiveFundsOnBack;
+          } else {
+            onBack = undefined;
+          }
         } else {
           onBack = undefined;
         }
@@ -180,7 +184,7 @@ const Body = ({
         ]);
       }
     },
-    [onChangeStepId, steps, setSteps, currency.family],
+    [onChangeStepId, steps, setSteps, currency],
   );
 
   const handleResetSkip = useCallback(() => {

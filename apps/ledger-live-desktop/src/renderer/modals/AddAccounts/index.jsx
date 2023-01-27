@@ -262,7 +262,6 @@ class AddAccounts extends PureComponent<Props, State> {
       stepId = "connectDevice";
     }
     stepperProps.currency = stepperProps.currency || this.props.currency;
-
     return (
       <Modal
         centered

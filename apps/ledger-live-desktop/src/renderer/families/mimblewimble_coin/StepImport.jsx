@@ -324,6 +324,7 @@ class StepImport extends PureComponent<StepProps, State> {
     }
 
     const currencyName = mainCurrency ? mainCurrency.name : "";
+
     const { sections, alreadyEmptyAccount } = groupAddAccounts(existingAccounts, scannedAccounts, {
       scanning: scanStatus === "scanning",
       preferredNewAccountSchemes: [preferredNewAccountScheme],
