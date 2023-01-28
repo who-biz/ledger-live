@@ -323,6 +323,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
       },
     ],
     keywords: ["btc", "bitcoin"],
+    explorerId: "btc",
   },
   bitcoin_cash: {
     type: "CryptoCurrency",
@@ -369,6 +370,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://blockchair.com/bitcoin-cash/address/$address",
       },
     ],
+    explorerId: "bch",
   },
   bitcoin_gold: {
     type: "CryptoCurrency",
@@ -416,6 +418,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://btgexplorer.com/address/$address",
       },
     ],
+    explorerId: "btg",
   },
   bitcoin_private: {
     type: "CryptoCurrency",
@@ -489,6 +492,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
       },
     ],
     keywords: ["bsc", "bnb", "binance", "binance smart chain", "binance chain"],
+    explorerId: "bnb",
   },
   callisto: {
     type: "CryptoCurrency",
@@ -634,6 +638,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         tx: "https://chainz.cryptoid.info/club/tx.dws?$hash.htm",
       },
     ],
+    explorerId: "club",
   },
   cosmos: {
     type: "CryptoCurrency",
@@ -734,6 +739,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://explorer.dash.org/insight/address/$address",
       },
     ],
+    explorerId: "dash",
   },
   decred: {
     type: "CryptoCurrency",
@@ -774,6 +780,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://mainnet.decred.org/address/$address",
       },
     ],
+    explorerId: "dcr",
   },
   dexon: {
     type: "CryptoCurrency",
@@ -838,6 +845,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://digiexplorer.info/address/$address",
       },
     ],
+    explorerId: "dgb",
   },
   dogecoin: {
     type: "CryptoCurrency",
@@ -875,6 +883,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
       },
     ],
     keywords: ["doge", "dogecoin"],
+    explorerId: "doge",
   },
   elastos: {
     type: "CryptoCurrency",
@@ -918,18 +927,18 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
     type: "CryptoCurrency",
     id: "elrond",
     coinType: 508,
-    name: "Elrond",
-    managerAppName: "Elrond",
+    name: "MultiversX",
+    managerAppName: "MultiversX",
     ticker: "EGLD",
     scheme: "elrond",
-    color: "#1b46c2",
+    color: "#23F7DD",
     family: "elrond",
     blockAvgTime: 6,
     deviceTicker: "EGLD",
     units: [
       {
         name: "EGLD",
-        code: "egld",
+        code: "EGLD",
         magnitude: 18,
       },
     ],
@@ -1008,6 +1017,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
       },
     ],
     keywords: ["eth", "ethereum"],
+    explorerId: "eth",
   },
   ethereum_classic: {
     type: "CryptoCurrency",
@@ -1035,6 +1045,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
       },
     ],
     keywords: ["etc", "ethereum classic"],
+    explorerId: "etc",
   },
   ether1: {
     type: "CryptoCurrency",
@@ -1308,6 +1319,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
     terminated: {
       link: "https://support.ledger.com/hc/en-us/articles/115003917133",
     },
+    explorerId: "hsr",
   },
   hedera: {
     type: "CryptoCurrency",
@@ -1554,6 +1566,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://kmdexplorer.io/address/$address",
       },
     ],
+    explorerId: "kmd",
   },
   kusama: {
     type: "CryptoCurrency",
@@ -1636,6 +1649,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
       },
     ],
     keywords: ["ltc", "litecoin"],
+    explorerId: "ltc",
   },
   lisk: {
     type: "CryptoCurrency",
@@ -2026,6 +2040,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://blockbook.peercoin.net/address/$address",
       },
     ],
+    explorerId: "ppc",
   },
   pirl: {
     type: "CryptoCurrency",
@@ -2084,6 +2099,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://chainz.cryptoid.info/pivx/address.dws?$address.htm",
       },
     ],
+    explorerId: "pivx",
   },
   poa: {
     type: "CryptoCurrency",
@@ -2173,6 +2189,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
       },
     ],
     keywords: ["matic", "polygon"],
+    explorerId: "matic",
   },
   poswallet: {
     type: "CryptoCurrency",
@@ -2208,6 +2225,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
     terminated: {
       link: "https://support.ledger.com/hc/en-us/articles/115005175309",
     },
+    explorerId: "posw",
   },
   qrl: {
     type: "CryptoCurrency",
@@ -2269,6 +2287,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://explorer.qtum.org/address/$address",
       },
     ],
+    explorerId: "qtum",
   },
   nem: {
     type: "CryptoCurrency",
@@ -2481,6 +2500,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://xsnexplorer.io/addresses/$address",
       },
     ],
+    explorerId: "xsn",
   },
   stratis: {
     terminated: {
@@ -2520,6 +2540,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://chainz.cryptoid.info/strat/address.dws?$address.htm",
       },
     ],
+    explorerId: "strat",
   },
   stealthcoin: {
     terminated: {
@@ -2559,6 +2580,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://www.stealthmonitor.org/address/$address",
       },
     ],
+    explorerId: "xst",
   },
   stellar: {
     type: "CryptoCurrency",
@@ -2853,6 +2875,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://vtcblocks.com/address/$address",
       },
     ],
+    explorerId: "vtc",
   },
   viacoin: {
     type: "CryptoCurrency",
@@ -2889,6 +2912,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://explorer.viacoin.org/address/$address",
       },
     ],
+    explorerId: "via",
   },
   wanchain: {
     type: "CryptoCurrency",
@@ -2966,6 +2990,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://chain.so/address/ZEC/$address",
       },
     ],
+    explorerId: "zec",
   },
   zclassic: {
     type: "CryptoCurrency",
@@ -3058,6 +3083,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://explorer.zensystem.io/address/$address",
       },
     ],
+    explorerId: "zen",
   },
   zilliqa: {
     type: "CryptoCurrency",
@@ -3142,6 +3168,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://live.blockcypher.com/btc-testnet/address/$address",
       },
     ],
+    explorerId: "btc_testnet",
   },
   ethereum_ropsten: {
     type: "CryptoCurrency",
@@ -3170,6 +3197,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://ropsten.etherscan.io/address/$address",
       },
     ],
+    explorerId: "eth_ropsten",
   },
   ethereum_goerli: {
     type: "CryptoCurrency",
@@ -3198,6 +3226,7 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         address: "https://goerli.etherscan.io/address/$address",
       },
     ],
+    explorerId: "eth_goerli",
   },
   stacks: {
     type: "CryptoCurrency",
