@@ -153,8 +153,11 @@ export default function SendSelectRecipient(props: Props) {
   if (!account || !transaction) return null;
   const error = withoutHiddenError(status.errors.recipient);
   const warning = status.warnings.recipient;
-  const CustomSendRecipientFields =
-    sendRecipientFieldsByFamily[currency.family];
+  const CustomSendRecipientFields = currency
+    ? sendRecipientFieldsByFamily[
+        currency.family as keyof typeof sendRecipientFieldsByFamily
+      ]
+    : null;
   return (
     <>
       <SafeAreaView

@@ -175,7 +175,8 @@ type Props = StackNavigatorProps<
   ScreenName.SendConnectDevice
 >;
 
-export default function ConnectDevice({ route, navigation }: Props) {
+export default function ConnectDevice(props: Props) {
+  const { route, navigation } = props;
   const [currentDevice, setCurrentDevice] = useState(null);
   const [transactionData, setTransactionData] = useState(null);
   const [enterTransactionResponse, setEnterTransactionResponse] =
@@ -222,14 +223,16 @@ export default function ConnectDevice({ route, navigation }: Props) {
     },
     [handleTx, t],
   );
-  const extraProps = onSuccess
-    ? {
-        onResult: onSuccess,
-        onError,
-      }
-    : {
-        renderOnResult: onResult,
-      };
+  const extraProps = useMemo(() => {
+    return onSuccess
+      ? {
+          onResult: onSuccess,
+          onError,
+        }
+      : {
+          renderOnResult: onResult,
+        };
+  }, [onSuccess, onError, onResult]);
   const onDeviceConnected = useCallback(
     ({ device }: { device: Device }) => {
       setCurrentDevice(device);
@@ -372,7 +375,7 @@ export default function ConnectDevice({ route, navigation }: Props) {
   }, [navigation, route.params, account, transaction]);
   const { width } = getWindowDimensions();
   const qRSize = Math.round(width / 1.2 - 15);
-  return useMemo(() => {
+  const render = useMemo(() => {
     return transaction ? (
       <SafeAreaView
         style={[styles.root, { backgroundColor: colors.background.main }]}
@@ -594,4 +597,5 @@ export default function ConnectDevice({ route, navigation }: Props) {
     route,
     t,
   ]);
+  return render;
 }

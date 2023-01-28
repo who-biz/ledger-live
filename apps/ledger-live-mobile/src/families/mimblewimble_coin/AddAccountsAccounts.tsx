@@ -189,7 +189,6 @@ function AddAccountsAccounts(props: Props) {
     existingAccounts,
     blacklistedTokenIds,
   } = props;
-  const { currency, device, inline, returnToSwap } = route.params || {};
   const { colors } = useTheme();
   const [scanning, setScanning] = useState(true);
   const [error, setError] = useState(null);
@@ -204,6 +203,7 @@ function AddAccountsAccounts(props: Props) {
   const [accountIndex, setAccountIndex] = useState(0);
   const [percentComplete, setPercentComplete] = useState(0);
   const scanSubscription = useRef<Subscription | null>(null);
+  const { currency, device, inline, returnToSwap } = route.params || {};
   // Find accounts that are (scanned && !existing && !used)
   const newAccountSchemes = scannedAccounts
     ?.filter(

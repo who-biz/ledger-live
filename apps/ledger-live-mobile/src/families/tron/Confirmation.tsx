@@ -6,7 +6,7 @@ import { getCurrencyColor } from "@ledgerhq/live-common/currencies/color";
 import { Button, Flex, Icons, Notification, Text } from "@ledgerhq/native-ui";
 import type { Account, TokenAccount } from "@ledgerhq/types-live";
 import { useRoute } from "@react-navigation/native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Share, TouchableOpacity } from "react-native";
 import QRCode from "react-native-qrcode-svg";
@@ -105,6 +105,12 @@ function ReceiveConfirmationInner({
   const mainAccount = account && getMainAccount(account, parentAccount);
   const currency =
     route.params?.currency || (account && getAccountCurrency(account));
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: getAccountName(account as AccountLike),
+    });
+  }, [colors, navigation, account]);
 
   const onShare = useCallback(() => {
     track("button_clicked", {

@@ -231,7 +231,6 @@ function ReceiveConfirmationInner({
       headerTitle: "",
       gestureEnabled: false,
     });
-    return null;
   }
   const verified = route.params?.verified ?? false;
   const [isModalOpened, setIsModalOpened] = useState(true);
@@ -295,6 +294,9 @@ function ReceiveConfirmationInner({
     route.params?.currency || (account && getAccountCurrency(account));
 
   useEffect(() => {
+    if (!route.params.verified) {
+      return;
+    }
     if (route.params?.createTokenAccount && !hasAddedTokenAccount) {
       const newMainAccount = { ...mainAccount };
       if (
@@ -332,13 +334,17 @@ function ReceiveConfirmationInner({
     mainAccount,
     dispatch,
     hasAddedTokenAccount,
+    route.params?.verified,
   ]);
 
   useEffect(() => {
+    if (!route.params.verified) {
+      return;
+    }
     if (verified && currency) {
       track("Verification Success", { currency: currency.name });
     }
-  }, [verified, currency]);
+  }, [verified, currency, route.params?.verified]);
 
   const onShare = useCallback(() => {
     track("button_clicked", {
@@ -393,11 +399,19 @@ function ReceiveConfirmationInner({
     onChangeTransactionData("");
   }, [onChangeTransactionData]);
   useEffect(() => {
+    if (!route.params.verified) {
+      return;
+    }
     if (route.params.transactionData !== undefined) {
       setTransactionData(route.params.transactionData);
       onChangeTransactionData(route.params.transactionData);
     }
-  }, [setTransactionData, route.params, onChangeTransactionData]);
+  }, [
+    setTransactionData,
+    route.params,
+    onChangeTransactionData,
+    route.params?.verified,
+  ]);
   const onDeviceConnected = useCallback(
     ({ device }: { device: Device }) => {
       setCurrentDevice(device);
@@ -406,6 +420,9 @@ function ReceiveConfirmationInner({
     [setCurrentDevice, t],
   );
   useEffect(() => {
+    if (!route.params.verified) {
+      return;
+    }
     if (currentDevice) {
       unsubscribe();
       getTransactionResponseSubscription.current = getTransactionResponse(
@@ -480,10 +497,18 @@ function ReceiveConfirmationInner({
     } else {
       unsubscribe();
     }
+    // eslint-disable-next-line consistent-return
     return () => {
       unsubscribe();
     };
-  }, [currentDevice, account, dispatch, mainAccount.id, transactionData]);
+  }, [
+    currentDevice,
+    account,
+    dispatch,
+    mainAccount.id,
+    transactionData,
+    route.params?.verified,
+  ]);
   const unsubscribe = () => {
     if (getTransactionResponseSubscription.current) {
       getTransactionResponseSubscription.current.unsubscribe();
@@ -507,6 +532,9 @@ function ReceiveConfirmationInner({
     Share.share({ message: transactionResponse });
   }, [transactionResponse]);
   useEffect(() => {
+    if (!route.params.verified) {
+      return;
+    }
     const backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
@@ -564,6 +592,7 @@ function ReceiveConfirmationInner({
         gestureEnabled: false,
       });
     }
+    // eslint-disable-next-line consistent-return
     return () => backHandler.remove();
   }, [
     signatureRequested,
@@ -573,7 +602,12 @@ function ReceiveConfirmationInner({
     navigation,
     route.params,
     t,
+    route.params?.verified,
   ]);
+
+  if (!route.params.verified) {
+    return null;
+  }
 
   if (!account || !currency || !mainAccount) return null;
 

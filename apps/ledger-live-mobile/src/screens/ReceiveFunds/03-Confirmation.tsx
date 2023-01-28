@@ -115,6 +115,14 @@ function ReceiveConfirmationInner({
     route.params?.currency || (account && getAccountCurrency(account));
 
   useEffect(() => {
+    if (
+      currency &&
+      currency.type === "CryptoCurrency" &&
+      Object.keys(byFamily).includes(currency.family) &&
+      byFamily[currency.family as keyof typeof byFamily]
+    ) {
+      return;
+    }
     if (route.params?.createTokenAccount && !hasAddedTokenAccount) {
       const newMainAccount = { ...mainAccount };
       if (
@@ -155,6 +163,28 @@ function ReceiveConfirmationInner({
   ]);
 
   useEffect(() => {
+    if (
+      currency &&
+      currency.type === "CryptoCurrency" &&
+      Object.keys(byFamily).includes(currency.family) &&
+      byFamily[currency.family as keyof typeof byFamily]
+    ) {
+      return;
+    }
+    navigation.setOptions({
+      headerTitle: getAccountName(account as AccountLike),
+    });
+  }, [colors, navigation, account, currency]);
+
+  useEffect(() => {
+    if (
+      currency &&
+      currency.type === "CryptoCurrency" &&
+      Object.keys(byFamily).includes(currency.family) &&
+      byFamily[currency.family as keyof typeof byFamily]
+    ) {
+      return;
+    }
     setIsVerifiedToastDisplayed(verified);
     if (verified && currency) {
       track("Verification Success", { currency: currency.name });
@@ -176,10 +206,9 @@ function ReceiveConfirmationInner({
     });
   }, []);
 
-  if (!account || !currency || !mainAccount) return null;
-
   // check for coin specific UI
   if (
+    currency &&
     currency.type === "CryptoCurrency" &&
     Object.keys(byFamily).includes(currency.family)
   ) {
@@ -198,11 +227,7 @@ function ReceiveConfirmationInner({
     }
   }
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerTitle: getAccountName(account as AccountLike),
-    });
-  }, [colors, navigation, account]);
+  if (!account || !currency || !mainAccount) return null;
 
   return (
     <Flex flex={1} mb={9}>

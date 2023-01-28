@@ -9,6 +9,11 @@ import Scanner from "../../components/Scanner";
 import HeaderRightClose from "../../components/HeaderRightClose";
 import TransparentHeaderNavigationOptions from "../../navigation/TransparentHeaderNavigationOptions";
 
+const HeaderRight = () => {
+  const { colors } = useTheme();
+  return <HeaderRightClose color={colors.white} preferDismiss={false} />;
+};
+
 type Props = {
   navigation;
   route: {
@@ -43,8 +48,7 @@ const options = {
   ...TransparentHeaderNavigationOptions,
   title: i18next.t("send.scan.title"),
   headerRight: () => {
-    const { colors } = useTheme();
-    return <HeaderRightClose color={colors.white} preferDismiss={false} />;
+    return <HeaderRight />;
   },
   headerLeft: null,
 };

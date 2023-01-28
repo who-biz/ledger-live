@@ -55,6 +55,7 @@ import { TezosDelegationFlowParamList } from "../families/tezos/DelegationFlow/t
 import { TronVoteFlowParamList } from "../families/tron/VoteFlow/types";
 import { SignTransactionNavigatorParamList } from "../components/RootNavigator/types/SignTransactionNavigator";
 import { SignMessageNavigatorStackParamList } from "../components/RootNavigator/types/SignMessageNavigator";
+// eslint-disable-next-line import/no-cycle
 import byFamily from "../generated/SendFundsConnectDevice";
 
 const action = createAction(connectApp);
@@ -222,15 +223,6 @@ export default function ConnectDevice(props: Props) {
   const { t } = useTranslation();
   const { account, parentAccount } = useSelector(accountScreenSelector(route));
   invariant(account, "account is required");
-
-  // custom family UI for SendFundsConnectDevice
-  if (route.name === ScreenName.SendConnectDevice) {
-    const CustomSendFundsConnectDevice = byFamily[account.currency.family];
-    if (CustomSendFundsConnectDevice) {
-      return <CustomSendFundsConnectDevice {...props} />;
-    }
-  }
-
   const { appName, onSuccess, onError, analyticsPropertyFlow } = route.params;
   const mainAccount = getMainAccount(account, parentAccount);
   const { transaction, status } = useBridgeTransaction(() => ({
@@ -260,7 +252,8 @@ export default function ConnectDevice(props: Props) {
     : {
         renderOnResult: onResult,
       };
-  return useMemo(
+
+  const render = useMemo(
     () =>
       transaction ? (
         <SafeAreaView
@@ -296,6 +289,23 @@ export default function ConnectDevice(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [status, transaction, tokenCurrency, route.params.device],
   );
+
+  // custom family UI for SendFundsConnectDevice
+  if (
+    route.name === ScreenName.SendConnectDevice &&
+    account.currency.type === "CryptoCurrency" &&
+    Object.keys(byFamily).includes(account.currency.family)
+  ) {
+    const CustomSendFundsConnectDevice =
+      account.currency.type === "CryptoCurrency"
+        ? byFamily[account.currency.family as keyof typeof byFamily]
+        : null;
+    if (CustomSendFundsConnectDevice) {
+      return <CustomSendFundsConnectDevice {...props} />;
+    }
+  }
+
+  return render;
 }
 
 const edges = ["bottom"] as Edge[];

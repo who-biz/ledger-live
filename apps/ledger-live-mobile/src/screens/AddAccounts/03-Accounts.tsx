@@ -110,20 +110,6 @@ function AddAccountsAccounts(props: Props) {
     existingAccounts,
     blacklistedTokenIds,
   } = props;
-  const {
-    currency,
-    device: { deviceId },
-    inline,
-    returnToSwap,
-  } = route.params || {};
-
-  // custom family UI for AddAccountsAccounts
-  const CustomAddAccountsAccounts =
-    addAccountsAccountsByFamily[currency.family];
-  if (CustomAddAccountsAccounts) {
-    return <CustomAddAccountsAccounts {...props} />;
-  }
-
   const { colors } = useTheme();
   const [scanning, setScanning] = useState(true);
   const [error, setError] = useState(null);
@@ -135,6 +121,12 @@ function AddAccountsAccounts(props: Props) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [cancelled, setCancelled] = useState(false);
   const scanSubscription = useRef<Subscription | null>(null);
+  const {
+    currency,
+    device: { deviceId },
+    inline,
+    returnToSwap,
+  } = route.params || {};
   // Find accounts that are (scanned && !existing && !used)
   const newAccountSchemes = scannedAccounts
     ?.filter(
@@ -149,12 +141,33 @@ function AddAccountsAccounts(props: Props) {
     [newAccountSchemes],
   );
   useEffect(() => {
+    if (
+      currency &&
+      currency.type === "CryptoCurrency" &&
+      Object.keys(addAccountsAccountsByFamily).includes(currency.family) &&
+      addAccountsAccountsByFamily[
+        currency.family as keyof typeof addAccountsAccountsByFamily
+      ]
+    ) {
+      return;
+    }
     startSubscription();
+    // eslint-disable-next-line consistent-return
     return () => stopSubscription(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    if (
+      currency &&
+      currency.type === "CryptoCurrency" &&
+      Object.keys(addAccountsAccountsByFamily).includes(currency.family) &&
+      addAccountsAccountsByFamily[
+        currency.family as keyof typeof addAccountsAccountsByFamily
+      ]
+    ) {
+      return;
+    }
     if (latestScannedAccount) {
       const hasAlreadyBeenScanned = scannedAccounts.some(
         a => latestScannedAccount.id === a.id,
@@ -187,6 +200,7 @@ function AddAccountsAccounts(props: Props) {
     onlyNewAccounts,
     scannedAccounts,
     selectedIds,
+    currency,
   ]);
   const startSubscription = useCallback(() => {
     const cryptoCurrency = isTokenCurrency(currency)
@@ -366,6 +380,24 @@ function AddAccountsAccounts(props: Props) {
       </LText>
     ),
   };
+
+  // custom family UI for AddAccountsAccounts
+  if (
+    currency &&
+    currency.type === "CryptoCurrency" &&
+    Object.keys(addAccountsAccountsByFamily).includes(currency.family)
+  ) {
+    const CustomAddAccountsAccounts =
+      currency.type === "CryptoCurrency"
+        ? addAccountsAccountsByFamily[
+            currency.family as keyof typeof addAccountsAccountsByFamily
+          ]
+        : null;
+    if (CustomAddAccountsAccounts) {
+      return <CustomAddAccountsAccounts {...props} />;
+    }
+  }
+
   return (
     <SafeAreaView
       style={[

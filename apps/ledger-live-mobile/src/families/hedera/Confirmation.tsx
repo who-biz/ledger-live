@@ -92,7 +92,7 @@ export default function ReceiveConfirmation({ navigation, route }: Props) {
   useEffect(() => {
     if (!allowNavigation) {
       navigation.setOptions({
-        headerTitle: getAccountName(account),
+        headerTitle: getAccountName(account as AccountLike),
         headerLeft: undefined,
         headerRight: () => null,
         gestureEnabled: false,
@@ -102,7 +102,7 @@ export default function ReceiveConfirmation({ navigation, route }: Props) {
 
     const { headerRight } = getStackNavigatorConfig(colors, true);
     navigation.setOptions({
-      headerTitle: getAccountName(account),
+      headerTitle: getAccountName(account as AccountLike),
       headerLeft: undefined,
       headerRight,
       gestureEnabled: Platform.OS === "ios",
