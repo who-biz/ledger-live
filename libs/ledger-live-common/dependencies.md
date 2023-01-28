@@ -93,6 +93,7 @@ yarn upgrade-interactive -i --latest
 | hi-base32                                   | MimbleWimble Coin coin integration                                | monthly
 | invariant                                   | generic helper                                                    | monthly                                                              |
 | isomorphic-ws                               | WebSocket helper                                                  | monthly                                                              |
+| json-bignumber                              | MimbleWimble Coin coin integration                                | monthly                                                              |
 | json-rpc-2.0                                | Ethereum coin integration                                         | monthly                                                              |
 | leb128                                      | Filecoin coin integration                                         | monthly                                                              |
 | lodash                                      | generic helper                                                    | monthly                                                              |

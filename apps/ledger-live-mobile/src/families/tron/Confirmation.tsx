@@ -1,10 +1,11 @@
 import {
   getAccountCurrency,
   getMainAccount,
+  getAccountName,
 } from "@ledgerhq/live-common/account/index";
 import { getCurrencyColor } from "@ledgerhq/live-common/currencies/color";
 import { Button, Flex, Icons, Notification, Text } from "@ledgerhq/native-ui";
-import type { Account, TokenAccount } from "@ledgerhq/types-live";
+import type { Account, TokenAccount, AccountLike } from "@ledgerhq/types-live";
 import { useRoute } from "@react-navigation/native";
 import React, { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";

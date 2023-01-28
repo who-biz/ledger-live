@@ -9,7 +9,7 @@ import type {
   OperationRaw,
 } from "@ledgerhq/types-live";
 import BigNumber from "bignumber.js";
-import JSONBigNumber from "@ledgerhq/json-bignumber";
+import JSONBigNumber from "json-bignumber";
 import MimbleWimbleCoin from "./hw-app-mimblewimble-coin";
 import Crypto from "./api/crypto";
 import Slate from "./api/slate";

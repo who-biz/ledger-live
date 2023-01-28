@@ -1,5 +1,5 @@
 import axios from "axios";
-import JSONBigNumber from "@ledgerhq/json-bignumber";
+import JSONBigNumber from "json-bignumber";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import http from "http";
 import https from "https";

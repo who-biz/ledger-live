@@ -1,5 +1,5 @@
 import { Account, Operation, SignedOperation } from "@ledgerhq/types-live";
-import JSONBigNumber from "@ledgerhq/json-bignumber";
+import JSONBigNumber from "json-bignumber";
 import Node from "./api/node";
 
 export default async ({

@@ -523,7 +523,6 @@ export function patchAccount(
         }
       }
       break;
-    }
     case "mimblewimble_coin": {
       const mimbleWimbleCoinAcc = account as MimbleWimbleCoinAccount;
       const mimbleWimbleCoinUpdatedRaw =

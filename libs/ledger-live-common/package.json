@@ -228,6 +228,7 @@
     "hi-base32": "^0.5.1",
     "invariant": "^2.2.2",
     "isomorphic-ws": "^4.0.1",
+    "json-bignumber": "^1.1.1",
     "json-rpc-2.0": "^0.2.19",
     "jwt-decode": "^3.1.2",
     "leb128": "^0.0.5",

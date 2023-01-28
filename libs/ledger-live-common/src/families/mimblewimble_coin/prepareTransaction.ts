@@ -4,7 +4,7 @@ import { fromAccountRaw } from "../../account/serialization";
 import type { MimbleWimbleCoinAccount, TransactionRaw } from "./types";
 import { fromTransactionRaw } from "./transaction";
 import BigNumber from "bignumber.js";
-import JSONBigNumber from "@ledgerhq/json-bignumber";
+import JSONBigNumber from "json-bignumber";
 import Slate from "./api/slate";
 import Consensus from "./api/consensus";
 import Node from "./api/node";

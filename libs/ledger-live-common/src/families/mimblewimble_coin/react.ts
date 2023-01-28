@@ -1,5 +1,5 @@
 import type { CryptoCurrency } from "@ledgerhq/types-cryptoassets";
-import JSONBigNumber from "@ledgerhq/json-bignumber";
+import JSONBigNumber from "json-bignumber";
 import {
   Account,
   SignedOperation,
