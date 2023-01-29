@@ -118,10 +118,12 @@ export default function Progress({ navigation, route }: Props) {
       })
       .pipe(
         reduce((all: Account[], event: ScanAccountEvent) => {
-          if (event.type !== "discovered") {
+          const { type } = event;
+          if (type !== "discovered") {
             return all;
           }
-          return all.concat(event.account);
+          const { account } = event;
+          return all.concat(account);
         }, []),
       )
       .subscribe({

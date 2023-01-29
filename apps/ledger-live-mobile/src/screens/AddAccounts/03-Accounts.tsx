@@ -223,10 +223,12 @@ function AddAccountsAccounts(props: Props) {
       }),
     ).subscribe({
       next: event => {
-        if (event.type !== "discovered") {
+        const { type } = event;
+        if (type !== "discovered") {
           return;
         }
-        setLatestScannedAccount(event.account);
+        const { account } = event;
+        setLatestScannedAccount(account);
       },
       complete: () => setScanning(false),
       error: error => {

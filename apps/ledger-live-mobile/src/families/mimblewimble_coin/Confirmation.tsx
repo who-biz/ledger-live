@@ -5,17 +5,23 @@ import {
   View,
   BackHandler,
   StyleSheet,
-  Linking,
   Platform,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import QRCode from "react-native-qrcode-svg";
 import { useTranslation, Trans } from "react-i18next";
-import type { Account, TokenAccount, OperationRaw } from "@ledgerhq/types-live";
+import type {
+  Account,
+  TokenAccount,
+  OperationRaw,
+  Address,
+  AccountLike,
+} from "@ledgerhq/types-live";
 import type {
   CryptoCurrency,
   CryptoOrTokenCurrency,
   TokenCurrency,
+  Currency,
 } from "@ledgerhq/types-cryptoassets";
 import {
   makeEmptyTokenAccount,
@@ -38,6 +44,10 @@ import getTransactionResponse from "@ledgerhq/live-common/families/mimblewimble_
 import { toAccountRaw } from "@ledgerhq/live-common/account/serialization";
 // @ts-expect-error no declaration file
 import qrcode from "qrcode";
+import type { Device } from "@ledgerhq/live-common/hw/actions/types";
+import { Subscription } from "rxjs";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { DeviceModelId } from "@ledgerhq/types-devices";
 import getWindowDimensions from "../../logic/getWindowDimensions";
 import { accountScreenSelector } from "../../reducers/accounts";
 import CurrencyIcon from "../../components/CurrencyIcon";
@@ -63,7 +73,6 @@ import { renderLoading } from "../../components/DeviceAction/rendering";
 import DeviceAction from "../../components/DeviceAction";
 import logger from "../../logger";
 import ValidateError from "../../components/ValidateError";
-import { urls } from "../../config/urls";
 import SkipLock from "../../components/behaviour/SkipLock";
 import HeaderRightClose from "../../components/HeaderRightClose";
 import ValidateReceiveOnDevice from "./ValidateReceiveOnDevice";
@@ -76,9 +85,13 @@ import { ReceiveFundsStackParamList } from "../../components/RootNavigator/types
 
 const openAction = createAction(connectApp);
 
-const IconQRCode = ({ size, color }: { size: number; color: string }) => (
-  <Icon name="qrcode" size={size} color={color} />
-);
+const IconQRCode = ({
+  size = 16,
+  color,
+}: {
+  size?: number;
+  color?: string;
+}) => <Icon name="qrcode" size={size} color={color} />;
 
 const styles = StyleSheet.create({
   separatorContainer: {
@@ -123,6 +136,21 @@ type Props = {
   readOnlyModeEnabled?: boolean;
 } & ScreenProps;
 
+type ParamList = {
+  account?: AccountLike;
+  accountId: string;
+  parentId?: string;
+  modelId?: DeviceModelId;
+  verified?: boolean;
+  wired?: boolean;
+  device?: Device;
+  currency?: Currency;
+  createTokenAccount?: boolean;
+  onSuccess?: (_?: string) => void;
+  onError?: () => void;
+  transactionData?: string;
+};
+
 export default function ReceiveConfirmation({ navigation }: Props) {
   const route = useRoute<ScreenProps["route"]>();
   const { account, parentAccount } = useSelector(accountScreenSelector(route));
@@ -161,11 +189,15 @@ function ReceiveConfirmationInner({
         navigation.getState().routes[0].name === ScreenName.ReceiveSelectCrypto
       ) {
         if (selectAccountRoute !== undefined) {
-          navigation.reset({
+          (navigation as StackNavigationProp<{ [key: string]: object }>).reset({
             index: 2,
             routes: [
-              navigation.getState().routes[0],
-              navigation.getState().routes[selectAccountRoute],
+              (
+                navigation as StackNavigationProp<{ [key: string]: object }>
+              ).getState().routes[0],
+              (
+                navigation as StackNavigationProp<{ [key: string]: object }>
+              ).getState().routes[selectAccountRoute],
               {
                 name: ScreenName.ReceiveConnectDevice,
                 params: {
@@ -174,13 +206,16 @@ function ReceiveConfirmationInner({
                   transactionData: undefined,
                 },
               },
-            ],
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ] as any,
           });
         } else {
-          navigation.reset({
+          (navigation as StackNavigationProp<{ [key: string]: object }>).reset({
             index: 1,
             routes: [
-              navigation.getState().routes[0],
+              (
+                navigation as StackNavigationProp<{ [key: string]: object }>
+              ).getState().routes[0],
               {
                 name: ScreenName.ReceiveConnectDevice,
                 params: {
@@ -189,14 +224,17 @@ function ReceiveConfirmationInner({
                   transactionData: undefined,
                 },
               },
-            ],
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ] as any,
           });
         }
       } else if (selectAccountRoute !== undefined) {
-        navigation.reset({
+        (navigation as StackNavigationProp<{ [key: string]: object }>).reset({
           index: 1,
           routes: [
-            navigation.getState().routes[selectAccountRoute],
+            (
+              navigation as StackNavigationProp<{ [key: string]: object }>
+            ).getState().routes[selectAccountRoute],
             {
               name: ScreenName.ReceiveConnectDevice,
               params: {
@@ -205,10 +243,11 @@ function ReceiveConfirmationInner({
                 transactionData: undefined,
               },
             },
-          ],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ] as any,
         });
       } else {
-        navigation.reset({
+        (navigation as StackNavigationProp<{ [key: string]: object }>).reset({
           index: 0,
           routes: [
             {
@@ -238,7 +277,7 @@ function ReceiveConfirmationInner({
   const [isToastDisplayed, setIsToastDisplayed] = useState(false);
   const [isAddionalInfoModalOpen, setIsAddionalInfoModalOpen] = useState(false);
   const [enterTransaction, setEnterTransaction] = useState(
-    route.params.transactionData !== undefined,
+    (route.params as ParamList).transactionData !== undefined,
   );
   const [transactionData, setTransactionData] = useState("");
   const [transactionDataError, setTransactionDataError] = useState<
@@ -248,21 +287,23 @@ function ReceiveConfirmationInner({
     undefined | Error
   >(undefined);
   const [finalizeTransaction, setFinalizeTransaction] = useState(false);
-  const [currentDevice, setCurrentDevice] = useState(null);
-  const getTransactionResponseSubscription = useRef(null);
+  const [currentDevice, setCurrentDevice] = useState<null | Device>(null);
+  const getTransactionResponseSubscription = useRef<null | Subscription>(null);
   const [processingTransactionError, setProcessingTransactionError] =
-    useState(null);
+    useState<null | Error>(null);
   const [useTransactionResponseQrCode, setUseTransactionResponseQrCode] =
     useState(true);
-  const [operationAmount, setOperationAmount] = useState(null);
-  const [operationFee, setOperationFee] = useState(null);
+  const [operationAmount, setOperationAmount] = useState<null | string>(null);
+  const [operationFee, setOperationFee] = useState<null | string>(null);
   const [
     operationSenderPaymentProofAddress,
     setOperationSenderPaymentProofAddress,
-  ] = useState(null);
+  ] = useState<null | string>(null);
   const [signatureRequested, setSignatureRequested] = useState(false);
   const [signatureReceived, setSignatureReceived] = useState(false);
-  const [transactionResponse, setTransactionResponse] = useState(null);
+  const [transactionResponse, setTransactionResponse] = useState<null | string>(
+    null,
+  );
   const dispatch = useDispatch();
 
   const hideToast = useCallback(() => {
@@ -287,7 +328,10 @@ function ReceiveConfirmationInner({
     });
     const params = { ...route.params, notSkippable: true };
     setIsModalOpened(false);
-    navigation.navigate(ScreenName.ReceiveConnectDevice, params);
+    (navigation as StackNavigationProp<{ [key: string]: object }>).navigate(
+      ScreenName.ReceiveConnectDevice,
+      params,
+    );
   }, [navigation, route.params]);
 
   const { width } = getWindowDimensions();
@@ -371,7 +415,7 @@ function ReceiveConfirmationInner({
     setFinalizeTransaction(true);
   }, [setFinalizeTransaction]);
   const onPressScan = useCallback(() => {
-    navigation.navigate(
+    (navigation as StackNavigationProp<{ [key: string]: object }>).navigate(
       ScreenName.MimbleWimbleCoinScanTransactionData,
       route.params,
     );
@@ -380,7 +424,7 @@ function ReceiveConfirmationInner({
     transactionData => {
       if (transactionData) {
         const { error, warning } = validateTransactionData(
-          account.currency,
+          (account as Account).currency,
           transactionData,
         );
         setTransactionDataError(error);
@@ -402,9 +446,9 @@ function ReceiveConfirmationInner({
     if (!route.params.verified) {
       return;
     }
-    if (route.params.transactionData !== undefined) {
-      setTransactionData(route.params.transactionData);
-      onChangeTransactionData(route.params.transactionData);
+    if ((route.params as ParamList).transactionData !== undefined) {
+      setTransactionData((route.params as ParamList).transactionData || "");
+      onChangeTransactionData((route.params as ParamList).transactionData);
     }
   }, [
     setTransactionData,
@@ -426,7 +470,7 @@ function ReceiveConfirmationInner({
     if (currentDevice) {
       unsubscribe();
       getTransactionResponseSubscription.current = getTransactionResponse(
-        toAccountRaw(account),
+        toAccountRaw(account as Account),
         currentDevice.deviceId,
         transactionData,
       ).subscribe({
@@ -445,10 +489,12 @@ function ReceiveConfirmationInner({
         }) => {
           switch (type) {
             case "device-signature-requested":
-              setOperationAmount(operation.value);
-              setOperationFee(operation.fee);
+              setOperationAmount((operation as OperationRaw).value);
+              setOperationFee((operation as OperationRaw).fee);
               setOperationSenderPaymentProofAddress(
-                operation.senders.length ? operation.senders[0] : null,
+                (operation as OperationRaw).senders.length
+                  ? (operation as OperationRaw).senders[0]
+                  : null,
               );
               setSignatureRequested(true);
               break;
@@ -465,17 +511,17 @@ function ReceiveConfirmationInner({
                   if (getTransactionResponseSubscription.current) {
                     setUseTransactionResponseQrCode(!error);
                     setCurrentDevice(null);
-                    setOperationAmount(operation.value);
-                    setTransactionResponse(transactionResponse);
+                    setOperationAmount((operation as OperationRaw).value);
+                    setTransactionResponse(transactionResponse as string);
                     dispatch(
                       updateAccountWithUpdater(
-                        mainAccount.id,
+                        (mainAccount as Account).id,
                         (account: Account) => {
                           return addReceivedTransactionToAccount(
                             account,
-                            freshAddress,
-                            nextIdentifier,
-                            operation,
+                            freshAddress as Address,
+                            nextIdentifier as string,
+                            operation as OperationRaw,
                           );
                         },
                       ),
@@ -505,7 +551,7 @@ function ReceiveConfirmationInner({
     currentDevice,
     account,
     dispatch,
-    mainAccount.id,
+    mainAccount,
     transactionData,
     route.params?.verified,
   ]);
@@ -516,20 +562,22 @@ function ReceiveConfirmationInner({
     }
   };
   const retry = useCallback(() => {
-    navigation.navigate(ScreenName.ReceiveConfirmation, {
-      ...route.params,
-      verified: false,
-      transactionData: undefined,
-    });
+    (navigation as StackNavigationProp<{ [key: string]: object }>).navigate(
+      ScreenName.ReceiveConfirmation,
+      {
+        ...route.params,
+        verified: false,
+        transactionData: undefined,
+      },
+    );
   }, [navigation, route.params]);
-  const contactUs = useCallback(() => {
-    Linking.openURL(urls.contact);
-  }, []);
   const close = useCallback(() => {
-    navigation.getParent().pop();
+    (
+      navigation.getParent() as StackNavigationProp<{ [key: string]: object }>
+    ).pop();
   }, [navigation]);
   const share = useCallback(() => {
-    Share.share({ message: transactionResponse });
+    Share.share({ message: transactionResponse || "" });
   }, [transactionResponse]);
   useEffect(() => {
     if (!route.params.verified) {
@@ -539,7 +587,9 @@ function ReceiveConfirmationInner({
       "hardwareBackPress",
       () => {
         if (!signatureRequested || processingTransactionError) {
-          navigation.navigate(ScreenName.ReceiveConfirmation, {
+          (
+            navigation as StackNavigationProp<{ [key: string]: object }>
+          ).navigate(ScreenName.ReceiveConfirmation, {
             ...route.params,
             verified: false,
             transactionData: undefined,
@@ -553,7 +603,9 @@ function ReceiveConfirmationInner({
         headerLeft: () => (
           <HeaderBackButton
             onPress={() =>
-              navigation.navigate(ScreenName.ReceiveConfirmation, {
+              (
+                navigation as StackNavigationProp<{ [key: string]: object }>
+              ).navigate(ScreenName.ReceiveConfirmation, {
                 ...route.params,
                 verified: false,
                 transactionData: undefined,
@@ -575,8 +627,8 @@ function ReceiveConfirmationInner({
       });
     } else {
       navigation.setOptions({
-        headerLeft: null,
-        headerRight: null,
+        headerLeft: undefined,
+        headerRight: undefined,
         headerTitle:
           processingTransactionError || transactionResponse !== null
             ? ""
@@ -620,7 +672,7 @@ function ReceiveConfirmationInner({
           <ValidateReceiveSuccess
             transactionResponse={transactionResponse}
             useTransactionResponseQrCode={useTransactionResponseQrCode}
-            operationAmount={operationAmount}
+            operationAmount={operationAmount || ""}
             mainAccount={mainAccount}
           />
           <View style={[styles.container, { paddingVertical: 16 }]}>
@@ -644,7 +696,6 @@ function ReceiveConfirmationInner({
           error={processingTransactionError}
           onRetry={retry}
           onClose={close}
-          onContactUs={contactUs}
         />
       ) : signatureReceived ? (
         <>{renderLoading({ t })}</>
@@ -655,8 +706,8 @@ function ReceiveConfirmationInner({
             account={account}
             parentAccount={parentAccount}
             device={route.params.device}
-            amount={operationAmount}
-            fee={operationFee}
+            amount={operationAmount || ""}
+            fee={operationFee || ""}
             senderPaymentProofAddress={operationSenderPaymentProofAddress}
           />
         </>
@@ -665,10 +716,13 @@ function ReceiveConfirmationInner({
           <DeviceAction
             action={openAction}
             request={{
-              account,
+              account: account as Account,
             }}
             device={route.params.device}
-            onSelectDeviceLink={() => navigateToSelectDevice(navigation, route)}
+            onSelectDeviceLink={() =>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              navigateToSelectDevice(navigation as any, route as any)
+            }
             renderOnResult={onDeviceConnected}
           />
         </Flex>
@@ -748,7 +802,7 @@ function ReceiveConfirmationInner({
               event="ReceiveConfirmationFinalize"
               type="primary"
               title={<Trans i18nKey={"common.continue"} />}
-              disabled={!transactionData || transactionDataError}
+              disabled={!!(!transactionData || transactionDataError)}
               onPress={onFinalize}
             />
           </Flex>
@@ -852,11 +906,11 @@ function ReceiveConfirmationInner({
                 >
                   <CurrencyIcon
                     currency={currency}
-                    color={colors.constant.white}
+                    color={colors.white}
                     bg={
                       (currency as CryptoCurrency)?.color ||
                       (currency as TokenCurrency).parentCurrency?.color ||
-                      colors.constant.black
+                      colors.black
                     }
                     size={48}
                     circle

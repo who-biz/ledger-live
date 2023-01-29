@@ -187,19 +187,19 @@ type Props = StackNavigatorProps<
 export default function ConnectDevice(props: Props) {
   const { route, navigation } = props;
   const [currentDevice, setCurrentDevice] = useState<null | Device>(null);
-  const [transactionData, setTransactionData] = useState<string | null>(null);
+  const [transactionData, setTransactionData] = useState<null | string>(null);
   const [enterTransactionResponse, setEnterTransactionResponse] =
     useState(false);
   const [finalizingTransaction, setFinalizingTransaction] = useState(false);
   const [useTransactionDataQrCode, setUseTransactionDataQrCode] =
     useState(true);
   const [transactionResponseError, setTransactionResponseError] = useState<
-    Error | undefined
+    undefined | Error
   >(undefined);
   const [transactionResponseWarning, setTransactionResponseWarning] = useState<
-    Error | undefined
+    undefined | Error
   >(undefined);
-  const prepareTransactionSubscription = useRef<Subscription | null>(null);
+  const prepareTransactionSubscription = useRef<null | Subscription>(null);
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { account, parentAccount } = useSelector(accountScreenSelector(route));
