@@ -1,10 +1,12 @@
 import React, { useCallback } from "react";
 import i18next from "i18next";
-import { useTheme } from "styled-components/native";
+import { useTheme } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import { ScreenName } from "../../const";
 import Scanner from "../../components/Scanner";
 import HeaderRightClose from "../../components/HeaderRightClose";
 import TransparentHeaderNavigationOptions from "../../navigation/TransparentHeaderNavigationOptions";
+import { BaseNavigation } from "../../components/RootNavigator/types/helpers";
 
 const HeaderRight = () => {
   const { colors } = useTheme();
@@ -12,19 +14,22 @@ const HeaderRight = () => {
 };
 
 type Props = {
-  navigation;
+  navigation: BaseNavigation;
   route: {
-    params;
+    params: object;
   };
 };
 
 function MimbleWimbleCoinScanTransactionData({ navigation, route }: Props) {
   const onResult = useCallback(
     (result: string) => {
-      navigation.navigate(ScreenName.ReceiveConfirmation, {
-        ...route.params,
-        transactionData: result,
-      });
+      (navigation as StackNavigationProp<{ [key: string]: object }>).navigate(
+        ScreenName.ReceiveConfirmation,
+        {
+          ...route.params,
+          transactionData: result,
+        },
+      );
     },
     [route.params, navigation],
   );

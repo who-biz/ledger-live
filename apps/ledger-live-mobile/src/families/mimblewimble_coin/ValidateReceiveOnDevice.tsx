@@ -11,6 +11,7 @@ import { getDeviceModel } from "@ledgerhq/devices";
 import { useTheme } from "@react-navigation/native";
 import styled from "styled-components/native";
 import { Flex, Log } from "@ledgerhq/native-ui";
+import { BigNumber } from "bignumber.js";
 import Alert from "../../components/Alert";
 import {
   DataRowUnitValue,
@@ -30,7 +31,13 @@ function AmountField({
 }) {
   const mainAccount = getMainAccount(account, parentAccount);
   const unit = getAccountUnit(mainAccount);
-  return <DataRowUnitValue label={"Amount"} unit={unit} value={amount} />;
+  return (
+    <DataRowUnitValue
+      label={"Amount"}
+      unit={unit}
+      value={new BigNumber(amount)}
+    />
+  );
 }
 
 function FeesField({
@@ -44,7 +51,13 @@ function FeesField({
 }) {
   const mainAccount = getMainAccount(account, parentAccount);
   const feesUnit = getAccountUnit(mainAccount);
-  return <DataRowUnitValue label={"Fee"} unit={feesUnit} value={fee} />;
+  return (
+    <DataRowUnitValue
+      label={"Fee"}
+      unit={feesUnit}
+      value={new BigNumber(fee)}
+    />
+  );
 }
 
 function TextField({ label, value }: { label: string; value: string }) {

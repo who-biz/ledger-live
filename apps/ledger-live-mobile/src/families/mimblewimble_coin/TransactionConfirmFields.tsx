@@ -21,7 +21,7 @@ const Footer = ({ status }: { status: TransactionStatus }) => {
         {t(
           status.warnings.recipient instanceof
             MimbleWimbleCoinTransactionWontHavePaymentProofNoRecipient ||
-            status.warnings.recipient instanceof
+            (status.warnings.recipient as object) instanceof
               MimbleWimbleCoinTransactionWontHavePaymentProofInapplicableAddress
             ? "mimblewimble_coin.noPaymentProof"
             : "mimblewimble_coin.verifyRecipientPaymentProofAddress",
@@ -31,6 +31,9 @@ const Footer = ({ status }: { status: TransactionStatus }) => {
   );
 };
 
+const fieldComponents = {};
+
 export default {
   footer: Footer,
+  fieldComponents,
 };

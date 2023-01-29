@@ -153,11 +153,12 @@ export default function SendSelectRecipient(props: Props) {
   if (!account || !transaction) return null;
   const error = withoutHiddenError(status.errors.recipient);
   const warning = status.warnings.recipient;
-  const CustomSendRecipientFields = currency
-    ? sendRecipientFieldsByFamily[
-        currency.family as keyof typeof sendRecipientFieldsByFamily
-      ]
-    : null;
+  const CustomSendRecipientFields =
+    currency && currency.type === "CryptoCurrency"
+      ? sendRecipientFieldsByFamily[
+          currency.family as keyof typeof sendRecipientFieldsByFamily
+        ]
+      : null;
   return (
     <>
       <SafeAreaView
@@ -256,8 +257,6 @@ export default function SendSelectRecipient(props: Props) {
                 account={account}
                 parentAccount={parentAccount}
                 transaction={transaction}
-                navigation={navigation}
-                route={route}
               />
             ) : null}
           </NavigationScrollView>

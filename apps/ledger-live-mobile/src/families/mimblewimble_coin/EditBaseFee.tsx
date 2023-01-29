@@ -11,6 +11,7 @@ import type { Transaction } from "@ledgerhq/live-common/families/mimblewimble_co
 import { useSendAmount } from "@ledgerhq/live-common/countervalues/react";
 import { validateBaseFee } from "@ledgerhq/live-common/families/mimblewimble_coin/react";
 import { Account } from "@ledgerhq/types-live";
+import { StackNavigationProp } from "@react-navigation/stack";
 import Button from "../../components/Button";
 import KeyboardView from "../../components/KeyboardView";
 import LText from "../../components/LText";
@@ -18,6 +19,7 @@ import CurrencyInput from "../../components/CurrencyInput";
 import { counterValueCurrencySelector } from "../../reducers/settings";
 import TranslatedError from "../../components/TranslatedError";
 import { ScreenName } from "../../const";
+import { BaseNavigation } from "../../components/RootNavigator/types/helpers";
 
 const styles = StyleSheet.create({
   root: {
@@ -50,7 +52,7 @@ const styles = StyleSheet.create({
 });
 
 type Props = {
-  navigation;
+  navigation: BaseNavigation;
   route: {
     params: RouteParams;
   };
@@ -72,24 +74,27 @@ function MimbleWimbleCoinEditBaseFee({ navigation, route }: Props) {
     cryptoAmount: transaction.baseFee,
   });
   const [baseFee, setBaseFee] = useState(transaction.baseFee.toFixed());
-  const [error, setError] = useState(undefined);
-  const onChangeBaseFee = useCallback((baseFee: string) => {
-    setBaseFee(baseFee);
-    setError(validateBaseFee(baseFee));
+  const [error, setError] = useState<undefined | Error>(undefined);
+  const onChangeBaseFee = useCallback((baseFee: BigNumber) => {
+    setBaseFee(baseFee.toFixed());
+    setError(validateBaseFee(baseFee.toFixed()));
   }, []);
   const onApplyBaseFee = useCallback(() => {
     const bridge = getAccountBridge(account);
-    navigation.navigate(ScreenName.SendSummary, {
-      ...route.params,
-      accountId: account.id,
-      transaction: bridge.updateTransaction(transaction, {
-        useDefaultBaseFee: false,
-        baseFee: new BigNumber(baseFee),
-      }),
-    });
+    (navigation as StackNavigationProp<{ [key: string]: object }>).navigate(
+      ScreenName.SendSummary,
+      {
+        ...route.params,
+        accountId: account.id,
+        transaction: bridge.updateTransaction(transaction, {
+          useDefaultBaseFee: false,
+          baseFee: new BigNumber(baseFee),
+        }),
+      },
+    );
   }, [account, route.params, navigation, transaction, baseFee]);
   return (
-    <SafeAreaView style={styles.root} forceInset={{ bottom: "always" }}>
+    <SafeAreaView style={styles.root}>
       <KeyboardView
         style={[styles.body, { backgroundColor: colors.background }]}
       >
@@ -121,7 +126,7 @@ function MimbleWimbleCoinEditBaseFee({ navigation, route }: Props) {
               title={t("common.continue")}
               onPress={onApplyBaseFee}
               containerStyle={styles.buttonContainer}
-              disabled={error}
+              disabled={!!error}
             />
           </View>
         </ScrollView>

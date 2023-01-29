@@ -154,6 +154,7 @@ export default function ValidateOnDevice({
         footer?: React.ComponentType<{
           transaction: Transaction;
           recipientWording: string;
+          status: TransactionStatus;
         }>;
       }
     ).footer;

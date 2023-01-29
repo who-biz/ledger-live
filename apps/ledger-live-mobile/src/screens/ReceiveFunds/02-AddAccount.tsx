@@ -89,10 +89,13 @@ function AddAccountsAccounts(props: Props) {
         syncConfig,
       }),
     ).subscribe({
-      next: ({ account }: { account: Account }) => {
+      next: event => {
+        if (event.type !== "discovered") {
+          return;
+        }
         if (currency.type === "TokenCurrency") {
           // handle token accounts cases where we want to create empty new token accounts
-          const pa = { ...account };
+          const pa = { ...(event.account as Account) };
 
           if (
             !pa.subAccounts ||
@@ -111,7 +114,10 @@ function AddAccountsAccounts(props: Props) {
 
           setScannedAccounts((accs: Account[]) => [...accs, pa]); // add the account with the newly added token account to the list of scanned accounts
         } else {
-          setScannedAccounts((accs: Account[]) => [...accs, account]); // add the account to the list of scanned accounts
+          setScannedAccounts((accs: Account[]) => [
+            ...accs,
+            event.account as Account,
+          ]); // add the account to the list of scanned accounts
         }
       },
       complete: () => setScanning(false),

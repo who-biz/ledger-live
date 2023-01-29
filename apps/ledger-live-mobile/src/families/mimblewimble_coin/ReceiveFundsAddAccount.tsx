@@ -48,16 +48,22 @@ const Wrapper = styled(Flex).attrs({
   minHeight: "160px",
 })``;
 
-const AnimationContainer = styled(Flex).attrs(p => ({
-  alignSelf: "stretch",
-  alignItems: "center",
-  justifyContent: "center",
-  height: p.withConnectDeviceHeight
-    ? "100px"
-    : p.withVerifyAddressHeight
-    ? "72px"
-    : undefined,
-}))``;
+type AnimationContainerExtraProps = {
+  withConnectDeviceHeight?: boolean;
+  withVerifyAddressHeight?: boolean;
+};
+const AnimationContainer = styled(Flex).attrs(
+  (p: AnimationContainerExtraProps) => ({
+    alignSelf: "stretch",
+    alignItems: "center",
+    justifyContent: "center",
+    height: p.withConnectDeviceHeight
+      ? "100px"
+      : p.withVerifyAddressHeight
+      ? "72px"
+      : undefined,
+  }),
+)<AnimationContainerExtraProps>``;
 
 const TitleContainer = styled(Flex).attrs({
   py: 8,
@@ -86,8 +92,9 @@ const ApproveExportRootPublicKeyOnDevice = ({
   device: Device;
   accountIndex: number;
 }) => {
-  const { theme } = useTheme();
+  const { dark } = useTheme();
   const { t } = useTranslation();
+  const theme: "dark" | "light" = dark ? "dark" : "light";
   return (
     <Flex>
       <DeviceActionContainer>
@@ -158,20 +165,14 @@ function AddAccountsAccounts(props: Props) {
         syncConfig,
       }),
     ).subscribe({
-      next: ({
-        type,
-        account,
-        index,
-      }: {
-        type: string;
-        account: Account;
-        index: number;
-      }) => {
+      next: event => {
+        const { type } = event;
         switch (type) {
-          case "discovered":
+          case "discovered": {
+            const { account } = event;
             if (currency.type === "TokenCurrency") {
               // handle token accounts cases where we want to create empty new token accounts
-              const pa = { ...account };
+              const pa = { ...(account as Account) };
 
               if (
                 !pa.subAccounts ||
@@ -190,13 +191,19 @@ function AddAccountsAccounts(props: Props) {
 
               setScannedAccounts((accs: Account[]) => [...accs, pa]); // add the account with the newly added token account to the list of scanned accounts
             } else {
-              setScannedAccounts((accs: Account[]) => [...accs, account]); // add the account to the list of scanned accounts
+              setScannedAccounts((accs: Account[]) => [
+                ...accs,
+                account as Account,
+              ]); // add the account to the list of scanned accounts
             }
             break;
-          case "device-root-public-key-requested":
+          }
+          case "device-root-public-key-requested": {
+            const { index } = event;
             setAccountIndex(index);
             setRootPublicKeyRequested(true);
             break;
+          }
           case "device-root-public-key-granted":
             setRootPublicKeyRequested(false);
             break;
@@ -217,13 +224,15 @@ function AddAccountsAccounts(props: Props) {
   }, [currency, device.deviceId]);
 
   const restartSubscription = useCallback(() => {
+    const c =
+      currency.type === "TokenCurrency" ? currency.parentCurrency : currency;
     setScanning(true);
     setScannedAccounts([]);
     setError(null);
     setCancelled(false);
     navigation.navigate(ScreenName.ReceiveAddAccountSelectDevice, {
       ...(route?.params ?? {}),
-      currency,
+      currency: c,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

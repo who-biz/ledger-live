@@ -3,11 +3,13 @@ import type { Transaction } from "@ledgerhq/live-common/families/mimblewimble_co
 import { Account } from "@ledgerhq/types-live";
 import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
 import i18next from "i18next";
-import { useTheme } from "styled-components/native";
+import { useTheme } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import { ScreenName } from "../../const";
 import Scanner from "../../components/Scanner";
 import HeaderRightClose from "../../components/HeaderRightClose";
 import TransparentHeaderNavigationOptions from "../../navigation/TransparentHeaderNavigationOptions";
+import { BaseNavigation } from "../../components/RootNavigator/types/helpers";
 
 const HeaderRight = () => {
   const { colors } = useTheme();
@@ -15,7 +17,7 @@ const HeaderRight = () => {
 };
 
 type Props = {
-  navigation;
+  navigation: BaseNavigation;
   route: {
     params: RouteParams;
   };
@@ -31,13 +33,16 @@ function MimbleWimbleCoinScanTransactionResponse({ navigation, route }: Props) {
   const onResult = useCallback(
     (result: string) => {
       const bridge = getAccountBridge(account);
-      navigation.navigate(ScreenName.SendConnectDevice, {
-        ...route.params,
-        accountId: account.id,
-        transaction: bridge.updateTransaction(transaction, {
-          transactionResponse: result,
-        }),
-      });
+      (navigation as StackNavigationProp<{ [key: string]: object }>).navigate(
+        ScreenName.SendConnectDevice,
+        {
+          ...route.params,
+          accountId: account.id,
+          transaction: bridge.updateTransaction(transaction, {
+            transactionResponse: result,
+          }),
+        },
+      );
     },
     [account, route.params, navigation, transaction],
   );

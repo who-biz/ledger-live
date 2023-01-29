@@ -77,16 +77,22 @@ const Wrapper = styled(Flex).attrs({
   minHeight: "160px",
 })``;
 
-const AnimationContainer = styled(Flex).attrs(p => ({
-  alignSelf: "stretch",
-  alignItems: "center",
-  justifyContent: "center",
-  height: p.withConnectDeviceHeight
-    ? "100px"
-    : p.withVerifyAddressHeight
-    ? "72px"
-    : undefined,
-}))``;
+type AnimationContainerExtraProps = {
+  withConnectDeviceHeight?: boolean;
+  withVerifyAddressHeight?: boolean;
+};
+const AnimationContainer = styled(Flex).attrs(
+  (p: AnimationContainerExtraProps) => ({
+    alignSelf: "stretch",
+    alignItems: "center",
+    justifyContent: "center",
+    height: p.withConnectDeviceHeight
+      ? "100px"
+      : p.withVerifyAddressHeight
+      ? "72px"
+      : undefined,
+  }),
+)<AnimationContainerExtraProps>``;
 
 const TitleContainer = styled(Flex).attrs({
   py: 8,
@@ -129,8 +135,9 @@ const ApproveExportRootPublicKeyOnDevice = ({
   device: Device;
   accountIndex: number;
 }) => {
-  const { theme } = useTheme();
+  const { dark } = useTheme();
   const { t } = useTranslation();
+  const theme: "dark" | "light" = dark ? "dark" : "light";
   return (
     <Flex>
       <DeviceActionContainer>
@@ -278,22 +285,29 @@ function AddAccountsAccounts(props: Props) {
         syncConfig,
       }),
     ).subscribe({
-      next: ({ type, account, index, percent }) => {
+      next: event => {
+        const { type } = event;
         switch (type) {
-          case "discovered":
+          case "discovered": {
+            const { account } = event;
             setLatestScannedAccount(account);
             setPercentComplete(0);
             break;
-          case "device-root-public-key-requested":
+          }
+          case "device-root-public-key-requested": {
+            const { index } = event;
             setAccountIndex(index);
             setRootPublicKeyRequested(true);
             break;
+          }
           case "device-root-public-key-granted":
             setRootPublicKeyRequested(false);
             break;
-          case "synced-percent":
+          case "synced-percent": {
+            const { percent } = event;
             setPercentComplete(percent);
             break;
+          }
           default:
             break;
         }

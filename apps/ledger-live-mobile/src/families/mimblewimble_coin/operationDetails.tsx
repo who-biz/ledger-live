@@ -8,6 +8,7 @@ import {
   isCoinbaseRewardMature,
   getRequiredCoinbaseRewardMaturityConfirmations,
 } from "@ledgerhq/live-common/families/mimblewimble_coin/react";
+import { Buffer } from "buffer";
 import Section, { styles } from "../../screens/OperationDetails/Section";
 import LText from "../../components/LText";
 
@@ -18,7 +19,11 @@ const OperationDetailsExtra = ({
   account,
 }: {
   operation: Operation;
-  extra: { [key: string] };
+  extra: {
+    outputCommitment?: Buffer;
+    kernelExcess?: Buffer;
+    recipientPaymentProofSignature?: Buffer;
+  };
   type: string;
   account: Account;
 }) => {

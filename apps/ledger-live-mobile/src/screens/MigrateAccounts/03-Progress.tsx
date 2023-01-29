@@ -117,11 +117,12 @@ export default function Progress({ navigation, route }: Props) {
         syncConfig,
       })
       .pipe(
-        reduce(
-          (all: Account[], event: ScanAccountEvent) =>
-            all.concat(event.account),
-          [],
-        ),
+        reduce((all: Account[], event: ScanAccountEvent) => {
+          if (event.type !== "discovered") {
+            return all;
+          }
+          return all.concat(event.account);
+        }, []),
       )
       .subscribe({
         next: scannedAccounts => {

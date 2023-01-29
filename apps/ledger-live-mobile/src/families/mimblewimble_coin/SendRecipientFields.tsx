@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { View, StyleSheet, Switch } from "react-native";
-import type { Transaction } from "@ledgerhq/live-common/families/mimblewimble_coin/types";
+import { Transaction } from "@ledgerhq/live-common/generated/types";
+import type { Transaction as MimbleWimbleCoinTransaction } from "@ledgerhq/live-common/families/mimblewimble_coin/types";
 import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
 import { Trans } from "react-i18next";
 import type { AccountLike, Account } from "@ledgerhq/types-live";
@@ -29,7 +30,7 @@ export default ({
   account: AccountLike;
   transaction: Transaction;
   parentAccount: Account | null | undefined;
-  setTransaction;
+  setTransaction: (..._: Array<Transaction>) => void;
 }) => {
   const onChangeSendAsFile = useCallback(
     (sendAsFile: boolean) => {
@@ -49,7 +50,7 @@ export default ({
       </LText>
       <Switch
         style={styles.switch}
-        value={transaction.sendAsFile}
+        value={(transaction as MimbleWimbleCoinTransaction).sendAsFile}
         onValueChange={onChangeSendAsFile}
       />
     </View>

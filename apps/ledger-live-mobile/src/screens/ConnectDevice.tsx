@@ -313,15 +313,22 @@ export default function ConnectDevice(props: Props) {
   // custom family UI for SendFundsConnectDevice
   if (
     route.name === ScreenName.SendConnectDevice &&
-    account.currency.type === "CryptoCurrency" &&
-    Object.keys(byFamily).includes(account.currency.family)
+    mainAccount.currency.type === "CryptoCurrency" &&
+    Object.keys(byFamily).includes(mainAccount.currency.family)
   ) {
     const CustomSendFundsConnectDevice =
-      account.currency.type === "CryptoCurrency"
-        ? byFamily[account.currency.family as keyof typeof byFamily]
+      mainAccount.currency.type === "CryptoCurrency"
+        ? byFamily[mainAccount.currency.family as keyof typeof byFamily]
         : null;
     if (CustomSendFundsConnectDevice) {
-      return <CustomSendFundsConnectDevice {...props} />;
+      return (
+        <CustomSendFundsConnectDevice
+          {...(props as StackNavigatorProps<
+            SendFundsNavigatorStackParamList,
+            ScreenName.SendConnectDevice
+          >)}
+        />
+      );
     }
   }
 

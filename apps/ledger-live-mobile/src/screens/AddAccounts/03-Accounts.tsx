@@ -222,8 +222,11 @@ function AddAccountsAccounts(props: Props) {
         syncConfig,
       }),
     ).subscribe({
-      next: ({ account }) => {
-        setLatestScannedAccount(account);
+      next: event => {
+        if (event.type !== "discovered") {
+          return;
+        }
+        setLatestScannedAccount(event.account);
       },
       complete: () => setScanning(false),
       error: error => {

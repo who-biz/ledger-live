@@ -20,9 +20,8 @@ import { createAction as createOpenAction } from "@ledgerhq/live-common/hw/actio
 import connectApp from "@ledgerhq/live-common/hw/connectApp";
 import type { Device } from "@ledgerhq/live-common/hw/actions/types";
 import useBridgeTransaction from "@ledgerhq/live-common/bridge/useBridgeTransaction";
-import { useTheme } from "styled-components/native";
 import { withDevice } from "@ledgerhq/live-common/hw/deviceAccess";
-import { from } from "rxjs";
+import { from, Subscription } from "rxjs";
 import prepareTransaction from "@ledgerhq/live-common/families/mimblewimble_coin/prepareTransaction";
 import { toAccountRaw } from "@ledgerhq/live-common/account/serialization";
 import { toTransactionRaw } from "@ledgerhq/live-common/transaction/index";
@@ -30,14 +29,15 @@ import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
 import { BigNumber } from "bignumber.js";
 import QRCode from "react-native-qrcode-svg";
 import { Flex, Text } from "@ledgerhq/native-ui";
+// @ts-expect-error no declaration file
 import qrcode from "qrcode";
-import Icon from "react-native-vector-icons/dist/FontAwesome";
+import Icon from "react-native-vector-icons/FontAwesome";
 import Clipboard from "@react-native-community/clipboard";
 import {
   validateTransactionResponse,
   addSentTransactionToAccount,
 } from "@ledgerhq/live-common/families/mimblewimble_coin/react";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation, useTheme } from "@react-navigation/native";
 import type {
   Account,
   AccountLike,
@@ -48,6 +48,10 @@ import { log } from "@ledgerhq/logs";
 import { UserRefusedOnDevice } from "@ledgerhq/errors";
 import { TransactionRefusedOnDevice } from "@ledgerhq/live-common/errors";
 import { StackNavigationProp } from "@react-navigation/stack";
+import type {
+  Transaction as MimbleWimbleCoinTransaction,
+  TransactionRaw as MimbleWimbleCoinTransactionRaw,
+} from "@ledgerhq/live-common/families/mimblewimble_coin/types";
 import CopyLink from "../../components/CopyLink";
 import Button from "../../components/Button";
 import LText from "../../components/LText";
@@ -67,14 +71,19 @@ import DeviceAction from "../../components/DeviceAction";
 import { accountScreenSelector } from "../../reducers/accounts";
 import type { SendFundsNavigatorStackParamList } from "../../components/RootNavigator/types/SendFundsNavigator";
 import getWindowDimensions from "../../logic/getWindowDimensions";
+import type { StackNavigatorProps } from "../../components/RootNavigator/types/helpers";
 
 const transactionAction = createTransactionAction(connectApp);
 
 const openAction = createOpenAction(connectApp);
 
-const IconQRCode = ({ size, color }: { size: number; color: string }) => (
-  <Icon name="qrcode" size={size} color={color} />
-);
+const IconQRCode = ({
+  size = 16,
+  color,
+}: {
+  size?: number;
+  color?: string;
+}) => <Icon name="qrcode" size={size} color={color} />;
 
 function useSignedTxHandler({
   account,
@@ -177,18 +186,20 @@ type Props = StackNavigatorProps<
 
 export default function ConnectDevice(props: Props) {
   const { route, navigation } = props;
-  const [currentDevice, setCurrentDevice] = useState(null);
-  const [transactionData, setTransactionData] = useState(null);
+  const [currentDevice, setCurrentDevice] = useState<null | Device>(null);
+  const [transactionData, setTransactionData] = useState<string | null>(null);
   const [enterTransactionResponse, setEnterTransactionResponse] =
     useState(false);
   const [finalizingTransaction, setFinalizingTransaction] = useState(false);
   const [useTransactionDataQrCode, setUseTransactionDataQrCode] =
     useState(true);
-  const [transactionResponseError, setTransactionResponseError] =
-    useState(undefined);
-  const [transactionResponseWarning, setTransactionResponseWarning] =
-    useState(undefined);
-  const prepareTransactionSubscription = useRef(null);
+  const [transactionResponseError, setTransactionResponseError] = useState<
+    Error | undefined
+  >(undefined);
+  const [transactionResponseWarning, setTransactionResponseWarning] = useState<
+    Error | undefined
+  >(undefined);
+  const prepareTransactionSubscription = useRef<Subscription | null>(null);
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { account, parentAccount } = useSelector(accountScreenSelector(route));
@@ -201,13 +212,38 @@ export default function ConnectDevice(props: Props) {
   }));
   const initialTransaction = useRef(transaction);
   const navigationTransaction = route.params?.transaction;
+  const onChangeTransactionResponse = useCallback(
+    transactionResponse => {
+      if (transactionResponse) {
+        const { error, warning } = validateTransactionResponse(
+          mainAccount.currency,
+          transactionResponse,
+        );
+        setTransactionResponseError(error);
+        setTransactionResponseWarning(warning);
+      } else {
+        setTransactionResponseError(undefined);
+        setTransactionResponseWarning(undefined);
+      }
+      const bridge = getAccountBridge(account, parentAccount);
+      setTransaction(
+        bridge.updateTransaction(transaction, {
+          transactionResponse,
+        }),
+      );
+    },
+    [account, parentAccount, setTransaction, transaction, mainAccount.currency],
+  );
   useEffect(() => {
     if (
       initialTransaction.current !== navigationTransaction &&
       navigationTransaction
     ) {
       setTransaction(navigationTransaction);
-      onChangeTransactionResponse(navigationTransaction.transactionResponse);
+      onChangeTransactionResponse(
+        (navigationTransaction as MimbleWimbleCoinTransaction)
+          .transactionResponse,
+      );
     }
   }, [setTransaction, navigationTransaction, onChangeTransactionResponse]);
   const tokenCurrency =
@@ -248,9 +284,11 @@ export default function ConnectDevice(props: Props) {
       )(transport =>
         from(
           prepareTransaction(
-            toAccountRaw(account),
+            toAccountRaw(account as Account),
             transport,
-            toTransactionRaw(transaction),
+            toTransactionRaw(
+              transaction as MimbleWimbleCoinTransaction,
+            ) as MimbleWimbleCoinTransactionRaw,
           ),
         ),
       ).subscribe({
@@ -300,10 +338,12 @@ export default function ConnectDevice(props: Props) {
         error: (error: Error) => {
           setCurrentDevice(null);
           logger.critical(error);
-          navigation.replace(
-            route.name.replace("ConnectDevice", "ValidationError"),
-            { ...route.params, error },
-          );
+          (
+            navigation as StackNavigationProp<{ [key: string]: object }>
+          ).replace(route.name.replace("ConnectDevice", "ValidationError"), {
+            ...route.params,
+            error,
+          });
         },
       });
     } else {
@@ -328,31 +368,6 @@ export default function ConnectDevice(props: Props) {
       prepareTransactionSubscription.current = null;
     }
   };
-  const onChangeTransactionResponse = useCallback(
-    transactionResponse => {
-      if (transactionResponse) {
-        const { error, warning } = validateTransactionResponse(
-          account.currency,
-          transactionResponse,
-        );
-        setTransactionResponseError(error);
-        setTransactionResponseWarning(warning);
-      } else {
-        setTransactionResponseError(undefined);
-        setTransactionResponseWarning(undefined);
-      }
-      const bridge = getAccountBridge(account, parentAccount);
-      setTransaction(
-        bridge.updateTransaction(transaction, {
-          transactionResponse,
-        }),
-      );
-    },
-    [account, parentAccount, setTransaction, transaction],
-  );
-  const clearTransactionResponse = useCallback(() => {
-    onChangeTransactionResponse("");
-  }, [onChangeTransactionResponse]);
   const onContinue = useCallback(() => {
     setEnterTransactionResponse(true);
   }, [setEnterTransactionResponse]);
@@ -364,27 +379,31 @@ export default function ConnectDevice(props: Props) {
       button: "Share",
       screen: route.name,
     });
-    Share.share({ message: transactionData });
+    Share.share({ message: transactionData || "" });
   }, [transactionData, route.name]);
   const onPressScan = useCallback(() => {
-    navigation.navigate(ScreenName.MimbleWimbleCoinScanTransactionResponse, {
-      ...route.params,
-      account,
-      transaction,
-    });
+    (navigation as StackNavigationProp<{ [key: string]: object }>).navigate(
+      ScreenName.MimbleWimbleCoinScanTransactionResponse,
+      {
+        ...route.params,
+        account,
+        transaction,
+      },
+    );
   }, [navigation, route.params, account, transaction]);
   const { width } = getWindowDimensions();
   const qRSize = Math.round(width / 1.2 - 15);
   const render = useMemo(() => {
     return transaction ? (
       <SafeAreaView
-        style={[styles.root, { backgroundColor: colors.background.main }]}
+        style={[styles.root, { backgroundColor: colors.background }]}
       >
         <TrackScreen
           category={route.name.replace("ConnectDevice", "")}
           name="ConnectDevice"
         />
-        {!transaction.sendAsFile || finalizingTransaction ? (
+        {!(transaction as MimbleWimbleCoinTransaction).sendAsFile ||
+        finalizingTransaction ? (
           <DeviceAction
             action={transactionAction}
             request={{
@@ -445,8 +464,10 @@ export default function ConnectDevice(props: Props) {
                     onChangeTransactionResponse(transactionResponse);
                   }}
                   onChangeText={onChangeTransactionResponse}
-                  onInputCleared={clearTransactionResponse}
-                  value={transaction.transactionResponse}
+                  value={
+                    (transaction as MimbleWimbleCoinTransaction)
+                      .transactionResponse || ""
+                  }
                   placeholder={t("mimblewimble_coin.enterResponse")}
                 />
               </View>
@@ -475,7 +496,10 @@ export default function ConnectDevice(props: Props) {
                 type="primary"
                 title={<Trans i18nKey={"common.continue"} />}
                 disabled={
-                  !transaction.transactionResponse || transactionResponseError
+                  !!(
+                    !(transaction as MimbleWimbleCoinTransaction)
+                      .transactionResponse || transactionResponseError
+                  )
                 }
                 onPress={onFinalize}
               />
@@ -556,7 +580,7 @@ export default function ConnectDevice(props: Props) {
           <DeviceAction
             action={openAction}
             request={{
-              account,
+              account: account as Account,
               appName,
               tokenCurrency,
             }}
@@ -581,8 +605,7 @@ export default function ConnectDevice(props: Props) {
     account,
     analyticsPropertyFlow,
     appName,
-    clearTransactionResponse,
-    colors.background.main,
+    colors.background,
     colors.lightFog,
     extraProps,
     navigation,

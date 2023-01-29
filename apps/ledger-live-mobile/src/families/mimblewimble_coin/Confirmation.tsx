@@ -22,12 +22,11 @@ import {
   getMainAccount,
   getAccountCurrency,
 } from "@ledgerhq/live-common/account/index";
-import { useTheme } from "styled-components/native";
+import { useTheme, useRoute } from "@react-navigation/native";
 import { Flex, Text, Icons, Notification } from "@ledgerhq/native-ui";
-import { useRoute } from "@react-navigation/native";
 import { SyncSkipUnderPriority } from "@ledgerhq/live-common/bridge/react/index";
 import { HeaderBackButton } from "@react-navigation/elements";
-import Icon from "react-native-vector-icons/dist/FontAwesome";
+import Icon from "react-native-vector-icons/FontAwesome";
 import Clipboard from "@react-native-community/clipboard";
 import {
   validateTransactionData,
@@ -37,6 +36,7 @@ import { createAction } from "@ledgerhq/live-common/hw/actions/app";
 import connectApp from "@ledgerhq/live-common/hw/connectApp";
 import getTransactionResponse from "@ledgerhq/live-common/families/mimblewimble_coin/getTransactionResponse";
 import { toAccountRaw } from "@ledgerhq/live-common/account/serialization";
+// @ts-expect-error no declaration file
 import qrcode from "qrcode";
 import getWindowDimensions from "../../logic/getWindowDimensions";
 import { accountScreenSelector } from "../../reducers/accounts";
@@ -226,8 +226,8 @@ function ReceiveConfirmationInner({
   }, [navigation, route.params]);
   if (!route.params.verified) {
     navigation.setOptions({
-      headerLeft: null,
-      headerRight: null,
+      headerLeft: undefined,
+      headerRight: undefined,
       headerTitle: "",
       gestureEnabled: false,
     });
@@ -241,9 +241,12 @@ function ReceiveConfirmationInner({
     route.params.transactionData !== undefined,
   );
   const [transactionData, setTransactionData] = useState("");
-  const [transactionDataError, setTransactionDataError] = useState(undefined);
-  const [transactionDataWarning, setTransactionDataWarning] =
-    useState(undefined);
+  const [transactionDataError, setTransactionDataError] = useState<
+    undefined | Error
+  >(undefined);
+  const [transactionDataWarning, setTransactionDataWarning] = useState<
+    undefined | Error
+  >(undefined);
   const [finalizeTransaction, setFinalizeTransaction] = useState(false);
   const [currentDevice, setCurrentDevice] = useState(null);
   const getTransactionResponseSubscription = useRef(null);
@@ -395,9 +398,6 @@ function ReceiveConfirmationInner({
       setTransactionData,
     ],
   );
-  const clearTransactionData = useCallback(() => {
-    onChangeTransactionData("");
-  }, [onChangeTransactionData]);
   useEffect(() => {
     if (!route.params.verified) {
       return;
@@ -722,7 +722,6 @@ function ReceiveConfirmationInner({
                   onChangeTransactionData(transactionData);
                 }}
                 onChangeText={onChangeTransactionData}
-                onInputCleared={clearTransactionData}
                 value={transactionData}
                 placeholder={t("mimblewimble_coin.enterTransaction")}
               />
