@@ -147,7 +147,7 @@ const ApproveExportRootPublicKeyOnDevice = ({
             withVerifyAddressHeight={device.modelId !== "blue"}
           >
             <Animation
-              source={getDeviceAnimation({ device, key: "validate", theme })}
+              source={getDeviceAnimation({ device, key: "sign", theme })}
             />
           </AnimationContainer>
           <TitleText>

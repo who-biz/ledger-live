@@ -1688,7 +1688,11 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         magnitude: 9,
       },
     ],
-    explorerViews: [],
+    explorerViews: [
+      {
+        custom: "https://explorer.mwc.mw/#k$kernelExcess",
+      },
+    ],
   },
   mimblewimble_coin_floonet: {
     type: "CryptoCurrency",
@@ -1710,7 +1714,11 @@ export const cryptocurrenciesById: Record<string, CryptoCurrency> = {
         magnitude: 9,
       },
     ].map(makeTestnetUnit),
-    explorerViews: [],
+    explorerViews: [
+      {
+        custom: "https://explorer.floonet.mwc.mw/#k$kernelExcess",
+      },
+    ],
   },
   mix: {
     type: "CryptoCurrency",

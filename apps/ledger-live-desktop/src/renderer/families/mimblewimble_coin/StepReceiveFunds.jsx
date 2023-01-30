@@ -345,7 +345,7 @@ class StepReceiveFunds extends PureComponent<Props, State> {
               qrcode.toString(
                 transactionResponse,
                 {
-                  errorCorrectionLevel: "Q",
+                  errorCorrectionLevel: "L",
                 },
                 (error: Error | null) => {
                   if (this.processTransactionSubscription) {
@@ -682,7 +682,7 @@ class StepReceiveFunds extends PureComponent<Props, State> {
                   <QRCode
                     size={transactionResponse !== null ? 372 : 160}
                     data={transactionResponse !== null ? transactionResponse : address}
-                    errorCorrectionLevel={"Q"}
+                    errorCorrectionLevel={transactionResponse !== null ? "L" : "Q"}
                   />
                 </QRCodeWrapper>
                 <Box mt={6}>

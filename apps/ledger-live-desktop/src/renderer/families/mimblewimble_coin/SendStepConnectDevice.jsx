@@ -148,7 +148,7 @@ class StepConnectDevice extends PureComponent<Props, State> {
           qrcode.toString(
             transactionData,
             {
-              errorCorrectionLevel: "Q",
+              errorCorrectionLevel: "L",
             },
             (error: Error | null) => {
               if (this.prepareTransactionSubscription) {
@@ -451,7 +451,7 @@ class StepConnectDevice extends PureComponent<Props, State> {
             render={() => (
               <Box alignItems="center">
                 <QRCodeWrapper>
-                  <QRCode size={372} data={transactionData} errorCorrectionLevel={"Q"} />
+                  <QRCode size={372} data={transactionData} errorCorrectionLevel={"L"} />
                 </QRCodeWrapper>
                 <Box mt={6}>
                   <ReadOnlyTransactionField transactionData={transactionData} />

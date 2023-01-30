@@ -89,7 +89,7 @@ export default function ValidateReceiveOnDevice({
             <Animation
               source={getDeviceAnimation({
                 device,
-                key: "validate",
+                key: "sign",
                 theme: dark ? "dark" : "light",
               })}
             />

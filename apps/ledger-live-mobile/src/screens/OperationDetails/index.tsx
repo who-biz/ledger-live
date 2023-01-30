@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import {
   getDefaultExplorerView,
   getTransactionExplorer,
+  getOperationExplorer,
 } from "@ledgerhq/live-common/explorers";
 import { getMainAccount } from "@ledgerhq/live-common/account/index";
 import { ParamListBase, useTheme } from "@react-navigation/native";
@@ -68,10 +69,11 @@ function OperationDetails({ route }: NavigatorProps) {
   if (!account) return null;
   const operation = route.params?.operation;
   const mainAccount = getMainAccount(account, parentAccount);
-  const url = getTransactionExplorer(
-    getDefaultExplorerView(mainAccount.currency),
-    operation.hash,
-  );
+  const url =
+    getTransactionExplorer(
+      getDefaultExplorerView(mainAccount.currency),
+      operation.hash,
+    ) || getOperationExplorer(mainAccount.currency, operation);
   const specific =
     byFamiliesOperationDetails[
       mainAccount.currency.family as keyof typeof byFamiliesOperationDetails

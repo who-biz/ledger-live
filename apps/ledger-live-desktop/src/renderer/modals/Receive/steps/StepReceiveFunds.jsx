@@ -239,13 +239,10 @@ const StepReceiveFunds = (props: StepProps) => {
 
   // when address need verification we trigger it on device
   useEffect(() => {
-    if (byFamily[mainAccount.currency.family]) {
-      return;
-    }
     if (isAddressVerified === null) {
       confirmAddress();
     }
-  }, [isAddressVerified, confirmAddress, mainAccount.currency.family]);
+  }, [isAddressVerified, confirmAddress]);
 
   // custom family UI for StepReceiveFunds
   const CustomStepReceiveFunds = byFamily[mainAccount.currency.family];
