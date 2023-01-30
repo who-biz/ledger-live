@@ -58,7 +58,7 @@ Type: any
 
 ### ExplorerView
 
-Type: {tx: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, address: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, token: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?}
+Type: {tx: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, address: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, token: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, custom: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?}
 
 #### Properties
 
