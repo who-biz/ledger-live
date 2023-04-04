@@ -4,7 +4,7 @@
   },
   "name": "@ledgerhq/live-common",
   "description": "Common ground for the Ledger Live apps",
-  "version": "27.12.0",
+  "version": "28.0.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/LedgerHQ/ledger-live.git"
@@ -42,16 +42,10 @@
     }
   },
   "exports": {
-    "./lib/*/": "./lib/*/index.js",
     "./lib/*": "./lib/*.js",
     "./lib/*.js": "./lib/*.js",
-    "./lib-es/*/": "./lib-es/*/index.js",
     "./lib-es/*": "./lib-es/*.js",
     "./lib-es/*.js": "./lib-es/*.js",
-    "./*/": {
-      "require": "./lib/*/index.js",
-      "default": "./lib-es/*/index.js"
-    },
     "./*": {
       "require": "./lib/*.js",
       "default": "./lib-es/*.js"

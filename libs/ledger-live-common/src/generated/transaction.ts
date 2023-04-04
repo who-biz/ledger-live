@@ -12,7 +12,6 @@ import hedera from "../families/hedera/transaction";
 import mimblewimble_coin from "../families/mimblewimble_coin/transaction";
 import near from "../families/near/transaction";
 import neo from "../families/neo/transaction";
-import osmosis from "../families/osmosis/transaction";
 import polkadot from "../families/polkadot/transaction";
 import ripple from "../families/ripple/transaction";
 import solana from "../families/solana/transaction";
@@ -35,7 +34,6 @@ export default {
   mimblewimble_coin,
   near,
   neo,
-  osmosis,
   polkadot,
   ripple,
   solana,

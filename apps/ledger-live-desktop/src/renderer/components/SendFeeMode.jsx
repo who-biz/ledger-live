@@ -52,12 +52,20 @@ const SendFeeMode = ({ isAdvanceMode, setAdvanceMode, useLink, label }: Props) =
         <Label>{label !== undefined ? label : t("send.steps.amount.fees")}</Label>
       )}
       <SelectorContainer>
-        <Selector active={!isAdvanceMode} onClick={setStandard}>
+        <Selector
+          active={!isAdvanceMode}
+          onClick={setStandard}
+          data-test-id="standard-fee-mode-selector"
+        >
           <Text ff="Inter|SemiBold" fontSize={10}>
             <Trans i18nKey="send.steps.amount.standard" />
           </Text>
         </Selector>
-        <Selector active={isAdvanceMode} onClick={setAdvanced}>
+        <Selector
+          active={isAdvanceMode}
+          onClick={setAdvanced}
+          data-test-id="advanced-fee-mode-selector"
+        >
           <Text ff="Inter|SemiBold" fontSize={10}>
             <Trans i18nKey="send.steps.amount.advanced" />
           </Text>

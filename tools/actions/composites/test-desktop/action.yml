@@ -7,6 +7,13 @@ inputs:
   turbo-server-port:
     description: "port on which the turborepo local cache server is running"
     required: true
+outputs:
+  outcome:
+    description: "Playwright outcome"
+    value: ${{ steps.tests.outcome }}
+  outcome-linux:
+    description: "Playwright outcome (linux)"
+    value: ${{ steps.linux-tests.outcome }}
 
 runs:
   using: "composite"
@@ -27,16 +34,14 @@ runs:
     - name: Build Dummy SDK app for testing
       run: pnpm --filter="dummy-live-app" i && pnpm --filter="dummy-live-app" build
       shell: bash
-    - name: Run unit tests [Linux]
-      if: inputs.os == 'linux'
-      run: pnpm desktop test:jest
-      shell: bash
     - name: Run playwright tests [Linux => xvfb-run]
       if: inputs.os == 'linux'
+      id: linux-tests
       run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm desktop test:playwright
       shell: bash
     - name: Run playwright tests
       if: inputs.os != 'linux'
+      id: tests
       run: pnpm desktop test:playwright
       shell: bash
     - name: upload diffs to imgur

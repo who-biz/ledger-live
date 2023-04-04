@@ -10,7 +10,6 @@ import filecoin from "../families/filecoin/cli-transaction";
 import hedera from "../families/hedera/cli-transaction";
 import mimblewimble_coin from "../families/mimblewimble_coin/cli-transaction";
 import near from "../families/near/cli-transaction";
-import osmosis from "../families/osmosis/cli-transaction";
 import polkadot from "../families/polkadot/cli-transaction";
 import ripple from "../families/ripple/cli-transaction";
 import solana from "../families/solana/cli-transaction";
@@ -31,7 +30,6 @@ export default {
   hedera,
   mimblewimble_coin,
   near,
-  osmosis,
   polkadot,
   ripple,
   solana,
