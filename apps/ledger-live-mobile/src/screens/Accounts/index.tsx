@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, memo, useMemo } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, FlatListProps, ListRenderItemInfo } from "react-native";
 import { useSelector } from "react-redux";
 import { useFocusEffect } from "@react-navigation/native";
@@ -115,6 +115,7 @@ function Accounts({ navigation, route }: NavigationProps) {
           !params?.currencyId &&
           flattenedAccounts[index + 1]?.type === "TokenAccount"
         }
+        sourceScreenName={ScreenName.Accounts}
       />
     ),
     [navigation, flattenedAccounts, params?.currencyId],
@@ -141,7 +142,7 @@ function Accounts({ navigation, route }: NavigationProps) {
           keyExtractor={(i: AccountLike) => i.id}
           ListHeaderComponent={
             <Flex mt={3} mb={3}>
-              <Text variant="h4">
+              <Text testID="accounts-list-title" variant="h4">
                 {params?.currencyTicker
                   ? t("accounts.cryptoAccountsTitle", {
                       currencyTicker: params?.currencyTicker,

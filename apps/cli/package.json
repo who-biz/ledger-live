@@ -1,6 +1,6 @@
 {
   "name": "@ledgerhq/live-cli",
-  "version": "22.6.2",
+  "version": "22.6.7",
   "description": "ledger-live CLI version",
   "repository": {
     "type": "git",
@@ -21,7 +21,8 @@
     "build": "tsc --project src/tsconfig.json",
     "prepublishOnly": "rm -rf lib && tsc --project src/tsconfig.json",
     "watch": "tsc --watch --project src/tsconfig.json",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "zx ./scripts/test.mjs"
   },
   "peerDependencies": {
     "@ledgerhq/hw-transport-node-ble": "workspace:^"
@@ -30,6 +31,7 @@
     "@ledgerhq/hw-transport-node-ble": "workspace:^"
   },
   "dependencies": {
+    "@ledgerhq/coin-framework": "workspace:^",
     "@ledgerhq/cryptoassets": "workspace:^",
     "@ledgerhq/errors": "workspace:^",
     "@ledgerhq/hw-app-btc": "workspace:^",

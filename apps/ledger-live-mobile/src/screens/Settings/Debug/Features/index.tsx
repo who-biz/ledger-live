@@ -10,7 +10,7 @@ import SettingsNavigationScrollView from "../../SettingsNavigationScrollView";
 import { StackNavigatorNavigation } from "../../../../components/RootNavigator/types/helpers";
 import { SettingsNavigatorStackParamList } from "../../../../components/RootNavigator/types/SettingsNavigator";
 
-export default function Debugging() {
+export default function Features() {
   const navigation =
     useNavigation<StackNavigatorNavigation<SettingsNavigatorStackParamList>>();
   return (
@@ -37,6 +37,12 @@ export default function Debugging() {
         onPress={() => navigation.navigate(ScreenName.DebugFetchCustomImage)}
       />
       <SettingsRow
+        title="Firmware Update"
+        desc="Test the firmware update feature. USE AT YOUR OWN RISK!"
+        iconLeft={<Icons.NanoFirmwareUpdateMedium size={32} color="black" />}
+        onPress={() => navigation.navigate(ScreenName.DebugFirmwareUpdate)}
+      />
+      <SettingsRow
         title="Custom lockscreen graphics"
         desc="Tool for testing the flow's graphics"
         iconLeft={<Icons.BringFrontMedium size={32} color="black" />}
@@ -58,6 +64,12 @@ export default function Debugging() {
         onPress={() => navigation.navigate(ScreenName.DebugLottie)}
       />
       <SettingsRow
+        title="Install set of apps"
+        desc="Multi app install feature test"
+        iconLeft={<Icons.MugHotMedium size={32} color="black" />}
+        onPress={() => navigation.navigate(ScreenName.DebugInstallSetOfApps)}
+      />
+      <SettingsRow
         title="Videos"
         desc="See all video assets"
         iconLeft={<Icons.PlayMedium size={32} color="black" />}
@@ -75,6 +87,13 @@ export default function Debugging() {
         desc="Trigger Terms of Use Popup"
         iconLeft={<Icons.LinkMedium size={32} color="black" />}
         onPress={() => navigation.navigate(ScreenName.DebugTermsOfUse)}
+      />
+
+      <SettingsRow
+        title="Successive drawers opening/closing"
+        desc="Open and close several bottom drawers"
+        iconLeft={<Icons.LayersMedium size={32} color="black" />}
+        onPress={() => navigation.navigate(ScreenName.DebugQueuedDrawers)}
       />
     </SettingsNavigationScrollView>
   );

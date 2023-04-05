@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import styled from "styled-components";
@@ -39,6 +39,7 @@ const PostOnboardingHubBanner = () => {
       justifyContent="space-between"
       px={6}
       mb={7}
+      position="relative"
     >
       <Flex flexDirection="column" justifyContent="center" alignItems="flex-start">
         <Text color="neutral.c00" variant="paragraph" fontSize={6}>

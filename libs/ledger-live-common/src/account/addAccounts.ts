@@ -1,8 +1,10 @@
 import type { Account, DerivationMode } from "@ledgerhq/types-live";
 import uniqWith from "lodash/uniqWith";
-import { validateNameEdition } from "./accountName";
+import {
+  findAccountMigration,
+  validateNameEdition,
+} from "@ledgerhq/coin-framework/account/index";
 import { clearAccount } from "./helpers";
-import { findAccountMigration } from "./support";
 // Reference all possible support link
 // For now we have only one, but we can union type in future
 // We can map .id to a wording.
@@ -47,7 +49,7 @@ export function groupAddAccounts(
   const importableAccounts: Account[] = [];
   const creatableAccounts: Account[] = [];
   const migrateAccounts: Account[] = [];
-  let alreadyEmptyAccount;
+  let alreadyEmptyAccount: Account | null = null;
   const scannedAccountsWithoutMigrate = [...scannedAccounts];
   existingAccounts.forEach((existingAccount) => {
     const migrate = findAccountMigration(

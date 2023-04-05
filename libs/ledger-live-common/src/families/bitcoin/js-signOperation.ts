@@ -2,7 +2,10 @@ import { BigNumber } from "bignumber.js";
 import { Observable } from "rxjs";
 import Btc from "@ledgerhq/hw-app-btc";
 import { log } from "@ledgerhq/logs";
-import { DerivationMode, isSegwitDerivationMode } from "./../../derivation";
+import {
+  DerivationMode,
+  isSegwitDerivationMode,
+} from "@ledgerhq/coin-framework/derivation";
 import { encodeOperationId } from "./../../operation";
 import { withDevice } from "../../hw/deviceAccess";
 import type { Transaction } from "./types";
@@ -77,7 +80,7 @@ const signOperation = ({
           : undefined;
 
         const perCoin = perCoinLogic[currency.id];
-        let additionals = [currency.id];
+        let additionals: string[] = [currency.id];
 
         if (account.derivationMode === "native_segwit") {
           additionals.push("bech32");

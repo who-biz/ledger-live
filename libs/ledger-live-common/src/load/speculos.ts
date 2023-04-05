@@ -9,6 +9,7 @@ import { promises as fsp } from "fs";
 import { log } from "@ledgerhq/logs";
 import type { DeviceModelId } from "@ledgerhq/devices";
 import SpeculosTransport from "@ledgerhq/hw-transport-node-speculos";
+import type { AppCandidate } from "@ledgerhq/coin-framework/bot/types";
 import { registerTransportModule } from "../hw";
 import { getEnv } from "../env";
 import { getDependencies } from "../apps/polyfill";
@@ -17,7 +18,7 @@ import { formatAppCandidate } from "../bot/formatters";
 import { delay } from "../promise";
 import { mustUpgrade, shouldUpgrade } from "../apps";
 
-let idCounter = 0;
+let idCounter = getEnv("SPECULOS_PID_OFFSET");
 
 const data = {};
 
@@ -89,10 +90,10 @@ export async function createSpeculosDevice(
   const { model, firmware, appName, appVersion, seed, coinapps, dependency } =
     arg;
   const speculosID = `speculosID-${++idCounter}`;
-  const apduPort = 40000 + idCounter;
-  const vncPort = 41000 + idCounter;
-  const buttonPort = 42000 + idCounter;
-  const automationPort = 43000 + idCounter;
+  const apduPort = 30000 + idCounter;
+  const vncPort = 35000 + idCounter;
+  const buttonPort = 40000 + idCounter;
+  const automationPort = 45000 + idCounter;
 
   const sdk = inferSDK(firmware, model);
 
@@ -243,13 +244,6 @@ export async function createSpeculosDevice(
     appPath,
   };
 }
-export type AppCandidate = {
-  path: string;
-  model: DeviceModelId;
-  firmware: string;
-  appName: string;
-  appVersion: string;
-};
 
 function hackBadSemver(str) {
   const split = str.split(".");

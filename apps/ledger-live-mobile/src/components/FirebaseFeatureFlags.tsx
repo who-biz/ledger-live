@@ -21,6 +21,8 @@ import {
   setOverriddenFeatureFlags,
 } from "../actions/settings";
 
+type Props = PropsWithChildren<unknown>;
+
 const checkFeatureFlagVersion = (feature: Feature | undefined) => {
   if (
     feature &&
@@ -38,8 +40,6 @@ const checkFeatureFlagVersion = (feature: Feature | undefined) => {
   }
   return feature;
 };
-
-type Props = PropsWithChildren<unknown>;
 
 const isFeature = (key: string): boolean => {
   try {
@@ -81,6 +81,11 @@ const getFeature = (args: {
           overridesRemote: true,
           overriddenByEnv: true,
         };
+    }
+    const config = remoteConfig();
+
+    if (__DEV__) {
+      config.setConfigSettings({ minimumFetchIntervalMillis: 0 });
     }
 
     const value = remoteConfig().getValue(formatToFirebaseFeatureId(key));
@@ -139,16 +144,16 @@ export const FirebaseFeatureFlagsProvider: React.FC<Props> = ({ children }) => {
       if (!isEqual(actualRemoteValue, value)) {
         const { overriddenByEnv: _, ...pureValue } = value;
         const overridenValue = { ...pureValue, overridesRemote: true };
-        dispatch(setOverriddenFeatureFlag(key, overridenValue));
+        dispatch(setOverriddenFeatureFlag({ id: key, value: overridenValue }));
       } else {
-        dispatch(setOverriddenFeatureFlag(key, undefined));
+        dispatch(setOverriddenFeatureFlag({ id: key, value: undefined }));
       }
     },
     [appLanguage, dispatch],
   );
 
   const resetFeature = (key: FeatureId): void => {
-    dispatch(setOverriddenFeatureFlag(key, undefined));
+    dispatch(setOverriddenFeatureFlag({ id: key, value: undefined }));
   };
 
   const resetFeatures = (): void => {

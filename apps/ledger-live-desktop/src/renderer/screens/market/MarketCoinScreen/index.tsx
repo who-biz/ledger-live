@@ -135,9 +135,7 @@ export default function MarketCoinScreen() {
   const stakeProgramsEnabled = stakeProgramsFeatureFlag?.enabled ?? false;
   const availableOnStake =
     stakeProgramsEnabled && currency && listFlag.includes(currency?.internalCurrency?.id);
-  const startStakeFlow = useStakeFlow({
-    currencies: currency ? [currency?.internalCurrency?.id] : [],
-  });
+  const startStakeFlow = useStakeFlow();
 
   const color = internalCurrency
     ? getCurrencyColor(internalCurrency, colors.background.main)
@@ -232,9 +230,11 @@ export default function MarketCoinScreen() {
       });
       setTrackingSource("Page Market Coin");
 
-      startStakeFlow();
+      startStakeFlow({
+        currencies: internalCurrency ? [internalCurrency.id] : undefined,
+      });
     },
-    [currency?.ticker, startStakeFlow],
+    [currency?.ticker, internalCurrency, startStakeFlow],
   );
 
   const toggleStar = useCallback(() => {
@@ -306,7 +306,7 @@ export default function MarketCoinScreen() {
                 </Button>
               )}
               {availableOnStake && (
-                <Button variant="color" onClick={onStake}>
+                <Button variant="color" onClick={onStake} data-test-id="market-coin-stake-button">
                   {t("accounts.contextMenu.stake")}
                 </Button>
               )}

@@ -22,7 +22,6 @@ import {
   getAndroidVersionCode,
 } from "../logic/cleanBuildVersion";
 import getOrCreateUser from "../user";
-// eslint-disable-next-line import/no-cycle
 import {
   analyticsEnabledSelector,
   languageSelector,
@@ -50,6 +49,7 @@ import {
   INFINITY_PASS_COLLECTION_CONTRACT,
   hasNftInAccounts,
 } from "../helpers/nfts";
+import { appStartupTime } from "../StartupTimeMarker";
 
 let sessionId = uuid();
 const appVersion = `${VersionNumber.appVersion || ""} (${
@@ -149,6 +149,7 @@ const extraProperties = async (store: AppStore) => {
     blockchainsWithNftsOwned,
     hasGenesisPass,
     hasInfinityPass,
+    appTimeToInteractiveMilliseconds: appStartupTime,
   };
 };
 

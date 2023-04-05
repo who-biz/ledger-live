@@ -18,6 +18,7 @@ import { AnalyticsContext } from "../../analytics/AnalyticsContext";
 import { BaseNavigatorStackParamList } from "../../components/RootNavigator/types/BaseNavigator";
 import { MainNavigatorParamList } from "../../components/RootNavigator/types/MainNavigator";
 import useDynamicContent from "../../dynamicContent/dynamicContent";
+import { useIsNewsfeedAvailable } from "../../hooks/newsfeed/useIsNewsfeedAvailable";
 
 const images = {
   light: {
@@ -48,6 +49,7 @@ function Discover() {
     >();
 
   const learn = useFeature("brazeLearn");
+  const isNewsfeedAvailable = useIsNewsfeedAvailable();
   const referralProgramConfig = useFeature("referralProgramDiscoverCard");
   const isNFTDisabled =
     useFeature("disableNftLedgerMarket")?.enabled && Platform.OS === "ios";
@@ -64,6 +66,7 @@ function Discover() {
   }, []);
 
   const { learnCards } = useDynamicContent();
+  const config = useFeature("discover");
 
   const featuresList: {
     title: string;
@@ -75,7 +78,27 @@ function Discover() {
   }[] = useMemo(
     () =>
       [
-        ...(Platform.OS !== "ios"
+        ...(config?.enabled && config?.params.version === "2"
+          ? [
+              {
+                title: t("discover.sections.browseWeb3.title"),
+                subTitle: t("discover.sections.browseWeb3.desc"),
+                onPress: () => {
+                  navigation.navigate(NavigatorName.Discover, {
+                    screen: ScreenName.PlatformCatalog,
+                  });
+                },
+                disabled: false,
+                Image: (
+                  <Illustration
+                    size={110}
+                    darkSource={images.dark.appsImg}
+                    lightSource={images.light.appsImg}
+                  />
+                ),
+              },
+            ]
+          : Platform.OS !== "ios"
           ? [
               {
                 title: t("discover.sections.ledgerApps.title"),
@@ -96,8 +119,7 @@ function Discover() {
               },
             ]
           : []),
-
-        ...(!learn?.enabled
+        ...(!learn?.enabled && !isNewsfeedAvailable
           ? [
               {
                 title: t("discover.sections.learn.title"),
@@ -119,14 +141,19 @@ function Discover() {
                 ),
               },
             ]
-          : learnCards.length > 0
+          : learnCards.length > 0 || isNewsfeedAvailable
           ? [
               {
-                title: t("discover.sections.learn.title"),
-                subTitle: t("discover.sections.learn.desc"),
+                title: t("discover.sections.news.title"),
+                subTitle: t("discover.sections.news.desc"),
                 onPress: () => {
-                  navigation.navigate(ScreenName.Learn);
-                  readOnlyTrack("Learn");
+                  // Fixme: Can't find a way to make TS happy ...
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  navigation.navigate(NavigatorName.ExploreTab);
+                  track("banner_clicked", {
+                    banner: "News",
+                  });
                 },
                 disabled: false,
                 Image: (
@@ -212,6 +239,8 @@ function Discover() {
       referralProgramConfig?.params.url,
       navigation,
       readOnlyTrack,
+      isNewsfeedAvailable,
+      config,
     ],
   );
 

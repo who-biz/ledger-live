@@ -58,7 +58,7 @@ function OnboardingStepPairNew() {
     useNotifications();
   const { resetCurrentStep } = useNavigationInterceptor();
 
-  const { deviceModelId, showSeedWarning, next } = route.params;
+  const { deviceModelId, showSeedWarning, next, isProtectFlow } = route.params;
 
   const newDeviceSelectionFeatureFlag = useFeature("llmNewDeviceSelection");
 
@@ -87,13 +87,23 @@ function OnboardingStepPairNew() {
             theme={theme === "dark" ? "dark" : "light"}
           />
         ),
-        drawer: {
-          route: ScreenName.OnboardingBluetoothInformation,
-          screen: ScreenName.OnboardingBluetoothInformation,
-        },
+        drawer: isProtectFlow
+          ? {
+              route: ScreenName.OnboardingProtectionConnectionInformation,
+              screen: ScreenName.OnboardingProtectionConnectionInformation,
+            }
+          : {
+              route: ScreenName.OnboardingBluetoothInformation,
+              screen: ScreenName.OnboardingBluetoothInformation,
+            },
       },
     ],
-    [deviceModelId, theme, newDeviceSelectionFeatureFlag?.enabled],
+    [
+      newDeviceSelectionFeatureFlag?.enabled,
+      deviceModelId,
+      theme,
+      isProtectFlow,
+    ],
   );
 
   const startPostOnboarding = useStartPostOnboardingCallback();
@@ -120,15 +130,14 @@ function OnboardingStepPairNew() {
       parentNav.popToTop();
     }
 
-    navigation.replace(NavigatorName.Base, {
-      screen: NavigatorName.Main,
+    startPostOnboarding({
+      deviceModelId: deviceModelId as DeviceModelId,
+      resetNavigationStack: true,
+      fallbackIfNoAction: () =>
+        navigation.replace(NavigatorName.Base, {
+          screen: NavigatorName.Main,
+        }),
     });
-
-    startPostOnboarding(deviceModelId as DeviceModelId, false, () =>
-      navigation.navigate(NavigatorName.Base, {
-        screen: NavigatorName.Main,
-      }),
-    );
 
     triggerJustFinishedOnboardingNewDevicePushNotificationModal();
   }, [

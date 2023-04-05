@@ -1,18 +1,22 @@
 import { RecipientRequired } from "@ledgerhq/errors";
-import { getAccountCurrency } from "@ledgerhq/live-common/account/helpers";
+import {
+  getAccountCurrency,
+  getMainAccount,
+} from "@ledgerhq/live-common/account/helpers";
 import { getAccountBridge } from "@ledgerhq/live-common/bridge/index";
 import {
   SyncOneAccountOnMount,
   SyncSkipUnderPriority,
 } from "@ledgerhq/live-common/bridge/react/index";
 import useBridgeTransaction from "@ledgerhq/live-common/bridge/useBridgeTransaction";
+import { useFeature } from "@ledgerhq/live-common/featureFlags/index";
 import { isNftTransaction } from "@ledgerhq/live-common/nft/index";
-import Clipboard from "@react-native-community/clipboard";
+import { CryptoCurrencyId } from "@ledgerhq/types-cryptoassets";
 import { useTheme } from "@react-navigation/native";
 import invariant from "invariant";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { Platform, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { useSelector } from "react-redux";
@@ -24,18 +28,16 @@ import GenericErrorBottomModal from "../../components/GenericErrorBottomModal";
 import KeyboardView from "../../components/KeyboardView";
 import LText from "../../components/LText";
 import NavigationScrollView from "../../components/NavigationScrollView";
-import RecipientInput from "../../components/RecipientInput";
 import RetryButton from "../../components/RetryButton";
 import {
   BaseComposite,
   StackNavigatorProps,
 } from "../../components/RootNavigator/types/helpers";
 import { SendFundsNavigatorStackParamList } from "../../components/RootNavigator/types/SendFundsNavigator";
-import sendRecipientFieldsByFamily from "../../generated/SendRecipientFields";
-import SupportLinkError from "../../components/SupportLinkError";
-import TranslatedError from "../../components/TranslatedError";
 import { ScreenName } from "../../const";
 import { accountScreenSelector } from "../../reducers/accounts";
+import DomainServiceRecipientRow from "./DomainServiceRecipientRow";
+import RecipientRow from "./RecipientRow";
 
 const withoutHiddenError = (error: Error): Error | null =>
   error instanceof RecipientRequired ? null : error;
@@ -51,7 +53,20 @@ export default function SendSelectRecipient(props: Props) {
   const { navigation, route } = props;
   const { colors } = useTheme();
   const { t } = useTranslation();
+
   const { account, parentAccount } = useSelector(accountScreenSelector(route));
+  invariant(account, "account is missing");
+
+  const mainAccount = getMainAccount(account, parentAccount);
+  const { enabled: isDomainResolutionEnabled, params } =
+    useFeature<{
+      supportedCurrencyIds: CryptoCurrencyId[];
+    }>("domainInputResolution") || {};
+  const isCurrencySupported =
+    params?.supportedCurrencyIds?.includes(
+      mainAccount.currency.id as CryptoCurrencyId,
+    ) || false;
+
   const { transaction, setTransaction, status, bridgePending, bridgeError } =
     useBridgeTransaction(() => ({
       account,
@@ -60,6 +75,7 @@ export default function SendSelectRecipient(props: Props) {
   const shouldSkipAmount =
     transaction?.family === "ethereum" &&
     transaction?.mode === "erc721.transfer";
+  const [value, setValue] = useState<string>("");
 
   const isNftSend = isNftTransaction(transaction);
   // handle changes from camera qr code
@@ -94,8 +110,9 @@ export default function SendSelectRecipient(props: Props) {
           recipient,
         }),
       );
+      setValue(recipient);
     },
-    [account, parentAccount, setTransaction, transaction],
+    [account, parentAccount, setTransaction, transaction, setValue],
   );
   // FIXME: PROP IS NOT USED. REMOVE ?
   // const clear = useCallback(() => onChangeText(""), [onChangeText]);
@@ -220,36 +237,26 @@ export default function SendSelectRecipient(props: Props) {
                 ]}
               />
             </View>
-            <View style={styles.inputWrapper}>
-              <RecipientInput
-                onPaste={async () => {
-                  const text = await Clipboard.getString();
-                  onChangeText(text);
-                }}
-                onFocus={onRecipientFieldFocus}
+            {isDomainResolutionEnabled && isCurrencySupported ? (
+              <DomainServiceRecipientRow
                 onChangeText={onChangeText}
-                // FIXME: onInputCleared PROP DOES NOT EXISTS
-                // onInputCleared={clear}
-                value={transaction.recipient}
+                value={value}
+                onRecipientFieldFocus={onRecipientFieldFocus}
+                account={account}
+                parentAccount={parentAccount}
+                transaction={transaction}
+                setTransaction={setTransaction}
+                error={error}
+                warning={warning}
               />
-            </View>
-            {(error || warning) && (
-              <>
-                <LText
-                  style={[styles.warningBox]}
-                  color={error ? "alert" : warning ? "orange" : "darkBlue"}
-                >
-                  <TranslatedError error={error || warning} />
-                </LText>
-                <View
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                  }}
-                >
-                  <SupportLinkError error={error} type="alert" />
-                </View>
-              </>
+            ) : (
+              <RecipientRow
+                onChangeText={onChangeText}
+                onRecipientFieldFocus={onRecipientFieldFocus}
+                transaction={transaction}
+                warning={warning}
+                error={error}
+              />
             )}
             {CustomSendRecipientFields ? (
               <CustomSendRecipientFields
@@ -330,19 +337,6 @@ const styles = StyleSheet.create({
     flex: 1,
     borderBottomWidth: 1,
     marginHorizontal: 8,
-  },
-  warningBox: {
-    marginTop: 8,
-    ...Platform.select({
-      android: {
-        marginLeft: 6,
-      },
-    }),
-  },
-  inputWrapper: {
-    marginTop: 32,
-    flexDirection: "row",
-    alignItems: "center",
   },
   button: {
     flex: 1,

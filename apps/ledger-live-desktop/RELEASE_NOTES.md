@@ -1,3 +1,34 @@
+# 2.55.0
+
+This release includes performance improvements and minor bug fixes. 
+
+# 2.54.0
+
+### 🚀 Features
+
+- Starting today, you can manage 100+ tokens on Cronos, Fantom, and Moonbeam networks with Ledger Live. 
+- Ledger Live will no longer display zero-amount transactions in the transaction history. If you want to view zero-amount transactions nonetheless, navigate to Settings -> Accounts -> Zero-amount transactions and flip the toggle switch to the on position.
+
+### 🐛 Fixes
+
+- We squished the bug that was triggering an error message instead of undelegating ATOM. 
+
+# 2.53.2
+
+### 🐛 Fixes
+
+- Some users reported a long sync time when adding an Ethereum account. We've fixed this.
+
+# 2.53.1
+
+### 🌷 Improvements
+
+- Following the latest TRON network update, we've raised the fee limit to 30 TRC to prevent failed transactions.
+
+### 🐛 Fixes
+
+- Accessing Ledger Live from market.ledger.com would cause the app to crash. We've fixed this.
+
 # 2.52.0
 
 ### 🚀 Features

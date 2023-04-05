@@ -18,9 +18,7 @@ import { mergeMap } from "rxjs/operators";
 import { Observable, from, of } from "rxjs";
 import { FeeNotLoaded } from "@ledgerhq/errors";
 import { LoadConfig } from "@ledgerhq/hw-app-eth/lib/services/types";
-import { byContractAddressAndChainId } from "@ledgerhq/hw-app-eth/erc20";
 import { ledgerService as ethLedgerServices } from "@ledgerhq/hw-app-eth";
-import { erc20SignatureInfo } from "./modules/erc20";
 import { apiForCurrency } from "../../api/Ethereum";
 import { withDevice } from "../../hw/deviceAccess";
 import type { Transaction } from "./types";
@@ -33,6 +31,7 @@ import {
   EIP1559ShouldBeUsed,
   toTransactionRaw,
 } from "./transaction";
+import { padHexString } from "./logic";
 
 export const signOperation = ({
   account,
@@ -83,14 +82,17 @@ export const signOperation = ({
                 throw new FeeNotLoaded();
               }
 
-              const { ethTxObject, tx, common, fillTransactionDataResult } =
-                buildEthereumTx(account, transaction, nonce);
+              const { ethTxObject, tx, common } = buildEthereumTx(
+                account,
+                transaction,
+                nonce
+              );
               const to = eip55.encode((tx.to || "").toString());
               const value = new BigNumber(
                 "0x" + (tx.value.toString("hex") || "0")
               );
 
-              // rawData Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
+              // rawData Format: type 0 `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
               // EIP1559 Format: type 2 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, destination, amount, data, access_list, v, r, s])
               const txHex = (() => {
                 if (EIP1559ShouldBeUsed(account.currency)) {
@@ -98,7 +100,11 @@ export const signOperation = ({
                 }
 
                 const rawData = tx.raw();
-                rawData[6] = Buffer.from([common.chainIdBN().toNumber()]);
+                rawData[6] = Buffer.from(
+                  padHexString(common.chainIdBN().toString("hex")),
+                  "hex"
+                );
+
                 return Buffer.from(encode(rawData)).toString("hex");
               })();
 
@@ -117,6 +123,10 @@ export const signOperation = ({
                 ? m.getResolutionConfig(account, transaction)
                 : {};
 
+              if (transaction.recipientDomain?.type === "forward") {
+                resolutionConfig.domains = [transaction.recipientDomain];
+              }
+
               log("rawtx", txHex);
 
               const resolution = await ethLedgerServices.resolveTransaction(
@@ -127,27 +137,6 @@ export const signOperation = ({
 
               const eth = new Eth(transport);
               eth.setLoadConfig(loadConfig);
-
-              // FIXME this part is still required for compound to correctly display info on the device
-              const addrs =
-                (fillTransactionDataResult &&
-                  fillTransactionDataResult.erc20contracts) ||
-                [];
-
-              const erc20SignatureBlob = await erc20SignatureInfo(loadConfig);
-
-              for (const addr of addrs) {
-                const tokenInfo = byContractAddressAndChainId(
-                  addr,
-                  account.currency.ethereumLikeInfo?.chainId || 0,
-                  erc20SignatureBlob
-                );
-
-                if (tokenInfo) {
-                  await eth.provideERC20TokenInformation(tokenInfo);
-                  if (cancelled) return;
-                }
-              }
 
               o.next({ type: "device-signature-requested" });
               const result = await eth.signTransaction(

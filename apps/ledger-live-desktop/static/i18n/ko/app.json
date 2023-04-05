@@ -606,6 +606,28 @@
       "creditedAmount" : "적립 금액"
     }
   },
+  "stake" : {
+    "noFundsModal" : {
+      "title" : "구매, 스왑 또는 수령",
+      "text" : "스테이킹에 가용한 {{coin}} 잔액이 충분하지 않습니다",
+      "description" : "자금이 부족하신가요? 걱정하지 마세요. Ledger Live에서 바로 암호화폐 구매, 스왑, 또는 수령이 가능합니다.",
+      "options" : {
+        "buy" : {
+          "title" : "구매",
+          "body" : "신뢰할 수 있는 공급자를 통한 구매"
+        },
+        "swap" : {
+          "title" : "스왑",
+          "label" : "인기 있는",
+          "body" : "암호화폐 간 안전한 전환"
+        },
+        "receive" : {
+          "title" : "수령",
+          "body" : "본인 지갑에서 암호화폐 수령"
+        }
+      }
+    }
+  },
   "lottieDebugger" : {
     "buttonTitle" : "테스트"
   },
@@ -797,12 +819,44 @@
       "redelegation" : {
         "title" : "알고 계셨나요?",
         "description" : "Ledger 검증인의 스테이킹 수수료는 귀하의 현 검증인보다 저렴합니다",
-        "cta" : "Ledger로 재위임"
+        "cta" : "Ledger로 재위임",
+        "linkText" : "재위임이란 무엇이며 시간이 얼마나 소요되나요?",
+        "solana" : {
+          "title" : "알고 계셨나요?",
+          "description" : "Ledger 수수료는 검증인 수수료보다 낮습니다. 이 프로세스는 최대 4일이 소요될 수 있습니다."
+        },
+        "near" : {
+          "title" : "알고 계셨나요?",
+          "description" : "Ledger 수수료는 검증인 수수료보다 낮습니다. 이 프로세스는 최대 65시간이 소요될 수 있습니다."
+        },
+        "elrond" : {
+          "title" : "알고 계셨나요?",
+          "description" : "Ledger 수수료는 검증인 수수료보다 낮습니다. 이 프로세스는 최대 10일이 소요될 수 있습니다."
+        }
       },
       "delegation" : {
         "title" : "알고 계셨나요?",
         "description" : "Ledger 검증인은 {{asset}} 스테이킹 서비스를 {{commission}}%의 커미션으로 제공합니다.",
-        "cta" : "Ledger를 통한 스테이킹"
+        "cta" : "Ledger를 통한 스테이킹",
+        "linkText" : "자세히 알아보기",
+        "ethereum" : {
+          "lido" : {
+            "title" : "알고 계셨나요?",
+            "description" : "Lido를 통해 이더리움을 스테이킹하고 매일 보상을 받으세요. 락업 기간 없음. 최소 예치금 없음.",
+            "cta" : "리도(Lido)를 통한 스테이킹"
+          },
+          "kiln" : {
+            "title" : "호들만으로는 부족합니다. 보유한 ETH로 더 큰 수익을 올려보세요",
+            "description" : "ETH를 32개 이상 보유하고 계시나요? Kiln을 통해 ETH를 안전하게 스테이킹하여 불로소득을 올려보세요.",
+            "cta" : "킬른(Kiln)으로 스테이킹"
+          }
+        },
+        "near" : {
+          "description" : "Ledger by Figment 검증인으로 NEAR를 스테이킹하세요. Ledger의 타협 없는 강력한 보안이 자산을 안전하게 보호합니다."
+        },
+        "elrond" : {
+          "description" : "Ledger by Figment 검증인으로 ELROND를 스테이킹하세요. Ledger의 타협 없는 강력한 보안이 자산을 안전하게 보호합니다."
+        }
       }
     }
   },
@@ -1099,6 +1153,7 @@
       "receive" : "수령",
       "send" : "전송",
       "swap" : "스왑",
+      "stake" : "스테이킹",
       "buy" : "구매",
       "sell" : "판매",
       "edit" : "계정 편집",
@@ -1364,7 +1419,22 @@
     },
     "recentActivity" : "최신 운영",
     "totalBalance" : "총 잔액",
-    "transactionsPendingConfirmation" : "일부 트랜잭션이 아직 확인되지 않았습니다. 트랜잭션이 확인된 후 잔액에 반영되며 사용이 가능합니다."
+    "transactionsPendingConfirmation" : "일부 트랜잭션이 아직 확인되지 않았습니다. 트랜잭션이 확인된 후 잔액에 반영되며 사용이 가능합니다.",
+    "featuredButtons" : {
+      "buySell" : {
+        "title" : "매수 / 매도",
+        "description" : "신뢰할 수 있는 공급자와 거래"
+      },
+      "swap" : {
+        "title" : "스왑",
+        "description" : "암호화폐 간 안전한 전환",
+        "label" : "인기 있는"
+      },
+      "earn" : {
+        "title" : "스테이킹",
+        "description" : "Ledger와 함께 암호화폐 수익 실현"
+      }
+    }
   },
   "currentAddress" : {
     "title" : "현재 주소",
@@ -1776,7 +1846,7 @@
       "used" : "사용됨",
       "firmwareAvailable" : "오래된 펌웨어:",
       "firmwareUpToDate" : "펌웨어가 최신입니다:",
-      "genuine" : "정품 장치입니다",
+      "genuine" : "귀하의 장치는 정품입니다",
       "incomplete" : "일부 앱이 인식되지 않았습니다. 제거 후 다시 설치하세요."
     },
     "applist" : {
@@ -2091,16 +2161,16 @@
           "description" : "신뢰할 수 있는 Ledger 검증인을 통해 ATOM을 스테이킹하세요. Ledger의 타협 없는 확실한 보안이 자산을 안전하게 보호합니다."
         },
         "osmo" : {
-          "title" : "OSMO를 성장시켜보세요. Ledger를 통해 Figment로 스테이킹.",
-          "description" : "Ledger를 통해 Figment로 검증인을 통해 OSMO를 스테이킹하세요. 최저 수수료와 슬래싱에 대한 보장이 제공됩니다!"
+          "title" : "OSMO를 성장시켜보세요. Ledger by Figment로 스테이킹.",
+          "description" : "Ledger by Figment로 검증인을 통해 OSMO를 스테이킹하세요. 최저 수수료와 슬래싱에 대한 보장이 제공됩니다!"
         },
         "solana" : {
-          "title" : "SOL을 성장시켜보세요. Ledger를 통해 Figment로 스테이킹.",
-          "description" : "Ledger를 통해 Figment로 검증인을 통해 SOL을 스테이킹하세요. Ledger의 타협 없는 확실한 보안이 자산을 안전하게 보호합니다."
+          "title" : "SOL을 성장시켜보세요. Ledger by Figment로 스테이킹.",
+          "description" : "Ledger by Figment로 검증인을 통해 SOL을 스테이킹하세요. Ledger의 타협 없는 확실한 보안이 자산을 안전하게 보호합니다."
         },
         "celo" : {
-          "title" : "CELO를 성장시켜보세요. Ledger를 통해 Figment로 스테이킹.",
-          "description" : "Ledger를 통해 Figment로 검증인을 통해 CELO를 스테이킹하세요. Ledger의 타협 없는 확실한 보안을 통해 슬래싱에 완벽히 대비하세요."
+          "title" : "CELO를 성장시켜보세요. Ledger by Figment로 스테이킹.",
+          "description" : "Ledger by Figment로 검증인을 통해 CELO를 스테이킹하세요. Ledger의 타협 없는 확실한 보안을 통해 슬래싱에 완벽히 대비하세요."
         }
       }
     }
@@ -2198,6 +2268,13 @@
     },
     "switchButton" : "{{language}}로 전환",
     "no" : "다음을 선호하지 않습니다:"
+  },
+  "deviceRename" : {
+    "title" : "{{ productName }} 이름 변경",
+    "chooseName" : "이름을 선택하세요",
+    "placeholder" : "Tony의 Stax",
+    "remainingCharacters" : "{{ remainingCharacters }}개 문자 남음",
+    "renamed" : "{{ productName }} 이름이 “{{ name }}”로 변경되었습니다 "
   },
   "deviceLocalization" : {
     "language" : "언어",
@@ -2809,7 +2886,7 @@
   "cosmos" : {
     "delegation" : {
       "emptyState" : {
-        "description" : "자산을 위임하여 ATOM 보상을 받을 수 있습니다.",
+        "description" : "자산을 위임하여 {{currencyTicker}} 보상을 받을 수 있습니다.",
         "info" : "위임은 어떤 원리인가요?",
         "delegation" : "보상 받기"
       },
@@ -2834,8 +2911,8 @@
         "title" : "위임하기",
         "steps" : {
           "starter" : {
-            "description" : "ATOM 자산을 검증인에게 위임하여 보상을 받을 수 있습니다.",
-            "bullet" : ["위임된 자산의 소유권은 귀하가 갖습니다", "Ledger 장치를 이용하여 위임하세요", "자산은 위임 해제 21일 후에 이용 가능합니다"],
+            "description" : "{{currencyTicker}} 암호화폐를 검증인에게 위임하여 보상을 받을 수 있습니다.",
+            "bullet" : ["위임된 자산의 소유권은 귀하가 갖습니다", "Ledger 장치를 이용하여 위임하세요", "자산은 위임 해제 {{numberOfDays}}일 후에 이용 가능합니다"],
             "warning" : {
               "description" : "검증인을 현명하게 선택하세요. 검증인이 부적절한 행동을 하는 경우 위임된 자산의 일부가 영구 손실될 수 있습니다."
             }
@@ -2912,7 +2989,7 @@
             "currentDelegation" : "현재 위임",
             "newDelegation" : "새로운 위임",
             "chooseValidator" : "검증인 선택",
-            "warning" : "다시 마음이 바뀌어 새로운 검증인 교체하고 재위임하려면 <0>21 days</0>일을 기다려야 합니다",
+            "warning" : "다시 마음이 바뀌어 새로운 검증인 교체하고 재위임하려면 <0>{{numberOfDays}}일</0>을 기다려야 합니다",
             "amountLabel" : "재위임할 금액"
           },
           "device" : {
@@ -2939,8 +3016,8 @@
         "steps" : {
           "amount" : {
             "title" : "금액",
-            "subtitle" : "위임 해제 절차 완료까지 <0>21일</0>이 소요됩니다.",
-            "warning" : "보상은 즉시 현금화할 수 있습니다. 위임 해제 금액은 <0>21일 시간 잠금</0> 후에 가용 잔금으로 되돌아옵니다.",
+            "subtitle" : "위임 해제 절차 완료까지 <0>{{numberOfDays}}일</0>이 소요됩니다.",
+            "warning" : "보상은 즉시 현금화할 수 있습니다. 위임 해제 금액은 <0>{{numberOfDays}}일 시간 잠금</0> 후에 이용 가능한 잔액으로 되돌아옵니다.",
             "fields" : {
               "validator" : "검증인",
               "amount" : "위임 해제 금액"
@@ -3024,176 +3101,6 @@
             "success" : {
               "title" : "보상을 성공적으로 수령했습니다!",
               "text" : "보상이 가용 잔금에 추가되었습니다",
-              "cta" : "세부사항 보기"
-            },
-            "broadcastError" : "트랜잭션이 실패한 것 같습니다. 잠시 기다려 트랜잭션 내역을 확인한 후 다시 시도하세요."
-          }
-        }
-      }
-    }
-  },
-  "osmosis" : {
-    "account" : {
-      "subHeader" : {
-        "cardTitle" : "Figment 기반",
-        "moreInfo" : "자세한 정보",
-        "drawerTitle" : "Figment 기반",
-        "title" : "이제 Ledger Live에서 OSMO 토큰을 사용할 수 있습니다.",
-        "description" : "이제 Ledger Live로 OSMO 토큰을 관리하고 안전하게 보호할 수 있습니다.",
-        "description2" : "OSMO 토큰은 OSMO 체인의 네이티브 토큰이며 트랜잭션과 스테이킹을 비롯하여 앞으로 공개될 다양한 기능에 사용됩니다.",
-        "website" : "Figment 기반"
-      }
-    },
-    "memo" : "메모",
-    "memoPlaceholder" : "선택 사항",
-    "memoWarningText" : "메모 기능을 사용할 때는 관련 정보를 수령인과 신중하게 확인하세요",
-    "delegation" : {
-      "emptyState" : {
-        "description" : "자산을 위임하여 OSMO 보상을 받을 수 있습니다.",
-        "info" : "위임은 어떤 원리인가요?",
-        "delegation" : "보상 받기"
-      },
-      "commission" : "커미션",
-      "totalStake" : "총 스테이킹",
-      "claimRewards" : "보상 수령",
-      "header" : "위임",
-      "noRewards" : "이용 가능한 보상이 없습니다",
-      "delegate" : "추가",
-      "undelegate" : "위임 해제",
-      "redelegate" : "재위임",
-      "redelegateDisabledTooltip" : "<0>{{days}}</0>에 재위임할 수 있습니다",
-      "redelegateMaxDisabledTooltip" : "한 번에 <0>7</0>명 이상의 검증인을 재위임할 수 없습니다",
-      "undelegateDisabledTooltip" : "한 번에 <0>7</0>명 이상의 검증인을 위임 해제할 수 없습니다",
-      "reward" : "보상 수령",
-      "currentDelegation" : "위임됨: <0>{{amount}}</0>",
-      "estYield" : "추산 수익",
-      "activeTooltip" : "위임된 금액이 보상을 생성합니다",
-      "inactiveTooltip" : "위임되지 않은 금액은 보상을 생성하지 않습니다",
-      "minSafeWarning" : "자금이 부족합니다",
-      "flow" : {
-        "title" : "위임하기",
-        "steps" : {
-          "starter" : {
-            "description" : "OSMO 암호화폐를 검증인에게 위임하여 보상을 받을 수 있습니다.",
-            "bullet" : ["위임된 자산의 소유권은 귀하가 갖습니다", "Ledger 장치를 이용하여 위임하세요", "자산은 위임 해제 14일 후에 이용 가능합니다"],
-            "warning" : {
-              "description" : "검증인을 현명하게 선택하세요. 검증인이 부적절한 행동을 하는 경우 위임된 자산의 일부가 영구 손실될 수 있습니다."
-            }
-          },
-          "amount" : {
-            "title" : "금액"
-          },
-          "validator" : {
-            "title" : "검증인"
-          },
-          "connectDevice" : {
-            "title" : "장치"
-          },
-          "confirmation" : {
-            "title" : "확인",
-            "success" : {
-              "title" : "자산을 성공적으로 위임했습니다",
-              "text" : "블록체인이 트랜잭션 검증을 완료하면 계정 잔금이 업데이트됩니다.",
-              "cta" : "세부사항 보기"
-            },
-            "broadcastError" : "트랜잭션이 실패한 것 같습니다. 잠시 기다려 트랜잭션 내역을 확인한 후 다시 시도하세요."
-          }
-        }
-      }
-    },
-    "claimRewards" : {
-      "flow" : {
-        "title" : "보상 수령",
-        "steps" : {
-          "claimRewards" : {
-            "title" : "보상",
-            "compound" : "컴파운드",
-            "claim" : "현금화",
-            "compoundOrClaim" : "컴파운드 또는 현금화",
-            "compoundDescription" : "위임된 금액에 보상이 추가됩니다",
-            "claimDescription" : "보상이 이용 가능 잔금에 추가됩니다",
-            "compoundInfo" : "<0>{{amount}}</0>의 보상을 획득했습니다. '계속'을 클릭하면, 바로 보상을 수령하고 동일한 검증인에게 자동 위임합니다.",
-            "claimInfo" : "아래 검증인으로부터 <0>{{amount}}</0>의 수익을 획득했습니다. '계속'을 클릭하면, 바로 보상을 수령하고 이용 가능 잔액에 자동 추가됩니다.",
-            "selectLabel" : "위임 선택"
-          },
-          "connectDevice" : {
-            "title" : "장치"
-          },
-          "confirmation" : {
-            "title" : "확인",
-            "label" : "확인",
-            "success" : {
-              "title" : "보상을 성공적으로 현금화 했습니다",
-              "titleCompound" : "성공적으로 보상에 복리를 적용했습니다.",
-              "text" : "보상이 이용 가능 잔액에 추가되었습니다",
-              "textCompound" : "귀하의 보상이 <0>{{amount}}</0>자동으로 <0>{{validator}}</0>에게 위임되었습니다",
-              "cta" : "세부사항 보기"
-            },
-            "pending" : {
-              "title" : "트랜잭션 브로드캐스팅 중..."
-            },
-            "broadcastError" : "트랜잭션이 실패한 것 같습니다. 잠시 기다려 트랜잭션 내역을 확인한 후 다시 시도하세요."
-          }
-        }
-      }
-    },
-    "redelegation" : {
-      "flow" : {
-        "title" : "자산 재위임",
-        "steps" : {
-          "starter" : {
-            "title" : "재위임",
-            "description" : "재위임 기능을 이용해 손쉽게 검증인을 변경하세요. 하지만 재위임 시 14일 타임 락이 적용되기 때문에, 다시 변경을 원하는 경우 14일을 기다려야 합니다.",
-            "warning" : "검증인을 현명하게 선택하세요. 검증인이 부적절한 행동을 하는 경우 위임된 자산의 일부가 영구 손실될 수 있습니다. 최대 <0>7개의 대기 중 재위임</0>이 있을 수 있습니다.",
-            "howDelegationWorks" : "위임은 어떤 원리인가요?"
-          },
-          "validators" : {
-            "title" : "검증인",
-            "currentDelegation" : "현재 위임",
-            "newDelegation" : "새로운 위임",
-            "chooseValidator" : "검증인 선택",
-            "warning" : "다시 마음이 바뀌어 새로운 검증인 교체하고 재위임하려면 <0>14일</0>을 기다려야 합니다",
-            "amountLabel" : "재위임할 금액"
-          },
-          "device" : {
-            "title" : "장치"
-          },
-          "confirmation" : {
-            "title" : "확인",
-            "success" : {
-              "title" : "귀하의 자산을 성공적으로 재위임했습니다",
-              "text" : "블록체인이 트랜잭션 확인을 마치고 나면 재위임이 업데이트됩니다.",
-              "cta" : "세부사항 보기"
-            },
-            "broadcastError" : "트랜잭션이 실패한 것 같습니다. 잠시 기다려 트랜잭션 내역을 확인한 후 다시 시도하세요."
-          }
-        }
-      }
-    },
-    "undelegation" : {
-      "header" : "위임 해제",
-      "headerTooltip" : "141일 타임 락이 끝나면 이용할 수 있습니다",
-      "inactiveTooltip" : "위임되지 않은 금액은 보상을 생성하지 않습니다",
-      "flow" : {
-        "title" : "위임 해제 자산",
-        "steps" : {
-          "amount" : {
-            "title" : "금액",
-            "subtitle" : "위임 해제 절차 완료까지 <0>14일</0>이 소요됩니다.",
-            "warning" : "보상은 즉시 현금화할 수 있습니다. 위임 해제 금액은 <0>14일 시간 잠금 후에 가용 잔금으로 되돌아옵니다.",
-            "fields" : {
-              "validator" : "검증인",
-              "amount" : "위임 해제 금액"
-            }
-          },
-          "device" : {
-            "title" : "장치"
-          },
-          "confirmation" : {
-            "title" : "확인",
-            "success" : {
-              "title" : "귀하의 자산을 성공적으로 위임 해제했습니다.",
-              "description" : "<0>{{amount}}</0>가 <0>{{validator}}</0>로부터 위임 해제되었습니다",
               "cta" : "세부사항 보기"
             },
             "broadcastError" : "트랜잭션이 실패한 것 같습니다. 잠시 기다려 트랜잭션 내역을 확인한 후 다시 시도하세요."
@@ -3664,7 +3571,7 @@
           },
           "validator" : {
             "title" : "검증인",
-            "ledgerByFigmentTC" : "Figment 기반 Ledger 이용약관"
+            "ledgerByFigmentTC" : "Ledger by Figment 이용약관"
           },
           "connectDevice" : {
             "title" : "장치"
@@ -3893,6 +3800,9 @@
       "catalogRampServerDesc" : "다중 거래 공급자 간 전환",
       "enablePlatformDevTools" : "플랫폼 개발자 도구 사용",
       "enablePlatformDevToolsDesc" : "개방형 플랫폼 앱 개발자 도구 창 사용",
+      "customLockScreen" : "맞춤식 잠금 화면 자산",
+      "customLockScreenDesc" : "맞춤식 잠금 화면 그래픽 자산 디버그",
+      "customLockScreenCTA" : "실행",
       "featureFlagsTitle" : "Ledger Live에서 사용되는 정의된 기능 플래그",
       "featureFlagsDesc" : "앱을 다시 실행하면 재정의된 값이 다시 설정됩니다. 유효한 JSON 문자열만 허용됩니다.",
       "featureFlagsEdit" : "편집",
@@ -3908,7 +3818,9 @@
       "runLocalAppDeleteButton" : "삭제",
       "runLocalAppOpenButton" : "열기",
       "enableLearnStagingUrl" : "페이지 스테이징 URL 알아보기",
-      "enableLearnStagingUrlDesc" : "학습 페이지의 스테이징 URL을 활성화합니다."
+      "enableLearnStagingUrlDesc" : "학습 페이지의 스테이징 URL을 활성화합니다.",
+      "openOnboardingAppInstallDebug" : "온보딩 앱 설치 디버그 화면 열기",
+      "openOnboardingAppInstallDebugDesc" : "동기화 온보딩 앱 설치 단계의 구성 요소가 있는 화면을 엽니다."
     },
     "currencies" : {
       "selectPlaceholder" : "암호화 자산 선택",
@@ -3955,10 +3867,6 @@
         "experimentalCurrencies" : {
           "title" : "실험 통합",
           "description" : "사용 가능한 실험 암호화폐 통합을 사용합니다."
-        },
-        "experimentalExecutionOnRenderer" : {
-          "title" : "실험 네트워킹",
-          "description" : "실험 네트워킹을 통해 VPN으로 Ledger Live 경험을 최적화하세요. 현재 사용 중인 VPN이 시스템 오류를 일으키는 경우에만 활성화하세요."
         },
         "experimentalLanguages" : {
           "title" : "번역 테스팅",
@@ -4074,6 +3982,10 @@
       "fullNode" : {
         "title" : "비트코인 풀 노드 연결",
         "desc" : "비트코인 풀 노드를 설정해 Ledger의 탐색기를 사용하지 않고 트랜잭션을 동기화하고 전송하세요."
+      },
+      "filterTokenOperationsZeroAmount" : {
+        "title" : "값이 0 인 경우 토큰 트랜잭션을 숨깁니다",
+        "desc" : "값이 없는 토큰 트랜잭션을 숨기는 것은 ETH, 폴리곤, BSC, 트론에 대한 잠재적인 주소 포이즌 공격을 방지 할 수 있습니다..."
       }
     }
   },
@@ -4146,7 +4058,7 @@
       "tr" : "터키어",
       "ja" : "일본어",
       "ko" : "한국어",
-      "pt" : "포르투갈어"
+      "pt" : "포르투갈어(브라질)"
     }
   },
   "theme" : {
@@ -5488,7 +5400,7 @@
       "description" : "30초 이내에 서명이 적용되어야 합니다. 다시 시도해 주세요."
     },
     "TronNotEnoughEnergy" : {
-      "title" : "에너지가 필요한 것보다 낮습니다. 수수료로 최대 20TRX를 지불할 수 있습니다."
+      "title" : "에너지가 필요한 것보다 낮습니다. 수수료로 최대 50 TRX를 지불할 수 있습니다."
     },
     "PairingFailed" : {
       "title" : "페어링 실패",
@@ -5653,6 +5565,10 @@
       "title" : "파일 이미지 로딩 실패",
       "description" : "다른 이미지로 다시 시도하세요"
     },
+    "ImageLoadFromNftError" : {
+      "title" : "NFT 이미지 로딩 실패",
+      "description" : "다른 NFT로 다시 시도하세요"
+    },
     "ImageDownloadError" : {
       "title" : "이미지 다운로드 실패",
       "description" : "다른 이미지로 다시 시도하세요"
@@ -5725,6 +5641,13 @@
       "descriptionWithProductName" : "먼저 {{ productName }} 장치 설정이 필요합니다.\n설정 절차를 안내해드리겠습니다.",
       "goToOnboardingButton" : "내 장치 설정",
       "goToOnboardingButtonWithProductName" : "내 {{ productName }} 설정"
+    },
+    "EtherscanAPIError" : {
+      "title" : "트랜잭션을 가져오지 못했습니다",
+      "description" : "탐색기에서 예상하지 못한 오류가 발생했습니다. 나중에 다시 시도해 주세요"
+    },
+    "GasEstimationError" : {
+      "title" : "가스비를 추정하지 못했습니다"
     }
   },
   "cryptoOrg" : {
@@ -5758,12 +5681,19 @@
   },
   "customImage" : {
     "title" : "맞춤 가능한 잠금 화면",
+    "managerCTA" : "잠금 화면 사진",
     "steps" : {
       "choose" : {
         "stepLabel" : "이미지 선택",
         "description" : "(...)로 설정할 이미지 선택",
         "pickFromNftGallery" : "내 NFT 갤러리에서 선택",
-        "upload" : "내 컴퓨터에서 업로드"
+        "myNfts" : "내 NFT",
+        "upload" : "내 컴퓨터에서 업로드",
+        "chooseNft" : "NFT 선택하기",
+        "selectNft" : "NFT 선택",
+        "previousSelectNft" : "뒤로",
+        "nftEmptyStateTitle" : "아직 표시할 NFT가 없습니다",
+        "nftEmptyStateDescription" : "지갑에 NFT를 추가하고 시작하세요."
       },
       "adjust" : {
         "stepLabel" : "이미지 조정",
@@ -5789,5 +5719,37 @@
     },
     "customImageSet" : "잠금화면을 설정하세요",
     "finishCTA" : "완료"
+  },
+  "onboardingAppInstall" : {
+    "restore" : {
+      "title" : "{{deviceName}}에서와 동일한 앱을 설치하시겠어요?",
+      "titleNoDeviceName" : "이전 Ledger 장치에서와 동일한 앱을 설치하시겠어요?",
+      "subtitle" : "언제든지 앱을 설치하거나 제거할 수 있습니다.",
+      "installCTA" : "애플리케이션 복구",
+      "skipCTA" : "나중에 할게요"
+    },
+    "default" : {
+      "title" : "{{ productName }} 제품은 앱을 사용하여 안전한 블록체인 트랜잭션을 지원합니다",
+      "subtitle" : "기본 앱 세트를 다운로드를 권장드립니다. 이후 추가로 다운로드할 수 있습니다.",
+      "installCTA" : "애플리케이션 설치",
+      "skipCTA" : "나중에 할게요"
+    },
+    "progress" : {
+      "loading" : "로딩 중...",
+      "resolving" : "의존성 해결",
+      "progress" : "앱 설치 중 {{progress}}%",
+      "disclaimer" : "Ledger Live에서 언제든지 앱을 추가하거나 제거하세요."
+    },
+    "cancelled" : {
+      "title" : "{{productName}}에서 앱 설치가 취소되었습니다",
+      "subtitle" : "{{productName}}에서 암호화폐 및 NFT 트랜잭션을 승인하려면 블록체인 앱이 필요합니다.",
+      "installCTA" : "지금 설치",
+      "skipCTA" : "나중에 할게요"
+    },
+    "locked" : {
+      "title" : "{{productName}} 장치가 잠금 상태입니다",
+      "subtitle" : "{{productName}}의 잠금을 해제하고 설치를 다시 시작하세요.",
+      "installCTA" : "설치 재시작"
+    }
   }
 }

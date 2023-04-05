@@ -9,6 +9,7 @@ import {
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { Trans } from "react-i18next";
 import { useTheme } from "@react-navigation/native";
+import { Flex } from "@ledgerhq/native-ui";
 import { counterValueCurrencySelector } from "../reducers/settings";
 import {
   useTrackingPairs,
@@ -19,7 +20,7 @@ import type { CurrencyUnitValueProps } from "./CurrencyUnitValue";
 import LText from "./LText";
 import Circle from "./Circle";
 import IconHelp from "../icons/Info";
-import BottomModal from "./BottomModal";
+import QueuedDrawer from "./QueuedDrawer";
 
 type Props = {
   // wich market to query
@@ -45,19 +46,21 @@ export const NoCountervaluePlaceholder = () => {
   return (
     <TouchableOpacity style={styles.placeholderButton} onPress={openModal}>
       <LText style={styles.placeholderLabel}>-</LText>
-      <BottomModal
-        isOpened={modalOpened}
+      <QueuedDrawer
+        isRequestingToBeOpened={modalOpened}
         onClose={closeModal}
         style={[styles.modal]}
       >
-        <Circle bg={colors.lightLive} size={70}>
-          <IconHelp size={30} color={colors.live} />
-        </Circle>
+        <Flex alignItems="center">
+          <Circle bg={colors.lightLive} size={70}>
+            <IconHelp size={30} color={colors.live} />
+          </Circle>
+        </Flex>
 
         <LText style={styles.modalTitle} semiBold>
           <Trans i18nKey="errors.countervaluesUnavailable.title" />
         </LText>
-      </BottomModal>
+      </QueuedDrawer>
     </TouchableOpacity>
   );
 };

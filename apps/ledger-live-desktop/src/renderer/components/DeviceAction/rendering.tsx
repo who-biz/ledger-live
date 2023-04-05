@@ -6,7 +6,7 @@ import { connect, useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
 import styled from "styled-components";
 import { TokenCurrency } from "@ledgerhq/types-cryptoassets";
-import { Transaction, TransactionStatus } from "@ledgerhq/live-common/generated/types";
+import { Transaction } from "@ledgerhq/live-common/generated/types";
 import { ExchangeRate, Exchange } from "@ledgerhq/live-common/exchange/swap/types";
 
 import { getProviderName, getNoticeType } from "@ledgerhq/live-common/exchange/swap/utils/index";
@@ -34,7 +34,6 @@ import { getDeviceAnimation } from "./animations";
 import { DeviceBlocker } from "./DeviceBlocker";
 import ErrorIcon from "~/renderer/components/ErrorIcon";
 import IconTriangleWarning from "~/renderer/icons/TriangleWarning";
-import SupportLinkError from "~/renderer/components/SupportLinkError";
 import { urls } from "~/config/urls";
 import CurrencyUnitValue from "~/renderer/components/CurrencyUnitValue";
 import ExternalLinkButton from "../ExternalLinkButton";
@@ -44,7 +43,6 @@ import ProgressCircle from "~/renderer/components/ProgressCircle";
 import CrossCircle from "~/renderer/icons/CrossCircle";
 import { getProviderIcon } from "~/renderer/screens/exchange/Swap2/utils";
 import CryptoCurrencyIcon from "~/renderer/components/CryptoCurrencyIcon";
-import { useGetSwapTrackingProperties } from "~/renderer/screens/exchange/Swap2/utils/index";
 import { context } from "~/renderer/drawers/Provider";
 import { track } from "~/renderer/analytics/segment";
 import { DrawerFooter } from "~/renderer/screens/exchange/Swap2/Form/DrawerFooter";
@@ -52,7 +50,6 @@ import {
   Theme,
   Button as ButtonV3,
   Flex,
-  Icons,
   Text,
   Log,
   ProgressLoader,
@@ -171,7 +168,7 @@ const ErrorDescription = styled(Text).attrs({
   user-select: text;
 `;
 
-const ButtonContainer = styled(Box).attrs(p => ({
+const ButtonContainer = styled(Box).attrs(() => ({
   mt: 25,
   horizontal: true,
 }))``;
@@ -314,7 +311,7 @@ export const InstallingApp = ({
   type: Theme["theme"];
   appName: string;
   progress: number;
-  request: any;
+  request: unknown;
   analyticsPropertyFlow?: string;
 }) => {
   const currency = request?.currency || request?.account?.currency;
@@ -631,10 +628,10 @@ export const renderError = ({
         <ErrorIcon size={44} error={error} />
       </Logo>
       <ErrorTitle>
-        <TranslatedError error={error} />
+        <TranslatedError error={error} noLink />
       </ErrorTitle>
       <ErrorDescription>
-        <TranslatedError error={error} field="description" /> <SupportLinkError error={error} />
+        <TranslatedError error={error} field="description" />
       </ErrorDescription>
       {list ? (
         <ErrorDescription>
@@ -698,14 +695,12 @@ export const renderInWrongAppForAccount = ({
 export const renderConnectYourDevice = ({
   modelId,
   type,
-  onRetry,
   onRepairModal,
   device,
   unresponsive,
 }: {
   modelId: DeviceModelId;
   type: Theme["theme"];
-  onRetry: () => void;
   onRepairModal: () => void;
   device: Device;
   unresponsive?: boolean;
@@ -762,7 +757,6 @@ export const renderSwapDeviceConfirmation = ({
   modelId,
   type,
   transaction,
-  status,
   exchangeRate,
   exchange,
   amountExpectedTo,
@@ -772,7 +766,6 @@ export const renderSwapDeviceConfirmation = ({
   modelId: DeviceModelId;
   type: Theme["theme"];
   transaction: Transaction;
-  status: TransactionStatus;
   exchangeRate: ExchangeRate;
   exchange: Exchange;
   amountExpectedTo?: string;
@@ -943,11 +936,8 @@ const ImageLoadingGenericWithoutStyleProvider: React.FC<{
   children?: React.ReactNode | undefined;
   top?: React.ReactNode | undefined;
   bottom?: React.ReactNode | undefined;
-  progress?: number;
-  backgroundPlaceholderText?: string;
   testId?: string;
-  src?: string | undefined;
-}> = ({ title, top, bottom, children, progress, backgroundPlaceholderText, testId, src }) => {
+}> = ({ title, top, bottom, children, testId }) => {
   return (
     <Flex
       flexDirection="column"
@@ -970,13 +960,7 @@ const ImageLoadingGenericWithoutStyleProvider: React.FC<{
         >
           {title}
         </Text>
-        <FramedImage
-          src={src}
-          loadingProgress={progress}
-          backgroundPlaceholderText={backgroundPlaceholderText}
-        >
-          {children}
-        </FramedImage>
+        {children}
       </Flex>
       <Flex flex={1} flexDirection="column" alignItems={"center"}>
         {bottom}
@@ -986,16 +970,29 @@ const ImageLoadingGenericWithoutStyleProvider: React.FC<{
 };
 const ImageLoadingGeneric = withV3StyleProvider(ImageLoadingGenericWithoutStyleProvider);
 
-export const renderImageLoadRequested = ({ t, device }: { t: TFunction; device: Device }) => {
+export const renderImageLoadRequested = ({
+  t,
+  device,
+  type,
+}: {
+  t: TFunction;
+  device: Device;
+  type: Theme["theme"];
+}) => {
   return (
     <ImageLoadingGeneric
       title={t("customImage.steps.transfer.allowPreview", {
         productName: device.deviceName || getDeviceModel(device.modelId)?.productName,
       })}
       progress={0}
-      backgroundPlaceholderText="load requested illustration placeholder"
       testId="device-action-image-load-requested"
-    />
+    >
+      <FramedImage
+        background={
+          <Animation animation={getDeviceAnimation(device.modelId, type, "allowManager", true)} />
+        }
+      />
+    </ImageLoadingGeneric>
   );
 };
 
@@ -1003,43 +1000,51 @@ export const renderLoadingImage = ({
   t,
   device,
   progress,
-  src,
+  source,
 }: {
   t: TFunction;
   progress?: number;
   device: Device;
-  src?: string | undefined;
+  source?: string | undefined;
 }) => {
   return (
     <ImageLoadingGeneric
       title={t("customImage.steps.transfer.loadingPicture", {
         productName: device.deviceName || getDeviceModel(device.modelId)?.productName,
       })}
-      src={src}
-      progress={progress}
-      backgroundPlaceholderText="image loading illustration placeholder"
       testId={`device-action-image-loading-${progress}`}
-    />
+    >
+      <FramedImage source={source} loadingProgress={progress} />
+    </ImageLoadingGeneric>
   );
 };
 
 export const renderImageCommitRequested = ({
   t,
   device,
-  src,
+  source,
+  type,
 }: {
   t: TFunction;
   device: Device;
-  src?: string | undefined;
+  source?: string | undefined;
+  type: Theme["theme"];
 }) => {
   return (
     <ImageLoadingGeneric
       title={t("customImage.steps.transfer.confirmPicture", {
         productName: device.deviceName || getDeviceModel(device.modelId)?.productName,
       })}
-      src={src}
-      backgroundPlaceholderText="commit requested illustration placeholder"
       testId="device-action-image-commit-requested"
-    />
+    >
+      <FramedImage
+        source={source}
+        background={
+          <Animation
+            animation={getDeviceAnimation(device.modelId, type, "confirmLockscreen", true)}
+          />
+        }
+      />
+    </ImageLoadingGeneric>
   );
 };

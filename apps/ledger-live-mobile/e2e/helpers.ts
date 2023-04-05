@@ -1,8 +1,12 @@
-import { readFileSync } from "fs";
-import { by, element, expect, waitFor } from "detox";
+import { by, device, element, waitFor } from "detox";
 import { Direction } from "react-native-modal";
 
 const DEFAULT_TIMEOUT = 60000;
+const BASE_DEEPLINK: string = "ledgerlive://";
+export const currencyParam: string = "?currency=";
+export const recipientParam: string = "&recipient=";
+export const amountParam: string = "&amount=";
+export const accountIdParam: string = "?accountId=";
 
 export function waitForElementByID(elementId: string, timeout?: number) {
   return waitFor(element(by.id(elementId)))
@@ -62,7 +66,7 @@ export async function typeTextByElement(
 export async function scrollToText(
   text: string,
   scrollViewId: string,
-  pixels: number = 100,
+  pixels = 100,
   direction: Direction = "down",
 ) {
   await waitFor(getElementByText(text))
@@ -82,4 +86,12 @@ export async function delay(ms: number) {
       resolve("delay complete");
     }, ms);
   });
+}
+
+export async function openDeeplink(link?: string) {
+  await device.openURL({ url: BASE_DEEPLINK + link });
+}
+
+export async function isAndroid() {
+  return device.getPlatform() == "android";
 }

@@ -7,7 +7,10 @@ import { AccountFilters, CurrencyFilters } from "./filters";
 import {
   Account as PlatformAccount,
   Currency as PlatformCurrency,
+  FAMILIES,
 } from "@ledgerhq/live-app-sdk";
+
+export const PLATFORM_FAMILIES = Object.values(FAMILIES);
 
 export type {
   Account as PlatformAccount,
@@ -48,6 +51,7 @@ export type AppPermission = {
 
 export type LiveAppManifest = {
   id: string;
+  author?: string;
   private?: boolean;
   name: string;
   url: string | URL;

@@ -2,6 +2,8 @@ import { BigNumber } from "bignumber.js";
 import type {
   BipPath,
   BipPathRaw,
+  CardanoAccount,
+  CardanoAccountRaw,
   CardanoOutput,
   CardanoOutputRaw,
   CardanoResources,
@@ -13,6 +15,7 @@ import type {
   Token,
   TokenRaw,
 } from "./types";
+import { Account, AccountRaw } from "@ledgerhq/types-live";
 
 function toTokenRaw({ assetName, policyId, amount }: Token): TokenRaw {
   return {
@@ -176,4 +179,24 @@ export function fromCardanoResourceRaw(
     utxos: r.utxos.map(fromCardanoOutputRaw),
     protocolParams: fromProtocolParamsRaw(r.protocolParams),
   };
+}
+
+export function assignToAccountRaw(
+  account: Account,
+  accountRaw: AccountRaw
+): void {
+  const cardanoAccount = account as CardanoAccount;
+  if (cardanoAccount.cardanoResources) {
+    (accountRaw as CardanoAccountRaw).cardanoResources = toCardanoResourceRaw(
+      cardanoAccount.cardanoResources
+    );
+  }
+}
+
+export function assignFromAccountRaw(accountRaw: AccountRaw, account: Account) {
+  const cardanoResourcesRaw = (accountRaw as CardanoAccountRaw)
+    .cardanoResources;
+  if (cardanoResourcesRaw)
+    (account as CardanoAccount).cardanoResources =
+      fromCardanoResourceRaw(cardanoResourcesRaw);
 }

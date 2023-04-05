@@ -519,7 +519,10 @@ export default function Tutorial({ useCase }: Props) {
        */
       const timeout: ReturnType<typeof setTimeout> = setTimeout(() => {
         if (history.location.pathname !== "/")
-          handleStartPostOnboarding(connectedDevice.modelId, true, () => history.push("/"));
+          handleStartPostOnboarding({
+            deviceModelId: connectedDevice.modelId,
+            fallbackIfNoAction: () => history.push("/"),
+          });
       }, 0);
       return () => {
         clearTimeout(timeout);
@@ -616,7 +619,7 @@ export default function Tutorial({ useCase }: Props) {
     history.push(`${path}/quiz-failure`);
   }, [history, path]);
 
-  function handleNextInDrawer(closeCurrentDrawer: any, targetPath: any) {
+  function handleNextInDrawer(closeCurrentDrawer: (bool) => void, targetPath: string) {
     closeCurrentDrawer(false);
     history.push(targetPath);
   }

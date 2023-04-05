@@ -6,7 +6,10 @@ import {
   StackNavigationOptions,
 } from "@react-navigation/stack";
 import { Flex } from "@ledgerhq/native-ui";
+import { Theme } from "@ledgerhq/native-ui/styles/theme";
+
 import { useTranslation } from "react-i18next";
+import { useTheme } from "styled-components/native";
 import { ScreenName, NavigatorName } from "../../const";
 import PasswordAddFlowNavigator from "./PasswordAddFlowNavigator";
 import OnboardingWelcome from "../../screens/Onboarding/steps/welcome";
@@ -22,7 +25,6 @@ import OnboardingInfoModal from "../OnboardingStepperView/OnboardingInfoModal";
 
 import OnboardingPairNew from "../../screens/Onboarding/steps/pairNew";
 import OnboardingImportAccounts from "../../screens/Onboarding/steps/importAccounts";
-import OnboardingFinish from "../../screens/Onboarding/steps/finish";
 import OnboardingPreQuizModal from "../../screens/Onboarding/steps/setupDevice/drawers/OnboardingPreQuizModal";
 import OnboardingQuiz from "../../screens/Onboarding/OnboardingQuiz";
 import OnboardingQuizFinal from "../../screens/Onboarding/OnboardingQuizFinal";
@@ -39,7 +41,6 @@ import OnboardingRecoveryPhraseWarning from "../../screens/Onboarding/steps/setu
 import PostWelcomeSelection from "../../screens/Onboarding/steps/postWelcomeSelection";
 import GetDeviceScreen from "../../screens/GetDeviceScreen";
 import OnboardingStepDoYouHaveALedgerDevice from "../../screens/Onboarding/steps/doYouHaveALedger";
-
 import OnboardingProtectFlow from "../../screens/Onboarding/steps/protectFlow";
 
 import {
@@ -48,6 +49,7 @@ import {
   OnboardingPreQuizModalNavigatorParamList,
 } from "./types/OnboardingNavigator";
 import { StackNavigatorProps } from "./types/helpers";
+import ProtectConnectionInformationModal from "../../screens/Onboarding/steps/setupDevice/drawers/ProtectConnectionInformationModal";
 
 const Stack = createStackNavigator<OnboardingNavigatorParamList>();
 const OnboardingCarefulWarningStack =
@@ -157,13 +159,22 @@ const modalOptions: Partial<StackNavigationOptions> = {
   ...TransitionPresets.ModalTransition,
 };
 
-const infoModalOptions: Partial<StackNavigationOptions> = {
+const infoModalOptions = ({
+  theme,
+}: {
+  theme: Theme;
+}): Partial<StackNavigationOptions> => ({
   ...TransitionPresets.ModalTransition,
+  headerStyle: {
+    backgroundColor: theme.colors.background.drawer,
+  },
   headerShown: true,
-};
+});
 
 export default function OnboardingNavigator() {
   const { t } = useTranslation();
+  const theme = useTheme();
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -189,7 +200,7 @@ export default function OnboardingNavigator() {
         name={ScreenName.OnboardingLanguage}
         component={OnboardingLanguage}
         options={{
-          ...infoModalOptions,
+          ...infoModalOptions({ theme }),
           headerTitle: t("onboarding.stepLanguage.title"),
         }}
       />
@@ -230,22 +241,27 @@ export default function OnboardingNavigator() {
       <Stack.Screen
         name={ScreenName.OnboardingSetupDeviceInformation}
         component={OnboardingSetupDeviceInformation}
-        options={infoModalOptions}
+        options={infoModalOptions({ theme })}
       />
       <Stack.Screen
         name={ScreenName.OnboardingModalSetupSecureRecovery}
         component={OnboardingSetupDeviceRecoveryPhrase}
-        options={infoModalOptions}
+        options={infoModalOptions({ theme })}
       />
       <Stack.Screen
         name={ScreenName.OnboardingGeneralInformation}
         component={OnboardingGeneralInformation}
-        options={infoModalOptions}
+        options={infoModalOptions({ theme })}
       />
       <Stack.Screen
         name={ScreenName.OnboardingBluetoothInformation}
         component={OnboardingBluetoothInformation}
-        options={infoModalOptions}
+        options={infoModalOptions({ theme })}
+      />
+      <Stack.Screen
+        name={ScreenName.OnboardingProtectionConnectionInformation}
+        component={ProtectConnectionInformationModal}
+        options={infoModalOptions({ theme })}
       />
       <Stack.Screen
         name={ScreenName.OnboardingSetNewDevice}
@@ -278,15 +294,6 @@ export default function OnboardingNavigator() {
       <Stack.Screen
         name={ScreenName.OnboardingImportAccounts}
         component={OnboardingImportAccounts}
-      />
-
-      <Stack.Screen
-        name={ScreenName.OnboardingFinish}
-        component={OnboardingFinish}
-        options={{
-          cardStyleInterpolator:
-            CardStyleInterpolators.forFadeFromBottomAndroid,
-        }}
       />
 
       <Stack.Screen

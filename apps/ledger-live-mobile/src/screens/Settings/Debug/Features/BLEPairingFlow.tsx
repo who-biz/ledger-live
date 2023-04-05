@@ -1,7 +1,6 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
 import React, { useCallback, useState } from "react";
 import {
-  BottomDrawer,
   Text,
   Icons,
   Button,
@@ -22,7 +21,7 @@ import {
   StackNavigatorNavigation,
   StackNavigatorRoute,
 } from "../../../../components/RootNavigator/types/helpers";
-import { usePromptBluetoothCallback } from "../../../../logic/usePromptBluetoothCallback";
+import QueuedDrawer from "../../../../components/QueuedDrawer";
 
 const availableDeviceModelFilter = [
   "none",
@@ -60,8 +59,6 @@ export default () => {
     pairedDevice: null,
   };
 
-  const promptBluetooth = usePromptBluetoothCallback();
-
   const goToBlePairingFlow = useCallback(() => {
     setIsDrawerOpen(false);
 
@@ -71,42 +68,33 @@ export default () => {
     // @ts-expect-error react navigation does not like having undefined as possible params
     navigation.setParams(newParams);
 
-    // Prompts user to enable bluetooth before navigating to the screen.
-    // Not mandatory as BleDevicePairingFlow screen handles the ble requirement, but it smooths the transition
-    promptBluetooth()
-      .then(() => {
-        const navigateInput: NavigateInput<
-          BaseNavigatorStackParamList,
-          NavigatorName.Settings
-        > = {
-          name: NavigatorName.Settings,
-          params: {
-            screen: screenName,
-            params: {
-              ...newParams,
-            },
-          },
-        };
-        navigation.navigate(ScreenName.BleDevicePairingFlow, {
-          filterByDeviceModelId:
-            chosenDeviceModelFilter === "none"
-              ? undefined
-              : chosenDeviceModelFilter,
-          areKnownDevicesDisplayed,
-          onSuccessAddToKnownDevices,
-          onSuccessNavigateToConfig: {
-            navigateInput,
-            pathToDeviceParam: "params.params.pairedDevice",
-          },
-        });
-      })
-      .catch(() => {
-        // ignore
-      });
+    const navigateInput: NavigateInput<
+      BaseNavigatorStackParamList,
+      NavigatorName.Settings
+    > = {
+      name: NavigatorName.Settings,
+      params: {
+        screen: screenName,
+        params: {
+          ...newParams,
+        },
+      },
+    };
+    navigation.navigate(ScreenName.BleDevicePairingFlow, {
+      filterByDeviceModelId:
+        chosenDeviceModelFilter === "none"
+          ? undefined
+          : chosenDeviceModelFilter,
+      areKnownDevicesDisplayed,
+      onSuccessAddToKnownDevices,
+      onSuccessNavigateToConfig: {
+        navigateInput,
+        pathToDeviceParam: "params.params.pairedDevice",
+      },
+    });
   }, [
     params,
     navigation,
-    promptBluetooth,
     screenName,
     chosenDeviceModelFilter,
     areKnownDevicesDisplayed,
@@ -145,7 +133,10 @@ export default () => {
         pairedDevice?.deviceName ?? pairedDevice?.deviceId ?? "no device"
       }`}
     >
-      <BottomDrawer isOpen={isDrawerOpen} onClose={onCloseDrawer}>
+      <QueuedDrawer
+        isRequestingToBeOpened={isDrawerOpen}
+        onClose={onCloseDrawer}
+      >
         <Flex mb="8">
           <Text variant="body" mb="8">
             Choose which device model to filter on:
@@ -179,7 +170,7 @@ export default () => {
         <Button type="color" onPress={goToBlePairingFlow}>
           Go to pairing flow
         </Button>
-      </BottomDrawer>
+      </QueuedDrawer>
     </SettingsRow>
   );
 };

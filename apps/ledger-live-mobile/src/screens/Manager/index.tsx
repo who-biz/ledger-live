@@ -103,13 +103,18 @@ const ChooseDevice: React.FC<ChooseDeviceProps> = ({ isFocused }) => {
     <Flex flex={1} pt={(isExperimental ? ExperimentalHeaderHeight : 0) + 70}>
       <TrackScreen category="Manager" name="ChooseDevice" />
       <Flex px={16} mb={8}>
-        <Text fontWeight="semiBold" variant="h4">
+        <Text fontWeight="semiBold" variant="h4" testID="manager-title">
           <Trans i18nKey="manager.title" />
         </Text>
       </Flex>
+
       {newDeviceSelectionFeatureFlag?.enabled ? (
-        <Flex px={16} flex={1} pb={insets.bottom + TAB_BAR_SAFE_HEIGHT}>
-          <SelectDevice2 onSelect={onSelectDevice} stopBleScanning={!!device} />
+        <Flex flex={1} px={16} pb={insets.bottom + TAB_BAR_SAFE_HEIGHT}>
+          <SelectDevice2
+            onSelect={onSelectDevice}
+            stopBleScanning={!!device}
+            displayServicesWidget
+          />
         </Flex>
       ) : (
         <NavigationScrollView

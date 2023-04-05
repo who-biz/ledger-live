@@ -12,14 +12,14 @@ import {
   isNativeSegwitDerivationMode,
   isTaprootDerivationMode,
   DerivationMode,
-} from "../../derivation";
+} from "@ledgerhq/coin-framework/derivation";
 import { BitcoinAccount, BitcoinOutput } from "./types";
 import { perCoinLogic } from "./logic";
 import wallet from "./wallet-btc";
 import { getAddress } from "./hw-getAddress";
 import { mapTxToOperations } from "./logic";
 import { Account, Operation } from "@ledgerhq/types-live";
-import { decodeAccountId } from "../../account/accountId";
+import { decodeAccountId } from "../../account/index";
 import { startSpan } from "../../performance";
 
 // Map LL's DerivationMode to wallet-btc's

@@ -1,46 +1,42 @@
 name: "@Desktop • Test App (external)"
-run-name: "@Desktop • Test App (external) triggered by ${{ inputs.login }} ${{ format('on branch {0}', inputs.ref) }}"
+run-name: "@Desktop • Test App (external) triggered by ${{ inputs.login }} ${{ format('on ref {0}', github.ref_name) }}"
 
 on:
   workflow_dispatch:
     inputs:
       ref:
         description: the branch which triggered this workflow
-        required: true
+        required: false
       login:
         description: The GitHub username that triggered the workflow
         required: true
+      base_ref:
+        description: The base branch to merge the head into when checking out the code
 
 concurrency:
-  group: ${{ github.workflow }}-${{ inputs.ref }}
-  cancel-in-progress: ${{ inputs.ref != 'develop' }}
+  # See: https://github.com/orgs/community/discussions/35341
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_name != 'develop' }}
 
 jobs:
-  typecheck:
-    name: "Ledger Live Desktop TypeCheck"
-    env:
-      NODE_OPTIONS: "--max-old-space-size=7168"
-      FORCE_COLOR: 3
-      CI_OS: ubuntu-latest
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ inputs.ref || github.ref }}
-      - uses: ./tools/actions/composites/setup-test-desktop
-        id: setup-test-desktop
-      - name: TurboRepo local caching server
-        id: turborepo-cache-server
-        uses: ./tools/actions/turborepo-gh-cache
-        with:
-          server-token: "yolo"
-          cleanup-cache-folder: "true"
-      - name: Install dependencies
-        run: pnpm i --filter="ledger-live-desktop..." --filter="ledger-live" --frozen-lockfile --unsafe-perm
-      - name: Build dependencies
-        run: pnpm build:lld:deps --api="http://127.0.0.1:${{ steps.turborepo-cache-server.outputs.port }}" --token="yolo" --team="foo"
-      - name: Run code checkers
-        run: pnpm desktop test:codecheck
+  # typecheck:
+  #   name: "Ledger Live Desktop TypeCheck"
+  #   env:
+  #     NODE_OPTIONS: "--max-old-space-size=7168"
+  #     FORCE_COLOR: 3
+  #     CI_OS: ubuntu-latest
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: LedgerHQ/ledger-live/tools/actions/composites/checkout-merge@develop
+  #       with:
+  #         ref: ${{ github.ref_name }}
+  #         base: ${{ inputs.base_ref }}
+  #     - uses: ./tools/actions/composites/setup-test-desktop
+  #       id: setup-test-desktop
+  #       with:
+  #         skip_builds: true
+  #     - name: Run code checkers
+  #       run: pnpm desktop test:codecheck
 
   unit-tests:
     name: "Ledger Live Desktop Unit Tests"
@@ -50,21 +46,14 @@ jobs:
       CI_OS: ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: LedgerHQ/ledger-live/tools/actions/composites/checkout-merge@develop
         with:
-          ref: ${{ inputs.ref || github.ref }}
+          ref: ${{ github.ref_name }}
+          base: ${{ inputs.base_ref }}
       - uses: ./tools/actions/composites/setup-test-desktop
         id: setup-test-desktop
-      - name: TurboRepo local caching server
-        id: turborepo-cache-server
-        uses: ./tools/actions/turborepo-gh-cache
         with:
-          server-token: "yolo"
-          cleanup-cache-folder: "true"
-      - name: Install dependencies
-        run: pnpm i --filter="ledger-live-desktop..." --filter="ledger-live" --frozen-lockfile --unsafe-perm
-      - name: Build dependencies
-        run: pnpm build:lld:deps --api="http://127.0.0.1:${{ steps.turborepo-cache-server.outputs.port }}" --token="yolo" --team="foo"
+          skip_builds: true
       - name: Run unit tests
         run: pnpm desktop test:jest
 
@@ -79,27 +68,52 @@ jobs:
       # DEBUG_LOGS: 1
     runs-on: ubuntu-latest
     outputs:
-      status: ${{ steps.test-desktop.outputs.outcome-linux }}
+      status: ${{ steps.tests.outcome }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: LedgerHQ/ledger-live/tools/actions/composites/checkout-merge@develop
         with:
-          ref: ${{ inputs.ref || github.ref }}
+          ref: ${{ github.ref_name }}
+          base: ${{ inputs.base_ref }}
       - uses: ./tools/actions/composites/setup-test-desktop
         id: setup-test-desktop
-      - name: Install node-gyp globally
-        run: |
-          pnpm add -g node-gyp
-      - name: TurboRepo local caching server
-        id: turborepo-cache-server
-        uses: ./tools/actions/turborepo-gh-cache
         with:
-          server-token: "yolo"
-          cleanup-cache-folder: "true"
-      - uses: ./tools/actions/composites/test-desktop
-        id: test-desktop
+          skip_python: true
+          skip_ruby: true
+          install_playwright: true
+      - name: Run playwright tests [Linux => xvfb-run]
+        id: tests
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm desktop test:playwright
+      - name: upload diffs to imgur
+        if: always() && !cancelled()
+        uses: ./tools/actions/upload-images
+        id: imgur
         with:
+          path: apps/ledger-live-desktop/tests/artifacts/test-results
+          workspace: ${{ github.workspace }}
           os: linux
-          turbo-server-port: ${{ steps.turborepo-cache-server.outputs.port }}
+      - name: upload ci suggested screenshots
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@v3
+        with:
+          name: images
+          path: images-linux.json
+      - name: Upload playwright test results [On Failure]
+        uses: actions/upload-artifact@v3
+        if: failure() && !cancelled()
+        with:
+          name: playwright-results-linux
+          path: |
+            apps/ledger-live-desktop/tests/artifacts/test-results
+            apps/ledger-live-desktop/tests/artifacts/html-report
+            apps/ledger-live-desktop/tests/artifacts/coverage
+            apps/ledger-live-desktop/tests/artifacts/videos
+            apps/ledger-live-desktop/tests/artifacts/logs
+      - name: Upload Allure Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: allure-results-linux
+          path: apps/ledger-live-desktop/allure-results
 
   e2e-tests-mac:
     name: "Live Desktop Tests (macOS X)"
@@ -112,27 +126,52 @@ jobs:
       # DEBUG_LOGS: 1
     runs-on: macos-latest
     outputs:
-      status: ${{ steps.test-desktop.outputs.outcome }}
+      status: ${{ steps.tests.outcome }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: LedgerHQ/ledger-live/tools/actions/composites/checkout-merge@develop
         with:
-          ref: ${{ inputs.ref || github.ref }}
+          ref: ${{ github.ref_name }}
+          base: ${{ inputs.base_ref }}
       - uses: ./tools/actions/composites/setup-test-desktop
         id: setup-test-desktop
-      - name: Install node-gyp globally
-        run: |
-          pnpm add -g node-gyp
-      - name: TurboRepo local caching server
-        id: turborepo-cache-server
-        uses: ./tools/actions/turborepo-gh-cache
         with:
-          server-token: "yolo"
-          cleanup-cache-folder: "true"
-      - uses: ./tools/actions/composites/test-desktop
-        id: test-desktop
+          skip_python: true
+          skip_ruby: true
+          install_playwright: true
+      - name: Run playwright tests
+        id: tests
+        run: pnpm desktop test:playwright
+      - name: upload diffs to imgur
+        if: always() && !cancelled()
+        uses: ./tools/actions/upload-images
+        id: imgur
         with:
+          path: apps/ledger-live-desktop/tests/artifacts/test-results
+          workspace: ${{ github.workspace }}
           os: macos
-          turbo-server-port: ${{ steps.turborepo-cache-server.outputs.port }}
+      - name: upload ci suggested screenshots
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@v3
+        with:
+          name: images
+          path: images-macos.json
+      - name: Upload playwright test results [On Failure]
+        uses: actions/upload-artifact@v3
+        if: failure() && !cancelled()
+        with:
+          name: playwright-results-macos
+          path: |
+            apps/ledger-live-desktop/tests/artifacts/test-results
+            apps/ledger-live-desktop/tests/artifacts/html-report
+            apps/ledger-live-desktop/tests/artifacts/coverage
+            apps/ledger-live-desktop/tests/artifacts/videos
+            apps/ledger-live-desktop/tests/artifacts/logs
+      - name: Upload Allure Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: allure-results-macos
+          path: apps/ledger-live-desktop/allure-results
 
   e2e-tests-windows:
     name: "Live Desktop Tests (Windows)"
@@ -145,37 +184,67 @@ jobs:
       # DEBUG_LOGS: 1
     runs-on: windows-latest
     outputs:
-      status: ${{ steps.test-desktop.outputs.outcome }}
+      status: ${{ steps.tests.outcome }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: LedgerHQ/ledger-live/tools/actions/composites/checkout-merge@develop
         with:
-          ref: ${{ inputs.ref || github.ref }}
+          ref: ${{ github.ref_name }}
+          base: ${{ inputs.base_ref }}
       - uses: ./tools/actions/composites/setup-test-desktop
         id: setup-test-desktop
-      - name: Install node-gyp globally
-        run: |
-          pnpm add -g node-gyp
-      - name: TurboRepo local caching server
-        id: turborepo-cache-server
-        uses: ./tools/actions/turborepo-gh-cache
         with:
-          server-token: "yolo"
-          cleanup-cache-folder: "true"
-      - uses: ./tools/actions/composites/test-desktop
-        id: test-desktop
+          install_node_gyp: true
+          install_playwright: true
+      - name: Run playwright tests
+        id: tests
+        run: pnpm desktop test:playwright
+      - name: upload diffs to imgur
+        if: always() && !cancelled()
+        uses: ./tools/actions/upload-images
+        id: imgur
         with:
+          path: apps/ledger-live-desktop/tests/artifacts/test-results
+          workspace: ${{ github.workspace }}
           os: windows
-          turbo-server-port: ${{ steps.turborepo-cache-server.outputs.port }}
+      - name: upload ci suggested screenshots
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@v3
+        with:
+          name: images
+          path: images-windows.json
+      - name: Upload playwright test results [On Failure]
+        uses: actions/upload-artifact@v3
+        if: failure() && !cancelled()
+        with:
+          name: playwright-results-windows
+          path: |
+            apps/ledger-live-desktop/tests/artifacts/test-results
+            apps/ledger-live-desktop/tests/artifacts/html-report
+            apps/ledger-live-desktop/tests/artifacts/coverage
+            apps/ledger-live-desktop/tests/artifacts/videos
+            apps/ledger-live-desktop/tests/artifacts/logs
+      - name: Upload Allure Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: allure-results-windows
+          path: apps/ledger-live-desktop/allure-results
 
   report:
-    needs:
-      [typecheck, unit-tests, e2e-tests-linux, e2e-tests-mac, e2e-tests-windows]
+    needs: [
+        # typecheck,
+        unit-tests,
+        e2e-tests-linux,
+        e2e-tests-mac,
+        e2e-tests-windows,
+      ]
     runs-on: ubuntu-latest
     if: always() && !cancelled() && github.event_name == 'workflow_dispatch'
     steps:
-      - uses: actions/checkout@v3
+      - uses: LedgerHQ/ledger-live/tools/actions/composites/checkout-merge@develop
         with:
-          ref: ${{ inputs.ref || github.ref }}
+          ref: ${{ github.ref_name }}
+          base: ${{ inputs.base_ref }}
       - name: download images artifacts
         uses: actions/download-artifact@v3
         with:
@@ -240,10 +309,12 @@ jobs:
               },
             };
 
+            /*
             const typecheck = {
               pass: ${{ needs.typecheck.result == 'success' }},
               status: "${{ needs.typecheck.result }}",
             };
+            */
 
             const unitTests = {
               pass: ${{ needs.unit-tests.result == 'success' }},
@@ -266,8 +337,8 @@ jobs:
             };
 
             let summary = `### TypeCheck
-            ${typecheck.pass ? "Typechecks are fine" : "Unfortunately typechecks did not pass"}
-              - ${typecheck.pass ? "✅" : "❌"} **Type checks** ended with status \`${typecheck.status}\`
+
+            DISABLED (ts migration in progress)
 
             ### Unit Tests (Jest)
             ${unitTests.pass ? "Unit tests are fine" : "Unit tests did not pass"}
@@ -330,7 +401,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.ref || github.ref }}
+          ref: ${{ github.ref_name }}
       - name: Download Allure Report - Windows
         uses: actions/download-artifact@v3
         with:
