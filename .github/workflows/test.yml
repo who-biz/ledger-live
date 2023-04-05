@@ -1,19 +1,19 @@
 name: "[Test] Libraries"
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-      - release
-      - hotfix
+#  push:
+#    branches:
+#      - main
+#      - develop
+#      - release
+#      - hotfix
   pull_request:
-  workflow_dispatch:
-    inputs:
-      since_branch:
-        description: The branch that turborepo will check when diffing.
-        default: "develop"
-        required: true
+#  workflow_dispatch:
+#    inputs:
+#      since_branch:
+#        description: The branch that turborepo will check when diffing.
+#        default: "develop"
+#        required: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
