@@ -2,7 +2,7 @@
 
 *This section will be tightened up as I grow more familiar with build tools and processes*
 
-Build requires pretty specific versioning of Node-related tools.  LedgerHQ had added support for `.protofile` toolchain management, but it looks like `proto`-driven build is still pretty buggy, so we'll use `nvm`, and specifics will be detailed below for reproducibility:
+Build requires pretty specific versioning of Node-related tools.  LedgerHQ had added support for `proto` toolchain management, but it looks like `.prototools`-driven build is still pretty buggy, so we'll use `nvm`, and specifics will be detailed below for reproducibility:
 
 **Step 1: Install `nvm`**:
 ```
@@ -37,6 +37,20 @@ Call from root directory of repo.
 pnpm build:lld
 ```
 
+**Step 6: Launch `ledger-live-desktop` AppImage:**
+
+You may either launch it from the AppImage directly, which will be located in `ledger-live/apps/ledger-live-desktop/dist` directory:
+
+```
+./apps/ledger-live-desktop/dist/ledger-live-desktop-2.52.0-linux-x86_64.AppImage
+```
+
+Or, for greater logging to stdout:
+
+```
+pnpm desktop start
+```
+
 **Optionals/Maintenance Notes:**
 
 **Depedencies:**
@@ -55,6 +69,10 @@ To minimize maintenance efforts, it is probably best to use static versioning fo
 
 
 **To be expanded...**
+
+
+---
+
 
 <h3 align="center">
   <image src="https://user-images.githubusercontent.com/3428394/165078916-06fe0b1b-c11d-4c6f-9c1a-ac9291333852.png" alt="ledger-logo" height="100" />
