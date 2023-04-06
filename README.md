@@ -39,11 +39,18 @@ pnpm build:lld
 
 **Step 6: Launch `ledger-live-desktop` AppImage:**
 
-You may either launch it from the AppImage directly, which will be located in `ledger-live/apps/ledger-live-desktop/dist` directory:
+You may launch it from the AppImage directly, which will be located in `ledger-live/apps/ledger-live-desktop/dist` directory:
 
 ```
 ./apps/ledger-live-desktop/dist/ledger-live-desktop-2.52.0-linux-x86_64.AppImage
 ```
+
+Or, from unpackaged binary located in `ledger-live/apps/ledger-live-desktop/dist/__appImage-x64` directory:
+
+```
+./apps/ledger-live-desktop/dist/__appImage-x64/ledger-live-desktop
+```
+
 
 Or, for greater logging to stdout: **THIS DOES NOT WORK** - see https://github.com/who-biz/ledger-live/issues/1
 
