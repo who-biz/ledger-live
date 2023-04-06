@@ -45,7 +45,7 @@ You may either launch it from the AppImage directly, which will be located in `l
 ./apps/ledger-live-desktop/dist/ledger-live-desktop-2.52.0-linux-x86_64.AppImage
 ```
 
-Or, for greater logging to stdout:
+Or, for greater logging to stdout: **THIS DOES NOT WORK** - see https://github.com/who-biz/ledger-live/issues/1
 
 ```
 pnpm desktop start
