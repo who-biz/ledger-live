@@ -1,3 +1,61 @@
+# Biz Notes about Compilation
+
+*This section will be tightened up as I grow more familiar with build tools and processes*
+
+Build requires pretty specific versioning of Node-related tools.  LedgerHQ had added support for `.protofile` toolchain management, but it looks like `proto`-driven build is still pretty buggy, so we'll use `nvm`, and specifics will be detailed below for reproducibility:
+
+**Step 1: Install `nvm`**:
+```
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+```
+Restart your terminal when it completes, or issue commands printed to stdout by installation script.
+
+**Step 2: Install Node.js v16.13.0 using `nvm:`**
+```
+nvm install v16.13.0
+```
+
+**Step 3: Install `pnpm`:**
+```
+npm install -g pnpm@7.4.1
+```
+This step created a massive amount of overhead in packages, but compilation wouldn't work with other methods I tried.  Will try to amend this and reduce overhead.
+
+Figuring out a way to use `corepack` or `nvm` to properly do this would be better, probably.
+
+
+**Step 4: Install dependencies:**
+
+```
+pnpm i
+```
+Call from root directory of repo.
+
+**Step 5: Build `ledger-live-desktop`:**
+
+```
+pnpm build:lld
+```
+
+**Optionals/Maintenance Notes:**
+
+**Depedencies:**
+
+To add dependencies, use scope/filters to do so from root directory. This will add them to your nested apps/libs, without screwing up monorepo build process.
+
+For example, adding `rlp` package to `linux-live-desktop` app, as in commit: ( https://github.com/who-biz/ledger-live/commit/5ad5f745391ee821ec7de6565bf02a5d7aec7644 ), can be done with:
+
+```
+pnpm desktop add rlp@3.0.0
+```
+
+**Recommended Depedency Versioning:**
+
+To minimize maintenance efforts, it is probably best to use static versioning for all compatible depedencies.  LedgerHQ's development of app is *extremely* active, and with so many dependencies, the ability for things to break easily is huge.
+
+
+**To be expanded...**
+
 <h3 align="center">
   <image src="https://user-images.githubusercontent.com/3428394/165078916-06fe0b1b-c11d-4c6f-9c1a-ac9291333852.png" alt="ledger-logo" height="100" />
   &nbsp;
